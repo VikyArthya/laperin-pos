@@ -16,24 +16,54 @@ class SaleController extends Controller
 {
     public function dashboard()
     {
-        // Data untuk dashboard
-        $recentSales = Sale::with('shift')
-            ->orderBy('tanggal', 'desc')
-            ->take(5)
-            ->get();
-            
         $totalOmset = Sale::sum('omset_penjualan');
         $totalUntung = Sale::sum('untung_bersih');
         
-        $currentMonthSales = Sale::whereMonth('tanggal', date('m'))->sum('omset_penjualan');
+        $currentMonthSales = Sale::whereMonth('tanggal', date('m'))
+            ->whereYear('tanggal', date('Y'))
+            ->sum('omset_penjualan');
+            
+        $monthlySalesRaw = Sale::selectRaw('MONTH(tanggal) as month, SUM(omset_penjualan) as omset, SUM(untung_bersih) as untung')
+            ->whereYear('tanggal', date('Y'))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $yearlySalesRaw = Sale::selectRaw('YEAR(tanggal) as year, SUM(omset_penjualan) as omset, SUM(untung_bersih) as untung')
+            ->groupBy('year')
+            ->orderBy('year')
+            ->take(5)
+            ->get();
+
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+        $monthlySales = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $data = $monthlySalesRaw->firstWhere('month', $i);
+            $monthlySales[] = [
+                'name' => $months[$i - 1],
+                'omset' => $data ? (int) $data->omset : 0,
+                'untung' => $data ? (int) $data->untung : 0,
+            ];
+        }
+
+        $yearlySales = $yearlySalesRaw->map(function ($item) {
+            return [
+                'name' => (string) $item->year,
+                'omset' => (int) $item->omset,
+                'untung' => (int) $item->untung,
+            ];
+        })->values()->toArray();
         
         return Inertia::render('dashboard', [
-            'recentSales' => $recentSales,
+            'chartData' => [
+                'monthly' => $monthlySales,
+                'yearly' => $yearlySales,
+            ],
             'stats' => [
                 'totalOmset' => $totalOmset,
                 'totalUntung' => $totalUntung,
                 'currentMonthSales' => $currentMonthSales,
-                'totalData' => Sale::count()
+                'totalData' => Sale::selectRaw('DATE(tanggal) as tgl')->groupBy('tgl')->get()->count()
             ]
         ]);
     }

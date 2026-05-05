@@ -1,17 +1,19 @@
 import { Head, Link } from '@inertiajs/react';
 import { dashboard } from '@/routes';
 import { Wallet, TrendingUp, ShoppingBag, Activity, ArrowUpRight, ArrowRight } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
-interface SaleData {
-    id: number;
-    tanggal: string;
-    omset_penjualan: number;
-    untung_bersih: number;
-    shift: { nama_shift: string };
+interface ChartDataItem {
+    name: string;
+    omset: number;
+    untung: number;
 }
 
 interface DashboardProps {
-    recentSales: SaleData[];
+    chartData: {
+        monthly: ChartDataItem[];
+        yearly: ChartDataItem[];
+    };
     stats: {
         totalOmset: number;
         totalUntung: number;
@@ -20,7 +22,7 @@ interface DashboardProps {
     };
 }
 
-export default function Dashboard({ recentSales = [], stats }: DashboardProps) {
+export default function Dashboard({ chartData, stats }: DashboardProps) {
     const formatRp = (num: number) => {
         if (!num) return 'Rp 0';
         return 'Rp ' + num.toLocaleString('id-ID');
@@ -114,53 +116,59 @@ export default function Dashboard({ recentSales = [], stats }: DashboardProps) {
                     </div>
                 </div>
 
-                {/* Recent Sales Section */}
-                <div className="mt-4 rounded-2xl bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700 overflow-hidden">
-                    <div className="flex items-center justify-between border-b border-slate-100 p-6 dark:border-slate-700">
-                        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Penjualan 5 Hari Terakhir</h2>
-                        <Link href="/sales" className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                            Lihat Semua
-                        </Link>
+                {/* Charts Section */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-4">
+                    {/* Monthly Chart */}
+                    <div className="rounded-2xl bg-white p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+                        <div className="mb-6 flex justify-between items-start">
+                            <div>
+                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Trend Bulanan ({new Date().getFullYear()})</h2>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Grafik omset dan untung setiap bulan.</p>
+                            </div>
+                        </div>
+                        <div className="h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData?.monthly || []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                                    <YAxis hide />
+                                    <Tooltip
+                                        cursor={{ fill: '#f8fafc' }}
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        formatter={(value: number) => ['Rp ' + value.toLocaleString('id-ID'), '']}
+                                    />
+                                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                                    <Bar dataKey="omset" name="Omset" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                                    <Bar dataKey="untung" name="Untung Bersih" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
-                    
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
-                            <thead className="bg-slate-50/50 text-xs uppercase text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
-                                <tr>
-                                    <th className="px-6 py-4 font-medium">Tanggal</th>
-                                    <th className="px-6 py-4 font-medium">Shift Cabang</th>
-                                    <th className="px-6 py-4 font-medium">Omset</th>
-                                    <th className="px-6 py-4 font-medium">Untung Bersih</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                                {recentSales.length > 0 ? recentSales.map((sale) => (
-                                    <tr key={sale.id} className="hover:bg-slate-50/80 transition-colors dark:hover:bg-slate-700/30">
-                                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-300">
-                                            {sale.tanggal}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
-                                                {sale.shift?.nama_shift || '-'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-200">
-                                            {formatRp(sale.omset_penjualan)}
-                                        </td>
-                                        <td className="px-6 py-4 font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                                            {formatRp(sale.untung_bersih)}
-                                            <ArrowUpRight className="h-3 w-3" />
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={4} className="px-6 py-10 text-center text-slate-500">
-                                            Belum ada data penjualan tersedia.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+
+                    {/* Yearly Chart */}
+                    <div className="rounded-2xl bg-white p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+                        <div className="mb-6 flex justify-between items-start">
+                            <div>
+                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Trend Tahunan</h2>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Perkembangan bisnis dari tahun ke tahun.</p>
+                            </div>
+                        </div>
+                        <div className="h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={chartData?.yearly || []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                                    <YAxis hide />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        formatter={(value: number) => ['Rp ' + value.toLocaleString('id-ID'), '']}
+                                    />
+                                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                                    <Line type="monotone" dataKey="omset" name="Omset" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                    <Line type="monotone" dataKey="untung" name="Untung Bersih" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
                 </div>
 
