@@ -144,7 +144,15 @@ class LaporanPulangController extends Controller
 
             // Auto-create Sale record dari Laporan Pulang
             $danaKeluar = 0; // Bisa disesuaikan jika ada dana keluar lain
-            $gajiKaryawan = 0; // Default 0, bisa disesuaikan
+
+            // Hitung gaji karyawan berdasarkan rumus payroll
+            // gaji = (omset × 20%) + (floor(omset / 100.000) × 5.000)
+            $gajiKaryawan = 0;
+            if ($employeeId && $totalPembayaran > 0) {
+                $gajiBase = floor($totalPembayaran * 0.20);
+                $bonus = floor($totalPembayaran / 100000) * 5000;
+                $gajiKaryawan = $gajiBase + $bonus;
+            }
 
             $sale = Sale::create([
                 'user_id' => auth()->id(),
