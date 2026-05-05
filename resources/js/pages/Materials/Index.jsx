@@ -43,19 +43,19 @@ export default function Index({ materials }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (modalMode === 'add') {
-            post(route('materials.store'), {
+            post('/materials', {
                 onSuccess: () => closeModal(),
             });
         } else {
-            put(route('materials.update', editingId), {
+            put('/materials/' + editingId, {
                 onSuccess: () => closeModal(),
             });
         }
     };
 
     const handleDelete = (id) => {
-        if (confirm('Apakah Anda yakin ingin menghapus bahan pokok ini?')) {
-            destroy(route('materials.destroy', id));
+        if (confirm('Apakah Anda yakin ingin menghapus bahan ini?')) {
+            destroy('/materials/' + id);
         }
     };
 

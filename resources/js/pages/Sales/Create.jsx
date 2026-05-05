@@ -77,7 +77,7 @@ export default function Create({ shifts, products, employees }) {
     const inputClasses = "w-full rounded-lg border border-slate-300 px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all";
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-slate-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
             <Head title="Input Transaksi Kasir" />
             
             <div className="max-w-7xl mx-auto">
@@ -196,22 +196,26 @@ export default function Create({ shifts, products, employees }) {
                                     </div>
                                 </div>
 
-                                <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50/50 -mx-6 -mb-6 p-6 rounded-b-2xl">
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-1">TOTAL OMSET PENJUALAN</label>
-                                        <input type="number" value={data.omset_penjualan} onChange={e => !isAutoCalc && setData('omset_penjualan', e.target.value)} readOnly={isAutoCalc} className={`w-full rounded-lg border-2 px-4 py-3 text-lg font-bold text-blue-700 focus:outline-none ${isAutoCalc ? 'border-blue-100 bg-blue-50' : 'border-slate-300'}`} />
+                                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 -mx-6 -mb-6 p-8 rounded-b-2xl shadow-inner relative overflow-hidden border-t-0">
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+                                    <div className="absolute -right-20 -top-20 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                                    <div className="absolute -left-20 -bottom-20 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                                    
+                                    <div className="relative z-10">
+                                        <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">TOTAL OMSET PENJUALAN</label>
+                                        <input type="number" value={data.omset_penjualan} onChange={e => !isAutoCalc && setData('omset_penjualan', e.target.value)} readOnly={isAutoCalc} className={`w-full rounded-xl border border-white/10 px-4 py-3 text-2xl font-black focus:outline-none transition-colors ${isAutoCalc ? 'bg-white/5 text-blue-400 border-white/5 shadow-inner drop-shadow-sm' : 'bg-slate-800 text-white border-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'}`} />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-1">UNTUNG BERSIH</label>
-                                        <input type="number" value={data.untung_bersih} onChange={e => !isAutoCalc && setData('untung_bersih', e.target.value)} readOnly={isAutoCalc} className={`w-full rounded-lg border-2 px-4 py-3 text-lg font-bold text-emerald-700 focus:outline-none ${isAutoCalc ? 'border-emerald-100 bg-emerald-50' : 'border-slate-300'}`} />
+                                    <div className="relative z-10">
+                                        <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">UNTUNG BERSIH</label>
+                                        <input type="number" value={data.untung_bersih} onChange={e => !isAutoCalc && setData('untung_bersih', e.target.value)} readOnly={isAutoCalc} className={`w-full rounded-xl border border-white/10 px-4 py-3 text-2xl font-black focus:outline-none transition-colors ${isAutoCalc ? 'bg-white/5 text-emerald-400 border-white/5 shadow-inner drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-slate-800 text-white border-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'}`} />
                                     </div>
-                                    <div>
+                                    <div className="relative z-10">
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Untung Kotor</label>
-                                        <input type="number" value={data.untung_kotor} onChange={e => !isAutoCalc && setData('untung_kotor', e.target.value)} readOnly={isAutoCalc} className={`${inputClasses} ${isAutoCalc ? 'bg-slate-100' : ''}`} />
+                                        <input type="number" value={data.untung_kotor} onChange={e => !isAutoCalc && setData('untung_kotor', e.target.value)} readOnly={isAutoCalc} className={`w-full rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors ${isAutoCalc ? 'bg-white/5 text-slate-300 border border-white/5' : 'bg-slate-800 text-white border border-slate-600'}`} />
                                     </div>
-                                    <div>
+                                    <div className="relative z-10">
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Selisih Uang Penjualan</label>
-                                        <input type="number" value={data.selisih_uang_penjualan} onChange={e => setData('selisih_uang_penjualan', e.target.value)} className={inputClasses} />
+                                        <input type="number" value={data.selisih_uang_penjualan} onChange={e => setData('selisih_uang_penjualan', e.target.value)} className={`w-full rounded-lg px-4 py-2 text-sm focus:outline-none bg-slate-800 text-white border border-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500`} />
                                     </div>
                                 </div>
                             </div>
@@ -225,10 +229,10 @@ export default function Create({ shifts, products, employees }) {
                             </div>
                             <div className="p-4 flex-1 overflow-y-auto space-y-4">
                                 {products.map(product => (
-                                    <div key={product.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition-colors">
+                                    <div key={product.id} className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 group">
                                         <div className="flex-1">
-                                            <p className="font-medium text-sm text-slate-800">{product.nama_produk}</p>
-                                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">{product.kategori}</p>
+                                            <p className="font-semibold text-sm text-slate-800 group-hover:text-blue-700 transition-colors">{product.nama_produk}</p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{product.kategori}</p>
                                         </div>
                                         <div className="w-24">
                                             <input 
@@ -236,7 +240,7 @@ export default function Create({ shifts, products, employees }) {
                                                 min="0" 
                                                 value={getQty(product.id)} 
                                                 onChange={e => handleItemChange(product.id, e.target.value)}
-                                                className="w-full text-center rounded-lg border-slate-200 py-1.5 focus:ring-blue-500 focus:border-blue-500" 
+                                                className="w-full text-center rounded-xl border-slate-200 py-2 bg-slate-50 font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all shadow-sm" 
                                             />
                                         </div>
                                     </div>

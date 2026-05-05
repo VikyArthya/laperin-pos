@@ -45,11 +45,11 @@ export default function Index({ products }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (modalMode === 'add') {
-            post(route('products.store'), {
+            post('/products', {
                 onSuccess: () => closeModal(),
             });
         } else {
-            put(route('products.update', editingId), {
+            put('/products/' + editingId, {
                 onSuccess: () => closeModal(),
             });
         }
@@ -57,7 +57,7 @@ export default function Index({ products }) {
 
     const handleDelete = (id) => {
         if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-            destroy(route('products.destroy', id));
+            destroy('/products/' + id);
         }
     };
 

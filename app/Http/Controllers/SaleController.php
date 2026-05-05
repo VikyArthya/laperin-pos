@@ -16,20 +16,25 @@ class SaleController extends Controller
 {
     public function dashboard()
     {
-        $totalOmset = Sale::sum('omset_penjualan');
-        $totalUntung = Sale::sum('untung_bersih');
+        $baseQuery = Sale::query();
+        if (auth()->check() && auth()->user()->role === 'karyawan') {
+            $baseQuery->where('user_id', auth()->id());
+        }
+
+        $totalOmset = (clone $baseQuery)->sum('omset_penjualan');
+        $totalUntung = (clone $baseQuery)->sum('untung_bersih');
         
-        $currentMonthSales = Sale::whereMonth('tanggal', date('m'))
+        $currentMonthSales = (clone $baseQuery)->whereMonth('tanggal', date('m'))
             ->whereYear('tanggal', date('Y'))
             ->sum('omset_penjualan');
             
-        $monthlySalesRaw = Sale::selectRaw('MONTH(tanggal) as month, SUM(omset_penjualan) as omset, SUM(untung_bersih) as untung')
+        $monthlySalesRaw = (clone $baseQuery)->selectRaw('MONTH(tanggal) as month, SUM(omset_penjualan) as omset, SUM(untung_bersih) as untung')
             ->whereYear('tanggal', date('Y'))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
-        $yearlySalesRaw = Sale::selectRaw('YEAR(tanggal) as year, SUM(omset_penjualan) as omset, SUM(untung_bersih) as untung')
+        $yearlySalesRaw = (clone $baseQuery)->selectRaw('YEAR(tanggal) as year, SUM(omset_penjualan) as omset, SUM(untung_bersih) as untung')
             ->groupBy('year')
             ->orderBy('year')
             ->take(5)
@@ -53,11 +58,33 @@ class SaleController extends Controller
                 'untung' => (int) $item->untung,
             ];
         })->values()->toArray();
+
+        $itemQuery = \App\Models\SaleItem::selectRaw('product_id, SUM(qty) as total_qty')
+            ->with('product:id,nama_produk');
+            
+        if (auth()->check() && auth()->user()->role === 'karyawan') {
+            $itemQuery->whereHas('sale', function($q) {
+                $q->where('user_id', auth()->id());
+            });
+        }
+
+        $topProductsRaw = $itemQuery->groupBy('product_id')
+            ->orderByDesc('total_qty')
+            ->take(5)
+            ->get();
+
+        $topProducts = $topProductsRaw->map(function ($item) {
+            return [
+                'name' => $item->product ? $item->product->nama_produk : 'Produk Dihapus',
+                'value' => (int) $item->total_qty
+            ];
+        })->values()->toArray();
         
         return Inertia::render('dashboard', [
             'chartData' => [
                 'monthly' => $monthlySales,
                 'yearly' => $yearlySales,
+                'topProducts' => $topProducts,
             ],
             'stats' => [
                 'totalOmset' => $totalOmset,
@@ -70,7 +97,11 @@ class SaleController extends Controller
 
     public function index(Request $request)
     {
-        $query = Sale::with('shift')->orderBy('tanggal', 'desc');
+        $query = Sale::with('shift')->orderBy('created_at', 'desc');
+
+        if (auth()->check() && auth()->user()->role === 'karyawan') {
+            $query->where('user_id', auth()->id());
+        }
 
         if ($request->filled('month')) {
             $parts = explode('-', $request->month);
@@ -147,6 +178,7 @@ class SaleController extends Controller
 
         DB::transaction(function() use ($data) {
             $sale = Sale::create([
+                'user_id' => auth()->id(),
                 'tanggal' => $data['tanggal'],
                 'shift_id' => $data['shift_id'],
                 'modal_awal' => $data['modal_awal'],

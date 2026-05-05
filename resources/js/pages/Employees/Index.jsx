@@ -7,14 +7,17 @@ export default function Index({ employees }) {
     const [modalMode, setModalMode] = useState('add');
     const [editingId, setEditingId] = useState(null);
 
-    const { data, setData, post, put, delete: destroy, processing, errors, reset, clearErrors } = useForm({
+    const { data, setData, post, delete: destroy, processing, errors, reset, clearErrors } = useForm({
         nama: '',
+        alamat: '',
+        gambar_ktp: null,
+        _method: 'post'
     });
 
     const openAddModal = () => {
         setModalMode('add');
         setEditingId(null);
-        reset();
+        setData({ nama: '', alamat: '', gambar_ktp: null, _method: 'post' });
         clearErrors();
         setIsModalOpen(true);
     };
@@ -24,6 +27,9 @@ export default function Index({ employees }) {
         setEditingId(employee.id);
         setData({
             nama: employee.nama,
+            alamat: employee.alamat || '',
+            gambar_ktp: null,
+            _method: 'put'
         });
         clearErrors();
         setIsModalOpen(true);
@@ -37,11 +43,11 @@ export default function Index({ employees }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (modalMode === 'add') {
-            post(route('employees.store'), {
+            post('/employees', {
                 onSuccess: () => closeModal(),
             });
         } else {
-            put(route('employees.update', editingId), {
+            post('/employees/' + editingId, {
                 onSuccess: () => closeModal(),
             });
         }
@@ -49,7 +55,7 @@ export default function Index({ employees }) {
 
     const handleDelete = (id) => {
         if (confirm('Apakah Anda yakin ingin menghapus data karyawan ini? Data gaji terkait akan ikut terhapus!')) {
-            destroy(route('employees.destroy', id));
+            destroy('/employees/' + id);
         }
     };
 
@@ -88,7 +94,9 @@ export default function Index({ employees }) {
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50/80">
                                 <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama Lengkap Karyawan</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Karyawan</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">KTP</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Alamat</th>
                                     <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
@@ -97,10 +105,22 @@ export default function Index({ employees }) {
                                     employees.data.map((employee) => (
                                         <tr key={employee.id} className="hover:bg-slate-50/80 transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">
+                                                <div className="h-8 w-8 shrink-0 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">
                                                     {employee.nama.charAt(0).toUpperCase()}
                                                 </div>
                                                 {employee.nama}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {employee.gambar_ktp ? (
+                                                    <a href={`/storage/${employee.gambar_ktp}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold transition-colors">
+                                                        Lihat KTP
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-slate-400 text-xs italic">Belum ada KTP</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate" title={employee.alamat}>
+                                                {employee.alamat || <span className="text-slate-400 italic">Belum diisi</span>}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <div className="flex justify-end gap-2">
@@ -179,6 +199,32 @@ export default function Index({ employees }) {
                                         placeholder="Contoh: Budi Santoso"
                                     />
                                     {errors.nama && <p className="mt-1.5 text-sm text-red-600">{errors.nama}</p>}
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Alamat Tempat Tinggal</label>
+                                    <textarea
+                                        value={data.alamat}
+                                        onChange={e => setData('alamat', e.target.value)}
+                                        rows="3"
+                                        className={`w-full rounded-lg border px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-pink-600 focus:border-transparent outline-none transition-all ${errors.alamat ? 'border-red-500 ring-red-500/20' : 'border-slate-300'}`}
+                                        placeholder="Contoh: Jl. Pahlawan No. 1, Semarang"
+                                    ></textarea>
+                                    {errors.alamat && <p className="mt-1.5 text-sm text-red-600">{errors.alamat}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                                        Scan / Foto KTP
+                                        {modalMode === 'edit' && <span className="text-slate-400 font-normal ml-1">(Abaikan jika tidak diubah)</span>}
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={e => setData('gambar_ktp', e.target.files[0])}
+                                        className={`w-full rounded-lg border px-4 py-2 text-slate-900 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 ${errors.gambar_ktp ? 'border-red-500' : 'border-slate-300'}`}
+                                    />
+                                    {errors.gambar_ktp && <p className="mt-1.5 text-sm text-red-600">{errors.gambar_ktp}</p>}
                                 </div>
                             </div>
                             

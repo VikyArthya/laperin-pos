@@ -37,19 +37,19 @@ export default function Index({ shifts }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (modalMode === 'add') {
-            post(route('shifts.store'), {
+            post('/shifts', {
                 onSuccess: () => closeModal(),
             });
         } else {
-            put(route('shifts.update', editingId), {
+            put('/shifts/' + editingId, {
                 onSuccess: () => closeModal(),
             });
         }
     };
 
     const handleDelete = (id) => {
-        if (confirm('Apakah Anda yakin ingin menghapus Cabang/Shift ini? Data penjualan terkait mungkin ikut terhapus!')) {
-            destroy(route('shifts.destroy', id));
+        if (confirm('Apakah Anda yakin ingin menghapus shift ini? Data penjualan terkait mungkin akan terpengaruh!')) {
+            destroy('/shifts/' + id);
         }
     };
 
