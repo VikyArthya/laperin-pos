@@ -128,6 +128,16 @@ class LaporanPulangController extends Controller
                     }
                 }
             }
+
+            // Kurangi stok bahan pokok yang perlu direfill
+            if ($request->has('stock_refill_items') && is_array($request->stock_refill_items)) {
+                foreach ($request->stock_refill_items as $materialId) {
+                    $material = Material::find($materialId);
+                    if ($material && $material->stok > 0) {
+                        $material->decrement('stok', 1);
+                    }
+                }
+            }
         });
 
         return redirect()->route('laporan-pulang.index');

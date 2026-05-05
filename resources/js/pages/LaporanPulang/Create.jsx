@@ -281,20 +281,35 @@ export default function Create({ shifts, products, materials, employees, authEmp
                             <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">------- STOK -------</h2>
 
                             <div className="mb-6">
-                                <p className="text-sm text-slate-600 mb-4">Tandai item yang perlu direfill:</p>
+                                <p className="text-sm text-slate-600 mb-2">Tandai item yang perlu direfill:</p>
+                                <p className="text-xs text-amber-600 mb-4 flex items-center gap-1">
+                                    <span>⚠️</span> Stok akan berkurang 1 setiap item yang dicentang
+                                </p>
                                 {materials && materials.length > 0 ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                                        {materials.map((material) => (
-                                            <div key={material.id} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isMaterialChecked(material.id)}
-                                                    onChange={() => handleStockRefillToggle(material.id)}
-                                                    className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 focus:ring-2"
-                                                />
-                                                <span className="text-xs text-slate-700">{material.nama_bahan}</span>
-                                            </div>
-                                        ))}
+                                        {materials.map((material) => {
+                                            const stockColor = material.stok > 10 ? 'text-emerald-600 bg-emerald-50' : material.stok > 0 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
+                                            return (
+                                                <div key={material.id} className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${
+                                                    isMaterialChecked(material.id)
+                                                        ? 'bg-amber-50 border-amber-300'
+                                                        : 'bg-slate-50 border-slate-100'
+                                                }`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isMaterialChecked(material.id)}
+                                                        onChange={() => handleStockRefillToggle(material.id)}
+                                                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 focus:ring-2"
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                        <span className="text-xs text-slate-700 block truncate">{material.nama_bahan}</span>
+                                                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>
+                                                            Stok: {material.stok}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <p className="text-sm text-slate-400 italic">Belum ada data bahan pokok. Silakan tambahkan di menu Master Bahan Pokok.</p>
