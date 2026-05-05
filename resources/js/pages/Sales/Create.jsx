@@ -83,8 +83,8 @@ export default function Create({ shifts, products, employees }) {
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0">
                                 <Receipt className="w-6 h-6" />
                             </div>
                             Input Transaksi Baru
@@ -218,7 +218,7 @@ export default function Create({ shifts, products, employees }) {
                         </div>
 
                         {/* Menu Input */}
-                        <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[800px]">
+                        <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[500px] lg:h-[800px]">
                             <div className="p-4 border-b bg-slate-50">
                                 <h2 className="text-lg font-semibold text-slate-900">Input Porsi Terjual</h2>
                                 <p className="text-xs text-slate-500">Masukkan Qty / Jumlah item yang laku</p>
@@ -250,11 +250,11 @@ export default function Create({ shifts, products, employees }) {
                         <textarea value={data.catatan} onChange={e => setData('catatan', e.target.value)} rows="3" className={inputClasses} placeholder="Tulis keterangan atau kendala hari ini..."></textarea>
                     </div>
 
-                    <div className="flex justify-end gap-4 pt-4">
-                        <Link href="/sales" className="px-6 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">
+                    <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
+                        <Link href="/sales" className="w-full sm:w-auto text-center px-6 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200 sm:border-transparent">
                             Batal
                         </Link>
-                        <button type="submit" disabled={processing} className="inline-flex items-center px-8 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-600/20 disabled:opacity-70 transition-all">
+                        <button type="submit" disabled={processing} className="w-full sm:w-auto justify-center inline-flex items-center px-8 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-600/20 disabled:opacity-70 transition-all">
                             <Save className="w-5 h-5 mr-2" />
                             {processing ? 'Menyimpan...' : 'Simpan Transaksi'}
                         </button>

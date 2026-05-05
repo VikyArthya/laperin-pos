@@ -4,9 +4,9 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\SaleController;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', function () {
+    return redirect()->route('login');
+})->name('home');
 
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShiftController;
