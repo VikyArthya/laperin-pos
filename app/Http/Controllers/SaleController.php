@@ -218,25 +218,29 @@ class SaleController extends Controller
                 }
             }
 
-            $modalAwal   = (int) $data['modal_awal'];
-            $danaMasuk   = (int) $data['dana_masuk'];
-            $danaKeluar  = (int) $data['dana_keluar'];
+            $modalAwal = (int) $data['modal_awal'];
+            $danaMasuk = (int) $data['dana_masuk'];
+            $danaKeluar = (int) $data['dana_keluar'];
             $gajiKaryawan = (int) $data['gaji_karyawan'];
+            $cash = (int) $data['cash'] ?? 0;
+            $qris = (int) $data['qris'] ?? 0;
+            $sf = (int) $data['sf'] ?? 0;
 
-            // Total Omset = Modal Awal + Dana Masuk - Dana Keluar
-            $totalOmset = $modalAwal + $danaMasuk - $danaKeluar;
-            // Untung Bersih = Dana Masuk - Modal Awal - Gaji Karyawan
-            $untungBersih = $danaMasuk - $modalAwal - $gajiKaryawan;
-            // Untung Bersih Tanpa Karyawan = Dana Masuk - Modal Awal
-            $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
+            // Total Omset = Dana Masuk
+            $totalOmset = $danaMasuk;
+            // Untung Bersih = Dana Masuk - Dana Keluar - Gaji Karyawan
+            $untungBersih = $danaMasuk - $danaKeluar - $gajiKaryawan;
+            // Untung Bersih Tanpa Karyawan = Dana Masuk - Dana Keluar
+            $untungBersihTanpaKaryawan = $danaMasuk - $danaKeluar;
 
             $sale = Sale::create([
                 'user_id' => auth()->id(),
                 'tanggal' => $data['tanggal'],
                 'shift_id' => $data['shift_id'],
                 'modal_awal' => $modalAwal,
-                'cash' => 0,
-                'qris' => 0,
+                'cash' => $cash,
+                'qris' => $qris,
+                'sf' => $sf,
                 'dana_keluar' => $danaKeluar,
                 'dana_masuk' => $danaMasuk,
                 'selisih_dana' => $data['selisih_dana'],

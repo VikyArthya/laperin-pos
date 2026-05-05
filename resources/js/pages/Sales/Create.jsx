@@ -15,6 +15,9 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         dana_masuk: 0,
         selisih_dana: 0,
         omset_penjualan: 0,
+        cash: 0,
+        qris: 0,
+        sf: 0,
         is_karyawan_hadir: isKaryawan ? true : false,
         employee_id: isKaryawan && authEmployee ? authEmployee.id : '',
         gaji_karyawan: 0,
@@ -223,6 +226,32 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                     </div>
                                 </div>
 
+                                {/* Payment Methods */}
+                                <div className="mt-6 pt-6 border-t border-slate-100">
+                                    <h3 className="text-sm font-semibold text-slate-700 mb-3">Metode Pembayaran</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-500 mb-1">💵 Cash</label>
+                                            <input type="number" value={data.cash} onChange={e => setData('cash', e.target.value)} className={inputClasses} placeholder="0" />
+                                            <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.cash)}</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-500 mb-1">📱 QRIS</label>
+                                            <input type="number" value={data.qris} onChange={e => setData('qris', e.target.value)} className={inputClasses} placeholder="0" />
+                                            <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.qris)}</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-500 mb-1">🍔 ShopeeFood (SF)</label>
+                                            <input type="number" value={data.sf} onChange={e => setData('sf', e.target.value)} className={inputClasses} placeholder="0" />
+                                            <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.sf)}</p>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                        <p className="text-xs text-blue-800 font-medium">Total Pembayaran: {formatRp(Number(data.cash) + Number(data.qris) + Number(data.sf))}</p>
+                                        <p className="text-[10px] text-blue-600 mt-1">Cash + QRIS + SF = {formatRp(Number(data.cash) + Number(data.qris) + Number(data.sf))}</p>
+                                    </div>
+                                </div>
+
                                 {/* Summary Section - Dark */}
                                 <div className="mt-8 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 rounded-2xl shadow-inner relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
@@ -232,8 +261,8 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
                                         <div>
                                             <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">TOTAL OMSET</label>
-                                            <p className="text-2xl sm:text-3xl font-black text-blue-400">{formatRp(Number(data.modal_awal) + Number(data.dana_masuk) - Number(data.dana_keluar))}</p>
-                                            <p className="text-[10px] text-slate-400 mt-2">= Modal Awal + Dana Masuk - Dana Keluar</p>
+                                            <p className="text-2xl sm:text-3xl font-black text-blue-400">{formatRp(data.dana_masuk)}</p>
+                                            <p className="text-[10px] text-slate-400 mt-2">= Dana Masuk</p>
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">UNTUNG BERSIH</label>

@@ -99,6 +99,43 @@ export default function Show({ sale }) {
                             </div>
                         </div>
 
+                        {/* Payment Methods Section */}
+                        <div className="mb-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                            <h3 className="text-sm font-semibold text-blue-900 mb-3">Metode Pembayaran</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="bg-white rounded-lg p-3 shadow-sm">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-xs text-slate-500">💵 Cash</p>
+                                            <p className="font-bold text-slate-900">{formatRp(sale.cash)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white rounded-lg p-3 shadow-sm">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-xs text-slate-500">📱 QRIS</p>
+                                            <p className="font-bold text-slate-900">{formatRp(sale.qris)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white rounded-lg p-3 shadow-sm">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-xs text-slate-500">🍔 ShopeeFood</p>
+                                            <p className="font-bold text-slate-900">{formatRp(sale.sf)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-blue-200">
+                                <div className="flex justify-between items-center">
+                                    <p className="text-xs font-semibold text-blue-800">Total Pembayaran</p>
+                                    <p className="text-sm font-bold text-blue-900">{formatRp(Number(sale.cash) + Number(sale.qris) + Number(sale.sf))}</p>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Summary Section - Dark */}
                         <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 rounded-2xl shadow-inner relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
