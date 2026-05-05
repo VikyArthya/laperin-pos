@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Receipt, ArrowLeft, Save, Calculator } from 'lucide-react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Receipt, ArrowLeft, Save, Calculator, Lock } from 'lucide-react';
 
-export default function Create({ shifts, products, employees }) {
-    const { data, setData, post, processing, errors } = useForm({
+export default function Create({ shifts, products, employees, authEmployee }) {
+    const { props } = usePage();
+    const authUser = props.auth?.user;
+    const isKaryawan = authUser?.role === 'karyawan';
+
+    const { data, setData, post, processing, errors, reset } = useForm({
         tanggal: new Date().toISOString().split('T')[0],
         shift_id: '',
         modal_awal: 0,
@@ -11,8 +15,8 @@ export default function Create({ shifts, products, employees }) {
         dana_masuk: 0,
         selisih_dana: 0,
         omset_penjualan: 0,
-        is_karyawan_hadir: false,
-        employee_id: '',
+        is_karyawan_hadir: isKaryawan ? true : false,
+        employee_id: isKaryawan && authEmployee ? authEmployee.id : '',
         gaji_karyawan: 0,
         catatan: '',
         items: products.map(p => ({ product_id: p.id, qty: 0 })),
@@ -114,25 +118,51 @@ export default function Create({ shifts, products, employees }) {
                         </div>
 
                         <div className="mt-6 border-t pt-4">
-                            <div className="flex items-center mb-4">
-                                <input type="checkbox" id="karyawan_hadir" checked={data.is_karyawan_hadir} onChange={e => setData('is_karyawan_hadir', e.target.checked)} className="h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
-                                <label htmlFor="karyawan_hadir" className="ml-2 block text-sm text-slate-900 font-medium">Karyawan Hadir?</label>
-                            </div>
+                            {!isKaryawan && (
+                                <div className="flex items-center mb-4">
+                                    <input type="checkbox" id="karyawan_hadir" checked={data.is_karyawan_hadir} onChange={e => setData('is_karyawan_hadir', e.target.checked)} className="h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                                    <label htmlFor="karyawan_hadir" className="ml-2 block text-sm text-slate-900 font-medium">Karyawan Hadir?</label>
+                                </div>
+                            )}
 
                             {data.is_karyawan_hadir && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Nama Karyawan</label>
-                                        <select value={data.employee_id} onChange={e => setData('employee_id', e.target.value)} className={inputClasses}>
-                                            <option value="">Pilih Karyawan</option>
-                                            {employees.map(e => <option key={e.id} value={e.id}>{e.nama}</option>)}
-                                        </select>
+                                        {isKaryawan ? (
+                                            <input
+                                                type="text"
+                                                value={authEmployee?.nama || authUser?.name || 'Tidak ada data karyawan'}
+                                                disabled
+                                                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-400 bg-slate-100 cursor-not-allowed"
+                                                readOnly
+                                            />
+                                        ) : (
+                                            <select value={data.employee_id} onChange={e => setData('employee_id', e.target.value)} className={inputClasses}>
+                                                <option value="">Pilih Karyawan</option>
+                                                {employees.map(e => <option key={e.id} value={e.id}>{e.nama}</option>)}
+                                            </select>
+                                        )}
+                                        {isKaryawan && (
+                                            <p className="text-[10px] text-amber-600 mt-1">🔒 Terkait akun Anda (tidak bisa diubah)</p>
+                                        )}
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Gaji Dibayarkan (Rp)</label>
-                                        <input type="number" value={data.gaji_karyawan} onChange={e => setData('gaji_karyawan', e.target.value)} className={inputClasses} min="0" />
-                                        <p className="text-xs text-slate-500 mt-1">{formatRp(data.gaji_karyawan)}</p>
-                                    </div>
+                                    {!isKaryawan && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Gaji Dibayarkan (Rp)</label>
+                                            <input type="number" value={data.gaji_karyawan} onChange={e => setData('gaji_karyawan', e.target.value)} className={inputClasses} min="0" />
+                                            <p className="text-xs text-slate-500 mt-1">{formatRp(data.gaji_karyawan)}</p>
+                                        </div>
+                                    )}
+                                    {isKaryawan && (
+                                        <div className="flex items-center p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                                            <Lock className="w-5 h-5 text-amber-600 mr-2" />
+                                            <div>
+                                                <p className="text-sm font-medium text-amber-800">Gaji diisi oleh Admin</p>
+                                                <p className="text-xs text-amber-600">Hubungi admin untuk mengubah gaji karyawan.</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

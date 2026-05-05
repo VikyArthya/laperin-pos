@@ -18,12 +18,13 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Administrator',
                 'password' => bcrypt('admin123'),
-                'role' => 'admin'
+                'role' => 'admin',
             ]
         );
 
-        $this->call([
-            ExcelDataSeeder::class
-        ]);
+        // ExcelDataSeeder di-comment untuk fresh install tanpa data Excel
+        // $this->call([
+        //     ExcelDataSeeder::class
+        // ]);
     }
 }

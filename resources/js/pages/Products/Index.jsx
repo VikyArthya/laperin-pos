@@ -16,7 +16,7 @@ export default function Index({ products }) {
         stok: 0,
     });
 
-    const { data: stockData, setData: setStockData, post: stockPost, processing: stockProcessing, reset: stockReset, clearErrors: stockClearErrors } = useForm({
+    const { data: stockData, setData: setStockDataData, post: stockPost, processing: stockProcessing, reset: stockReset, clearErrors: stockClearErrors } = useForm({
         jumlah: 0,
     });
 
@@ -47,7 +47,7 @@ export default function Index({ products }) {
 
     const openStockModal = (product, type) => {
         setStockItem({ ...product, type });
-        setStockData({ jumlah: 0 });
+        setStockDataData({ jumlah: 0 });
         stockClearErrors();
         setIsStockModalOpen(true);
     };
@@ -347,7 +347,7 @@ export default function Index({ products }) {
                                     <input
                                         type="number"
                                         value={stockData.jumlah}
-                                        onChange={e => setStockData('jumlah', e.target.value)}
+                                        onChange={e => setStockDataData('jumlah', e.target.value)}
                                         min="1"
                                         className={`w-full rounded-lg border px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all ${errors.jumlah ? 'border-red-500 ring-red-500/20' : 'border-slate-300'}`}
                                         placeholder="Masukkan jumlah"

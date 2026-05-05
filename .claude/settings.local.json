@@ -4,7 +4,11 @@
       "mcp__laravel-boost__database-schema",
       "Bash(php artisan *)",
       "Bash(vendor/bin/pint *)",
-      "mcp__laravel-boost__browser-logs"
+      "mcp__laravel-boost__browser-logs",
+      "mcp__laravel-boost__database-query",
+      "Bash(grep *)",
+      "mcp__laravel-boost__last-error",
+      "Bash(composer dump-autoload *)"
     ]
   },
   "enableAllProjectMcpServers": true,

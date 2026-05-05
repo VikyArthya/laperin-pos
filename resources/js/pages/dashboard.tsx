@@ -26,9 +26,17 @@ interface DashboardProps {
         currentMonthSales: number;
         totalData: number;
     };
+    auth?: {
+        user?: {
+            id: string;
+            name: string;
+            email: string;
+            role: string;
+        };
+    };
 }
 
-export default function Dashboard({ chartData, stats }: DashboardProps) {
+export default function Dashboard({ chartData, stats, auth }: DashboardProps) {
     const formatRp = (num: number | string | undefined | null) => {
         if (num === null || num === undefined) return 'Rp 0';
         const number = typeof num === 'string' ? parseInt(num, 10) || 0 : num;
@@ -44,6 +52,7 @@ export default function Dashboard({ chartData, stats }: DashboardProps) {
     };
 
     const greeting = getGreeting();
+    const isKaryawan = auth?.user?.role === 'karyawan';
     const PIE_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
 
     return (
@@ -54,11 +63,23 @@ export default function Dashboard({ chartData, stats }: DashboardProps) {
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 mb-2 rounded-full bg-blue-50 text-blue-600 text-sm font-medium border border-blue-100 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400">
-                            {greeting.emoji} {greeting.text}, Bos!
-                        </div>
+                        {isKaryawan && (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 mb-2 rounded-full bg-amber-50 text-amber-600 text-sm font-medium border border-amber-100">
+                                👤 Login sebagai: <span className="font-bold">{auth?.user?.name}</span> (Karyawan)
+                            </div>
+                        )}
+                        {!isKaryawan && (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 mb-2 rounded-full bg-blue-50 text-blue-600 text-sm font-medium border border-blue-100">
+                                {greeting.emoji} {greeting.text}, Bos!
+                            </div>
+                        )}
                         <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Overview Bisnis</h1>
-                        <p className="text-slate-500 dark:text-slate-400 mt-1">Pantau performa penjualan dan produk terlaris cabang Laper.in Anda.</p>
+                        <p className="text-slate-500 dark:text-slate-400 mt-1">
+                            {!isKaryawan ? 'Pantau performa penjualan dan produk terlaris cabang Laper.in Anda.' : 'Data di bawah ini adalah penjualan yang Anda catat.'}
+                        </p>
+                        {isKaryawan && (
+                            <p className="text-xs text-amber-600 mt-1">Data hanya menampilkan penjualan yang Anda inputkan.</p>
+                        )}
                     </div>
                     <Link 
                         href="/sales" 

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Package, Receipt, Store, Box, Users, ShieldAlert } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, Package, Receipt, Store, Box, Users, ShieldAlert, Banknote } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -51,6 +51,12 @@ const allNavItems = [
         title: 'Master Karyawan',
         href: '/employees',
         icon: Users,
+        role: 'admin'
+    },
+    {
+        title: 'Penggajian Karyawan',
+        href: '/payroll',
+        icon: Banknote,
         role: 'admin'
     },
     {

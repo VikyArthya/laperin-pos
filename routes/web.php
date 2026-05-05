@@ -12,6 +12,7 @@ use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PayrollController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [SaleController::class, 'dashboard'])->name('dashboard');
@@ -27,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('shifts', ShiftController::class)->except(['create', 'show', 'edit']);
         Route::resource('materials', MaterialController::class)->except(['create', 'show', 'edit']);
         Route::resource('employees', EmployeeController::class)->except(['create', 'show', 'edit']);
+        Route::get('payroll', [PayrollController::class, 'index'])->name('payroll.index');
 
         // Stock adjustment routes
         Route::post('materials/{material}/add-stock', [MaterialController::class, 'addStock'])->name('materials.add-stock');

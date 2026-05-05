@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
-use App\Models\EmployeeSalary;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -93,6 +92,14 @@ class SaleController extends Controller
                 'currentMonthSales' => $currentMonthSales,
                 'totalData' => Sale::selectRaw('DATE(tanggal) as tgl')->groupBy('tgl')->get()->count(),
             ],
+            'auth' => [
+                'user' => auth()->user() ? [
+                    'id' => auth()->id(),
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                    'role' => auth()->user()->role,
+                ] : null,
+            ],
         ]);
     }
 
@@ -142,10 +149,17 @@ class SaleController extends Controller
         $products = Product::orderBy('kategori')->get();
         $employees = Employee::orderBy('nama')->get();
 
+        // Get current logged in employee for karyawan role
+        $authEmployee = null;
+        if (auth()->user()->role === 'karyawan') {
+            $authEmployee = Employee::where('nama', auth()->user()->name)->first();
+        }
+
         return Inertia::render('Sales/Create', [
             'shifts' => $shifts,
             'products' => $products,
             'employees' => $employees,
+            'authEmployee' => $authEmployee,
         ]);
     }
 
@@ -194,6 +208,15 @@ class SaleController extends Controller
                 }
             }
 
+            // Auto-set employee_id untuk role karyawan
+            $employeeId = $data['employee_id'];
+            if (auth()->user()->role === 'karyawan') {
+                $authEmployee = Employee::where('nama', auth()->user()->name)->first();
+                if ($authEmployee) {
+                    $employeeId = $authEmployee->id;
+                }
+            }
+
             $sale = Sale::create([
                 'user_id' => auth()->id(),
                 'tanggal' => $data['tanggal'],
@@ -209,6 +232,7 @@ class SaleController extends Controller
                 'omset_topping' => 0,
                 'biaya_packaging' => 0,
                 'is_karyawan_hadir' => $data['is_karyawan_hadir'] ?? false,
+                'employee_id' => $employeeId,
                 'gaji_karyawan' => $data['gaji_karyawan'],
                 'untung_kotor' => $data['omset_penjualan'],
                 'untung_bersih' => $data['omset_penjualan'],
