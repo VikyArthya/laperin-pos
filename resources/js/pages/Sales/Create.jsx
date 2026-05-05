@@ -22,7 +22,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         items: products.map(p => ({ product_id: p.id, qty: 0 })),
     });
 
-    // Hitung total omset dari produk
+    // Hitung total omset dari harga jual produk
     const calculateTotalOmset = () => {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
@@ -33,7 +33,27 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         }, 0);
     };
 
+    // Hitung modal awal dari harga beli produk
+    const calculateModalAwal = () => {
+        return data.items.reduce((total, item) => {
+            const product = products.find(p => p.id === item.product_id);
+            if (product) {
+                return total + ((product.harga_beli || 0) * item.qty);
+            }
+            return total;
+        }, 0);
+    };
+
+    // Hitung gaji otomatis berdasarkan rumus: (omset × 20%) + (floor(omset / 100rb) × 5rb)
+    const calculateGaji = (omset) => {
+        const gajiBase = Math.floor(omset * 0.20);
+        const bonus = Math.floor(omset / 100000) * 5000;
+        return gajiBase + bonus;
+    };
+
     const totalOmsetProduk = calculateTotalOmset();
+    const totalModalAwal = calculateModalAwal();
+    const autoGaji = calculateGaji(totalOmsetProduk);
 
     // Auto calculate selisih dana
     useEffect(() => {
@@ -43,13 +63,28 @@ export default function Create({ shifts, products, employees, authEmployee }) {
             ...prev,
             selisih_dana: selisihDana,
             omset_penjualan: totalOmsetProduk,
+            modal_awal: totalModalAwal,
         }));
     }, [data.dana_keluar, data.dana_masuk]);
 
-    // Update omset saat qty berubah
+    // Update omset, modal, dana_masuk & gaji saat qty berubah
     useEffect(() => {
-        setData('omset_penjualan', totalOmsetProduk);
-    }, [totalOmsetProduk]);
+        setData(prev => ({
+            ...prev,
+            omset_penjualan: totalOmsetProduk,
+            modal_awal: totalModalAwal,
+            dana_masuk: totalOmsetProduk,
+            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : 0,
+        }));
+    }, [totalOmsetProduk, totalModalAwal]);
+
+    // Update gaji saat toggle karyawan hadir
+    useEffect(() => {
+        setData(prev => ({
+            ...prev,
+            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : 0,
+        }));
+    }, [data.is_karyawan_hadir, autoGaji]);
 
     const handleItemChange = (productId, qty) => {
         const newItems = data.items.map(item =>
@@ -147,22 +182,14 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                             <p className="text-[10px] text-amber-600 mt-1">🔒 Terkait akun Anda (tidak bisa diubah)</p>
                                         )}
                                     </div>
-                                    {!isKaryawan && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Gaji Dibayarkan (Rp)</label>
-                                            <input type="number" value={data.gaji_karyawan} onChange={e => setData('gaji_karyawan', e.target.value)} className={inputClasses} min="0" />
-                                            <p className="text-xs text-slate-500 mt-1">{formatRp(data.gaji_karyawan)}</p>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Gaji Dibayarkan <span className="text-emerald-500">(Auto)</span></label>
+                                        <input type="number" value={data.gaji_karyawan} readOnly className={`${inputClasses} bg-slate-100 cursor-not-allowed`} min="0" />
+                                        <div className="mt-1.5 space-y-0.5">
+                                            <p className="text-[10px] text-emerald-600 font-semibold">{formatRp(autoGaji)}</p>
+                                            <p className="text-[10px] text-slate-400">= (Omset {formatRp(totalOmsetProduk)} × 20%) + ({Math.floor(totalOmsetProduk / 100000)} × Rp 5.000)</p>
                                         </div>
-                                    )}
-                                    {isKaryawan && (
-                                        <div className="flex items-center p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                                            <Lock className="w-5 h-5 text-amber-600 mr-2" />
-                                            <div>
-                                                <p className="text-sm font-medium text-amber-800">Gaji diisi oleh Admin</p>
-                                                <p className="text-xs text-amber-600">Hubungi admin untuk mengubah gaji karyawan.</p>
-                                            </div>
-                                        </div>
-                                    )}
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -178,15 +205,15 @@ export default function Create({ shifts, products, employees, authEmployee }) {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Modal Awal</label>
-                                        <input type="number" value={data.modal_awal} onChange={e => setData('modal_awal', e.target.value)} className={inputClasses} />
-                                        <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.modal_awal)}</p>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Modal Awal <span className="text-emerald-500">(Auto)</span></label>
+                                        <input type="number" value={data.modal_awal} readOnly className={`${inputClasses} bg-slate-100 cursor-not-allowed`} />
+                                        <p className="text-[10px] text-emerald-500 mt-1">= Σ(Harga Beli × Qty) = {formatRp(totalModalAwal)}</p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Dana Masuk</label>
-                                        <input type="number" value={data.dana_masuk} onChange={e => setData('dana_masuk', e.target.value)} className={inputClasses} />
-                                        <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.dana_masuk)}</p>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Dana Masuk <span className="text-blue-500">(Auto)</span></label>
+                                        <input type="number" value={data.dana_masuk} readOnly className={`${inputClasses} bg-slate-100 cursor-not-allowed`} />
+                                        <p className="text-[10px] text-blue-500 mt-1">= Σ(Harga Jual × Qty) = {formatRp(totalOmsetProduk)}</p>
                                     </div>
 
                                     <div>
@@ -240,7 +267,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{product.kategori}</p>
                                                     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>Stok: {stock}</span>
                                                 </div>
-                                                <p className="text-[10px] text-slate-500 mt-1">{formatRp(product.harga)}</p>
+                                                <p className="text-[10px] text-slate-500 mt-1">Beli: {formatRp(product.harga_beli)} · Jual: {formatRp(product.harga)}</p>
                                                 {isOverStock && (
                                                     <p className="text-[10px] font-bold text-red-600 mt-1 flex items-center gap-1">
                                                         <span>⚠️</span> Melebihi stok! (max: {stock})

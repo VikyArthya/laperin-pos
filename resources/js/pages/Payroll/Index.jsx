@@ -27,12 +27,12 @@ function formatTanggal(dateStr) {
 }
 
 export default function Index({ payrollData, filters }) {
-    const [expandedUser, setExpandedUser] = useState(null);
+    const [expandedEmployee, setExpandedEmployee] = useState(null);
     const [month, setMonth] = useState(filters.month);
     const [year, setYear] = useState(filters.year);
 
-    const toggleExpand = (userId) => {
-        setExpandedUser(prev => prev === userId ? null : userId);
+    const toggleExpand = (employeeId) => {
+        setExpandedEmployee(prev => prev === employeeId ? null : employeeId);
     };
 
     const handleFilter = () => {
@@ -147,18 +147,18 @@ export default function Index({ payrollData, filters }) {
                 <div className="space-y-4">
                     {payrollData.length > 0 ? (
                         payrollData.map((p) => (
-                            <div key={p.user_id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all">
+                            <div key={p.employee_id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all">
                                 {/* Employee Summary Row */}
                                 <button
-                                    onClick={() => toggleExpand(p.user_id)}
+                                    onClick={() => toggleExpand(p.employee_id)}
                                     className="w-full flex items-center justify-between p-5 hover:bg-slate-50/70 transition-colors text-left"
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="h-11 w-11 shrink-0 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-500/20">
-                                            {p.user_name.charAt(0).toUpperCase()}
+                                            {p.employee_name.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-slate-900 text-base">{p.user_name}</p>
+                                            <p className="font-bold text-slate-900 text-base">{p.employee_name}</p>
                                             <p className="text-xs text-slate-500 mt-0.5">
                                                 {p.total_hari} hari kerja &bull; Omset: {formatRp(p.total_omset)}
                                             </p>
@@ -169,7 +169,7 @@ export default function Index({ payrollData, filters }) {
                                             <p className="text-xs text-slate-500 font-medium">Total Gaji</p>
                                             <p className="text-xl font-extrabold text-emerald-600">{formatRp(p.total_gaji)}</p>
                                         </div>
-                                        {expandedUser === p.user_id ? (
+                                        {expandedEmployee === p.employee_id ? (
                                             <ChevronUp className="w-5 h-5 text-slate-400 shrink-0" />
                                         ) : (
                                             <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
@@ -178,7 +178,7 @@ export default function Index({ payrollData, filters }) {
                                 </button>
 
                                 {/* Details Table */}
-                                {expandedUser === p.user_id && (
+                                {expandedEmployee === p.employee_id && (
                                     <div className="border-t border-slate-100 bg-slate-50/50">
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full divide-y divide-slate-200">

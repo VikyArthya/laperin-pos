@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Plus, Edit2, Trash2, X, Users } from 'lucide-react';
 
-export default function Index({ employees }) {
+export default function Index({ employees, users }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
     const [editingId, setEditingId] = useState(null);
@@ -11,13 +11,14 @@ export default function Index({ employees }) {
         nama: '',
         alamat: '',
         gambar_ktp: null,
+        user_id: '',
         _method: 'post'
     });
 
     const openAddModal = () => {
         setModalMode('add');
         setEditingId(null);
-        setData({ nama: '', alamat: '', gambar_ktp: null, _method: 'post' });
+        setData({ nama: '', alamat: '', gambar_ktp: null, user_id: '', _method: 'post' });
         clearErrors();
         setIsModalOpen(true);
     };
@@ -29,6 +30,7 @@ export default function Index({ employees }) {
             nama: employee.nama,
             alamat: employee.alamat || '',
             gambar_ktp: null,
+            user_id: employee.user_id || '',
             _method: 'put'
         });
         clearErrors();
@@ -108,7 +110,14 @@ export default function Index({ employees }) {
                                                 <div className="h-8 w-8 shrink-0 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">
                                                     {employee.nama.charAt(0).toUpperCase()}
                                                 </div>
-                                                {employee.nama}
+                                                <div>
+                                                    <p>{employee.nama}</p>
+                                                    {employee.user ? (
+                                                        <p className="text-[10px] text-emerald-600 font-medium">🔗 {employee.user.email}</p>
+                                                    ) : (
+                                                        <p className="text-[10px] text-amber-500 italic">Belum terhubung akun</p>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {employee.gambar_ktp ? (
@@ -225,6 +234,21 @@ export default function Index({ employees }) {
                                         className={`w-full rounded-lg border px-4 py-2 text-slate-900 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 ${errors.gambar_ktp ? 'border-red-500' : 'border-slate-300'}`}
                                     />
                                     {errors.gambar_ktp && <p className="mt-1.5 text-sm text-red-600">{errors.gambar_ktp}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Hubungkan ke Akun User</label>
+                                    <select
+                                        value={data.user_id}
+                                        onChange={e => setData('user_id', e.target.value)}
+                                        className={`w-full rounded-lg border px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-pink-600 focus:border-transparent outline-none transition-all border-slate-300`}
+                                    >
+                                        <option value="">-- Tidak dihubungkan --</option>
+                                        {users.map(u => (
+                                            <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                                        ))}
+                                    </select>
+                                    <p className="text-[10px] text-slate-400 mt-1">Pilih akun login karyawan agar data penjualan & gaji otomatis tersinkron.</p>
                                 </div>
                             </div>
                             

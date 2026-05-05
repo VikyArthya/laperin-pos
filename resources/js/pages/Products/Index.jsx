@@ -12,6 +12,7 @@ export default function Index({ products }) {
     const { data, setData, post, put, delete: destroy, processing, errors, reset, clearErrors } = useForm({
         nama_produk: '',
         kategori: '',
+        harga_beli: 0,
         harga: 0,
         stok: 0,
     });
@@ -38,6 +39,7 @@ export default function Index({ products }) {
         setData({
             nama_produk: product.nama_produk,
             kategori: product.kategori || '',
+            harga_beli: product.harga_beli || 0,
             harga: product.harga,
             stok: product.stok || 0,
         });
@@ -128,7 +130,8 @@ export default function Index({ products }) {
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama Produk</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategori</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Harga Satuan</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Harga Beli</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Harga Jual</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Stok</th>
                                     <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
@@ -148,6 +151,9 @@ export default function Index({ products }) {
                                                     'bg-blue-50 text-blue-700 border-blue-200/50'}`}>
                                                     {product.kategori || 'Tanpa Kategori'}
                                                 </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-orange-600">
+                                                {formatRp(product.harga_beli)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">
                                                 {formatRp(product.harga)}
@@ -188,7 +194,7 @@ export default function Index({ products }) {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                        <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
                                             <Package className="w-12 h-12 mx-auto text-slate-300 mb-3" />
                                             <p className="text-sm">Belum ada produk yang ditambahkan.</p>
                                         </td>
@@ -271,7 +277,20 @@ export default function Index({ products }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Harga Satuan (Rp)</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Harga Beli (Rp)</label>
+                                    <input
+                                        type="number"
+                                        value={data.harga_beli}
+                                        onChange={e => setData('harga_beli', e.target.value)}
+                                        min="0"
+                                        className={`w-full rounded-lg border px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all ${errors.harga_beli ? 'border-red-500 ring-red-500/20' : 'border-slate-300'}`}
+                                        placeholder="Contoh: 8000"
+                                    />
+                                    {errors.harga_beli && <p className="mt-1.5 text-sm text-red-600">{errors.harga_beli}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Harga Jual (Rp)</label>
                                     <input
                                         type="number"
                                         value={data.harga}

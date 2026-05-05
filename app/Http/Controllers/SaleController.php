@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\EmployeeSalary;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -152,7 +153,7 @@ class SaleController extends Controller
         // Get current logged in employee for karyawan role
         $authEmployee = null;
         if (auth()->user()->role === 'karyawan') {
-            $authEmployee = Employee::where('nama', auth()->user()->name)->first();
+            $authEmployee = Employee::where('user_id', auth()->id())->first();
         }
 
         return Inertia::render('Sales/Create', [
@@ -209,9 +210,9 @@ class SaleController extends Controller
             }
 
             // Auto-set employee_id untuk role karyawan
-            $employeeId = $data['employee_id'];
+            $employeeId = $data['employee_id'] ?? null;
             if (auth()->user()->role === 'karyawan') {
-                $authEmployee = Employee::where('nama', auth()->user()->name)->first();
+                $authEmployee = Employee::where('user_id', auth()->id())->first();
                 if ($authEmployee) {
                     $employeeId = $authEmployee->id;
                 }
