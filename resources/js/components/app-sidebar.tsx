@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Package, Receipt, Store, Box } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, FolderGit2, LayoutGrid, Package, Receipt, Store, Box, Users, ShieldAlert } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -16,31 +16,48 @@ import {
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+const allNavItems = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+        role: 'all'
     },
     {
         title: 'Kasir / Penjualan',
         href: '/sales',
         icon: Receipt,
+        role: 'all'
     },
     {
         title: 'Master Cabang / Shift',
         href: '/shifts',
         icon: Store,
+        role: 'admin'
     },
     {
         title: 'Master Produk',
         href: '/products',
         icon: Package,
+        role: 'admin'
     },
     {
         title: 'Master Bahan Pokok',
         href: '/materials',
         icon: Box,
+        role: 'admin'
+    },
+    {
+        title: 'Master Karyawan',
+        href: '/employees',
+        icon: Users,
+        role: 'admin'
+    },
+    {
+        title: 'Manajemen User',
+        href: '/users',
+        icon: ShieldAlert,
+        role: 'admin'
     },
 ];
 
@@ -58,6 +75,13 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    // Get logged in user role from Inertia props
+    const { auth } = usePage().props as any;
+    const userRole = auth?.user?.role || 'karyawan';
+
+    // Filter items based on role
+    const filteredNavItems = allNavItems.filter(item => item.role === 'all' || item.role === userRole) as NavItem[];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -73,7 +97,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={filteredNavItems} />
             </SidebarContent>
 
             <SidebarFooter>
