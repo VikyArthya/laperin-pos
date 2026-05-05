@@ -108,8 +108,15 @@ class SaleController extends Controller
     {
         $query = Sale::with('shift')->orderBy('created_at', 'desc');
 
+        // Karyawan hanya bisa melihat sales miliknya sendiri berdasarkan employee_id
         if (auth()->check() && auth()->user()->role === 'karyawan') {
-            $query->where('user_id', auth()->id());
+            $authEmployee = Employee::where('user_id', auth()->id())->first();
+            if ($authEmployee) {
+                $query->where('employee_id', $authEmployee->id);
+            } else {
+                // Jika tidak ada employee terkait, return empty
+                $query->where('employee_id', 0);
+            }
         }
 
         if ($request->filled('month')) {

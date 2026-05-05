@@ -7,7 +7,8 @@
       "Bash(php artisan migrate:fresh:*)",
       "Bash(php artisan migrate:status:*)",
       "Bash(php artisan:*)",
-      "Bash(vendor/bin/pint:*)"
+      "Bash(vendor/bin/pint:*)",
+      "mcp__laravel-boost__database-schema"
     ],
     "deny": [],
     "ask": []

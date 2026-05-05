@@ -182,6 +182,7 @@ export default function Create({ shifts, products, materials, employees, authEmp
                                                 {categoryProducts.map((product) => {
                                                     const item = data.items.find(i => i.product_id === product.id) || {};
                                                     const productInitial = product.nama_produk.split(' ')[0].toUpperCase();
+                                                    const totalHarga = (product.harga || 0) * (item.qty_terjual || 0);
 
                                                     return (
                                                         <div key={product.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
@@ -190,7 +191,7 @@ export default function Create({ shifts, products, materials, employees, authEmp
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="font-medium text-slate-900 truncate">{product.nama_produk}</p>
-                                                                <p className="text-xs text-slate-500">Stok saat ini: {product.stok}</p>
+                                                                <p className="text-xs text-slate-500">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
                                                             </div>
                                                             <div className="flex items-center gap-3">
                                                                 <div className="text-center">
@@ -213,10 +214,15 @@ export default function Create({ shifts, products, materials, employees, authEmp
                                                                         className="w-20 rounded-lg border border-slate-300 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                                                     />
                                                                 </div>
-                                                                <div className="text-center min-w-[80px]">
-                                                                    <p className="text-lg font-bold text-purple-600">
+                                                                <div className="text-center min-w-[120px]">
+                                                                    <p className="text-sm font-bold text-purple-600">
                                                                         {item.qty_terjual || 0} ({item.qty_bawa || 0})
                                                                     </p>
+                                                                    {item.qty_terjual > 0 && (
+                                                                        <p className="text-xs font-semibold text-emerald-600">
+                                                                            {formatRp(totalHarga)}
+                                                                        </p>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>

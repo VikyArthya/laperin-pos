@@ -7,6 +7,8 @@ use App\Models\LaporanPulang;
 use App\Models\LaporanPulangItem;
 use App\Models\Material;
 use App\Models\Product;
+use App\Models\Sale;
+use App\Models\SaleItem;
 use App\Models\Shift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -103,13 +105,27 @@ class LaporanPulangController extends Controller
             ]);
 
             // Process items dan kembalikan stok
+            $totalOmsetProduk = 0;
+            $totalModalAwal = 0;
+
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
                     if (isset($item['product_id']) && ($item['qty_terjual'] > 0 || $item['qty_bawa'] > 0)) {
                         $qtyTerjual = (int) ($item['qty_terjual'] ?? 0);
                         $qtyBawa = (int) ($item['qty_bawa'] ?? 0);
 
-                        // Simpan item
+                        $product = Product::find($item['product_id']);
+                        if ($product) {
+                            // Hitung omset
+                            $totalOmsetProduk += $product->harga * $qtyTerjual;
+
+                            // Modal awal = harga_beli × qty_terjual (sesuai menu Kasir)
+                            if ($product->harga_beli > 0) {
+                                $totalModalAwal += $product->harga_beli * $qtyTerjual;
+                            }
+                        }
+
+                        // Simpan item laporan pulang
                         LaporanPulangItem::create([
                             'laporan_pulang_id' => $laporan->id,
                             'product_id' => $item['product_id'],
@@ -119,11 +135,58 @@ class LaporanPulangController extends Controller
 
                         // Kembalikan sisa stok
                         $sisa = $qtyBawa - $qtyTerjual;
-                        if ($sisa > 0) {
-                            $product = Product::find($item['product_id']);
-                            if ($product) {
-                                $product->increment('stok', $sisa);
-                            }
+                        if ($sisa > 0 && $product) {
+                            $product->increment('stok', $sisa);
+                        }
+                    }
+                }
+            }
+
+            // Auto-create Sale record dari Laporan Pulang
+            $danaKeluar = 0; // Bisa disesuaikan jika ada dana keluar lain
+            $gajiKaryawan = 0; // Default 0, bisa disesuaikan
+
+            $sale = Sale::create([
+                'user_id' => auth()->id(),
+                'tanggal' => $request->tanggal,
+                'shift_id' => $request->shift_id,
+                'modal_awal' => $totalModalAwal,
+                'cash' => $cash,
+                'qris' => $qris,
+                'sf' => $sf,
+                'dana_keluar' => $danaKeluar,
+                'dana_masuk' => $totalPembayaran,
+                'selisih_dana' => $danaKeluar - $totalPembayaran,
+                'omset_penjualan' => $totalPembayaran, // Omset = Dana Masuk
+                'omset_bubuk' => 0,
+                'omset_topping' => 0,
+                'biaya_packaging' => 0,
+                'is_karyawan_hadir' => $employeeId ? true : false,
+                'employee_id' => $employeeId,
+                'gaji_karyawan' => $gajiKaryawan,
+                'untung_kotor' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
+                'untung_bersih' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
+                'untung_bersih_tanpa_karyawan' => $totalPembayaran - $danaKeluar,
+                'selisih_uang_penjualan' => 0,
+                'catatan' => 'Otomatis dibuat dari Laporan Pulang #'.$laporan->id,
+            ]);
+
+            // Create SaleItems dari Laporan Pulang Items
+            if ($request->has('items')) {
+                foreach ($request->items as $item) {
+                    if (isset($item['product_id']) && $item['qty_terjual'] > 0) {
+                        $product = Product::find($item['product_id']);
+                        if ($product) {
+                            $qtyTerjual = (int) ($item['qty_terjual'] ?? 0);
+                            $subtotal = $product->harga * $qtyTerjual;
+
+                            SaleItem::create([
+                                'sale_id' => $sale->id,
+                                'product_id' => $item['product_id'],
+                                'qty' => $qtyTerjual,
+                                'harga_satuan' => $product->harga,
+                                'subtotal' => $subtotal,
+                            ]);
                         }
                     }
                 }
