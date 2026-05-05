@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::table('products', function (Blueprint $table) {
             $table->integer('stok')->default(0)->after('harga');
         });
+
+        Schema::table('materials', function (Blueprint $table) {
+            $table->integer('stok')->default(0)->after('nominal');
+        });
     }
 
     /**
@@ -22,6 +26,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
+            $table->dropColumn('stok');
+        });
+
+        Schema::table('materials', function (Blueprint $table) {
             $table->dropColumn('stok');
         });
     }

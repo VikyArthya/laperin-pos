@@ -1,15 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "mcp__laravel-boost__database-schema",
-      "Bash(php artisan *)",
-      "Bash(vendor/bin/pint *)",
-      "mcp__laravel-boost__browser-logs",
-      "mcp__laravel-boost__database-query",
-      "Bash(grep *)",
-      "mcp__laravel-boost__last-error",
-      "Bash(composer dump-autoload *)"
-    ]
+      "Bash(npm run build:*)",
+      "Bash(php artisan route:list:*)",
+      "Bash(cat:*)",
+      "Bash(php artisan migrate:fresh:*)",
+      "Bash(php artisan migrate:status:*)",
+      "Bash(php artisan:*)"
+    ],
+    "deny": [],
+    "ask": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
