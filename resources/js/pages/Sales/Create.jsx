@@ -7,58 +7,48 @@ export default function Create({ shifts, products, employees }) {
         tanggal: new Date().toISOString().split('T')[0],
         shift_id: '',
         modal_awal: 0,
-        cash: 0,
-        qris: 0,
-        sf_out: 0,
-        sf_in: 0,
-        sf_selisih: 0,
+        dana_keluar: 0,
+        dana_masuk: 0,
+        selisih_dana: 0,
         omset_penjualan: 0,
-        omset_bubuk: 0,
-        omset_topping: 0,
-        biaya_packaging: 0,
         is_karyawan_hadir: false,
         employee_id: '',
         gaji_karyawan: 0,
-        untung_kotor: 0,
-        untung_bersih: 0,
-        untung_bersih_tanpa_karyawan: 0,
-        selisih_uang_penjualan: 0,
         catatan: '',
         items: products.map(p => ({ product_id: p.id, qty: 0 })),
     });
 
-    const [isAutoCalc, setIsAutoCalc] = useState(true);
+    // Hitung total omset dari produk
+    const calculateTotalOmset = () => {
+        return data.items.reduce((total, item) => {
+            const product = products.find(p => p.id === item.product_id);
+            if (product) {
+                return total + (product.harga * item.qty);
+            }
+            return total;
+        }, 0);
+    };
 
-    // Auto calculate if enabled
+    const totalOmsetProduk = calculateTotalOmset();
+
+    // Auto calculate selisih dana
     useEffect(() => {
-        if (!isAutoCalc) return;
-
-        // Auto hitung omset penjualan (Cash + QRIS + SF IN) - asumsi rumus standar, bisa disesuaikan
-        const omset = Number(data.cash) + Number(data.qris) + Number(data.sf_in);
-        
-        // Auto hitung sf_selisih (SF OUT - SF IN)
-        const sfSelisih = Number(data.sf_out) - Number(data.sf_in);
-
-        // Auto hitung untung kotor (Omset - Modal Awal - Biaya Packaging) - contoh rumus
-        const untungKotor = omset - Number(data.biaya_packaging);
-
-        // Auto hitung untung bersih
-        const untungBersih = untungKotor - Number(data.gaji_karyawan);
-        const untungBersihTanpaKaryawan = untungKotor;
+        const selisihDana = Number(data.dana_keluar) - Number(data.dana_masuk);
 
         setData(prev => ({
             ...prev,
-            omset_penjualan: omset,
-            sf_selisih: sfSelisih,
-            untung_kotor: untungKotor,
-            untung_bersih: untungBersih,
-            untung_bersih_tanpa_karyawan: untungBersihTanpaKaryawan
+            selisih_dana: selisihDana,
+            omset_penjualan: totalOmsetProduk,
         }));
+    }, [data.dana_keluar, data.dana_masuk]);
 
-    }, [data.cash, data.qris, data.sf_in, data.sf_out, data.modal_awal, data.biaya_packaging, data.gaji_karyawan, isAutoCalc]);
+    // Update omset saat qty berubah
+    useEffect(() => {
+        setData('omset_penjualan', totalOmsetProduk);
+    }, [totalOmsetProduk]);
 
     const handleItemChange = (productId, qty) => {
-        const newItems = data.items.map(item => 
+        const newItems = data.items.map(item =>
             item.product_id === productId ? { ...item, qty: Number(qty) } : item
         );
         setData('items', newItems);
@@ -74,17 +64,23 @@ export default function Create({ shifts, products, employees }) {
         post('/sales');
     };
 
+    const formatRp = (num) => {
+        if (num === null || num === undefined || num === '') return 'Rp 0';
+        const number = typeof num === 'string' ? parseInt(num, 10) || 0 : Number(num);
+        return 'Rp ' + number.toLocaleString('id-ID');
+    };
+
     const inputClasses = "w-full rounded-lg border border-slate-300 px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all";
 
     return (
         <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-slate-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
             <Head title="Input Transaksi Kasir" />
-            
+
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0">
+                            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
                                 <Receipt className="w-6 h-6" />
                             </div>
                             Input Transaksi Baru
@@ -97,11 +93,11 @@ export default function Create({ shifts, products, employees }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    
+
                     {/* General Info & Staffing */}
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                         <h2 className="text-lg font-semibold text-slate-900 mb-4 border-b pb-2">Informasi Umum & Shift</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal Transaksi</label>
                                 <input type="date" value={data.tanggal} onChange={e => setData('tanggal', e.target.value)} className={inputClasses} required />
@@ -122,7 +118,7 @@ export default function Create({ shifts, products, employees }) {
                                 <input type="checkbox" id="karyawan_hadir" checked={data.is_karyawan_hadir} onChange={e => setData('is_karyawan_hadir', e.target.checked)} className="h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
                                 <label htmlFor="karyawan_hadir" className="ml-2 block text-sm text-slate-900 font-medium">Karyawan Hadir?</label>
                             </div>
-                            
+
                             {data.is_karyawan_hadir && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                     <div>
@@ -135,6 +131,7 @@ export default function Create({ shifts, products, employees }) {
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Gaji Dibayarkan (Rp)</label>
                                         <input type="number" value={data.gaji_karyawan} onChange={e => setData('gaji_karyawan', e.target.value)} className={inputClasses} min="0" />
+                                        <p className="text-xs text-slate-500 mt-1">{formatRp(data.gaji_karyawan)}</p>
                                     </div>
                                 </div>
                             )}
@@ -144,78 +141,48 @@ export default function Create({ shifts, products, employees }) {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         {/* Financial Inputs */}
                         <div className="lg:col-span-8 space-y-6">
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
-                                <div className="absolute top-4 right-6 flex items-center gap-2">
-                                    <label className="text-xs text-slate-500 flex items-center cursor-pointer">
-                                        <input type="checkbox" checked={isAutoCalc} onChange={e => setIsAutoCalc(e.target.checked)} className="mr-2 rounded text-blue-600 focus:ring-blue-500" />
-                                        Auto Calculate
-                                    </label>
-                                </div>
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                                 <h2 className="text-lg font-semibold text-slate-900 mb-4 border-b pb-2 flex items-center gap-2">
                                     <Calculator className="w-5 h-5 text-emerald-500" /> Rincian Keuangan
                                 </h2>
-                                
+
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                                     <div>
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Modal Awal</label>
                                         <input type="number" value={data.modal_awal} onChange={e => setData('modal_awal', e.target.value)} className={inputClasses} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Cash</label>
-                                        <input type="number" value={data.cash} onChange={e => setData('cash', e.target.value)} className={inputClasses} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">QRIS</label>
-                                        <input type="number" value={data.qris} onChange={e => setData('qris', e.target.value)} className={inputClasses} />
-                                    </div>
-                                    
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">SF IN</label>
-                                        <input type="number" value={data.sf_in} onChange={e => setData('sf_in', e.target.value)} className={inputClasses} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">SF OUT</label>
-                                        <input type="number" value={data.sf_out} onChange={e => setData('sf_out', e.target.value)} className={inputClasses} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">SF Selisih</label>
-                                        <input type="number" value={data.sf_selisih} onChange={e => !isAutoCalc && setData('sf_selisih', e.target.value)} readOnly={isAutoCalc} className={`${inputClasses} ${isAutoCalc ? 'bg-slate-100' : ''}`} />
+                                        <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.modal_awal)}</p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Biaya Packaging</label>
-                                        <input type="number" value={data.biaya_packaging} onChange={e => setData('biaya_packaging', e.target.value)} className={inputClasses} />
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Dana Masuk</label>
+                                        <input type="number" value={data.dana_masuk} onChange={e => setData('dana_masuk', e.target.value)} className={inputClasses} />
+                                        <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.dana_masuk)}</p>
                                     </div>
+
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Omset Bubuk</label>
-                                        <input type="number" value={data.omset_bubuk} onChange={e => setData('omset_bubuk', e.target.value)} className={inputClasses} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Omset Topping</label>
-                                        <input type="number" value={data.omset_topping} onChange={e => setData('omset_topping', e.target.value)} className={inputClasses} />
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Dana Keluar</label>
+                                        <input type="number" value={data.dana_keluar} onChange={e => setData('dana_keluar', e.target.value)} className={inputClasses} />
+                                        <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.dana_keluar)}</p>
                                     </div>
                                 </div>
 
-                                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 -mx-6 -mb-6 p-8 rounded-b-2xl shadow-inner relative overflow-hidden border-t-0">
+                                {/* Summary Section - Dark */}
+                                <div className="mt-8 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 rounded-2xl shadow-inner relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
                                     <div className="absolute -right-20 -top-20 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
                                     <div className="absolute -left-20 -bottom-20 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
-                                    
-                                    <div className="relative z-10">
-                                        <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">TOTAL OMSET PENJUALAN</label>
-                                        <input type="number" value={data.omset_penjualan} onChange={e => !isAutoCalc && setData('omset_penjualan', e.target.value)} readOnly={isAutoCalc} className={`w-full rounded-xl border border-white/10 px-4 py-3 text-2xl font-black focus:outline-none transition-colors ${isAutoCalc ? 'bg-white/5 text-blue-400 border-white/5 shadow-inner drop-shadow-sm' : 'bg-slate-800 text-white border-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'}`} />
-                                    </div>
-                                    <div className="relative z-10">
-                                        <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">UNTUNG BERSIH</label>
-                                        <input type="number" value={data.untung_bersih} onChange={e => !isAutoCalc && setData('untung_bersih', e.target.value)} readOnly={isAutoCalc} className={`w-full rounded-xl border border-white/10 px-4 py-3 text-2xl font-black focus:outline-none transition-colors ${isAutoCalc ? 'bg-white/5 text-emerald-400 border-white/5 shadow-inner drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-slate-800 text-white border-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'}`} />
-                                    </div>
-                                    <div className="relative z-10">
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Untung Kotor</label>
-                                        <input type="number" value={data.untung_kotor} onChange={e => !isAutoCalc && setData('untung_kotor', e.target.value)} readOnly={isAutoCalc} className={`w-full rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors ${isAutoCalc ? 'bg-white/5 text-slate-300 border border-white/5' : 'bg-slate-800 text-white border border-slate-600'}`} />
-                                    </div>
-                                    <div className="relative z-10">
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Selisih Uang Penjualan</label>
-                                        <input type="number" value={data.selisih_uang_penjualan} onChange={e => setData('selisih_uang_penjualan', e.target.value)} className={`w-full rounded-lg px-4 py-2 text-sm focus:outline-none bg-slate-800 text-white border border-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500`} />
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
+                                        <div>
+                                            <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">TOTAL OMSET PRODUK</label>
+                                            <p className="text-3xl font-black text-blue-400">{formatRp(totalOmsetProduk)}</p>
+                                            <p className="text-xs text-slate-400 mt-2">Dihitung otomatis dari harga produk terjual</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">SELISIH DANA</label>
+                                            <p className="text-3xl font-black text-emerald-400">{formatRp(data.selisih_dana)}</p>
+                                            <p className="text-xs text-slate-400 mt-2">Dana Keluar - Dana Masuk</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -230,24 +197,38 @@ export default function Create({ shifts, products, employees }) {
                             <div className="p-4 flex-1 overflow-y-auto space-y-4">
                                 {products.map(product => {
                                     const stock = product.stok || 0;
+                                    const qty = getQty(product.id);
+                                    const isOverStock = qty > stock && stock > 0;
                                     const stockColor = stock > 10 ? 'text-emerald-600 bg-emerald-50' : stock > 0 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
                                     return (
-                                        <div key={product.id} className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 group">
+                                        <div key={product.id} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-300 group ${
+                                            isOverStock ? 'border-red-300 bg-red-50/50' : 'border-slate-100 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md hover:shadow-blue-500/5'
+                                        }`}>
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-sm text-slate-800 group-hover:text-blue-700 transition-colors truncate">{product.nama_produk}</p>
                                                 <div className="flex items-center gap-2 mt-0.5">
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{product.kategori}</p>
                                                     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>Stok: {stock}</span>
                                                 </div>
+                                                <p className="text-[10px] text-slate-500 mt-1">{formatRp(product.harga)}</p>
+                                                {isOverStock && (
+                                                    <p className="text-[10px] font-bold text-red-600 mt-1 flex items-center gap-1">
+                                                        <span>⚠️</span> Melebihi stok! (max: {stock})
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="w-24 ml-2">
                                                 <input
                                                     type="number"
                                                     min="0"
                                                     max={stock}
-                                                    value={getQty(product.id)}
+                                                    value={qty}
                                                     onChange={e => handleItemChange(product.id, e.target.value)}
-                                                    className="w-full text-center rounded-xl border-slate-200 py-2 bg-slate-50 font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
+                                                    className={`w-full text-center rounded-xl border py-2 font-bold focus:ring-2 focus:bg-white transition-all shadow-sm ${
+                                                        isOverStock
+                                                            ? 'border-red-400 text-red-600 bg-red-50 focus:ring-red-500 focus:border-red-500'
+                                                            : 'border-slate-200 text-slate-900 bg-slate-50 focus:ring-blue-500 focus:border-blue-500'
+                                                    }`}
                                                 />
                                             </div>
                                         </div>

@@ -13,6 +13,16 @@ class Sale extends Model
         return $this->belongsTo(Shift::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
     public function saleItems()
     {
         return $this->hasMany(SaleItem::class);

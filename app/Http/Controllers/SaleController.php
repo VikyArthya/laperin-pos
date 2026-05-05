@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Sale;
-use App\Models\SaleItem;
-use App\Models\Product;
-use App\Models\Shift;
 use App\Models\Employee;
 use App\Models\EmployeeSalary;
-use Inertia\Inertia;
+use App\Models\Product;
+use App\Models\Sale;
+use App\Models\SaleItem;
+use App\Models\Shift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class SaleController extends Controller
 {
@@ -23,11 +24,11 @@ class SaleController extends Controller
 
         $totalOmset = (clone $baseQuery)->sum('omset_penjualan');
         $totalUntung = (clone $baseQuery)->sum('untung_bersih');
-        
+
         $currentMonthSales = (clone $baseQuery)->whereMonth('tanggal', date('m'))
             ->whereYear('tanggal', date('Y'))
             ->sum('omset_penjualan');
-            
+
         $monthlySalesRaw = (clone $baseQuery)->selectRaw('MONTH(tanggal) as month, SUM(omset_penjualan) as omset, SUM(untung_bersih) as untung')
             ->whereYear('tanggal', date('Y'))
             ->groupBy('month')
@@ -59,11 +60,11 @@ class SaleController extends Controller
             ];
         })->values()->toArray();
 
-        $itemQuery = \App\Models\SaleItem::selectRaw('product_id, SUM(qty) as total_qty')
+        $itemQuery = SaleItem::selectRaw('product_id, SUM(qty) as total_qty')
             ->with('product:id,nama_produk');
-            
+
         if (auth()->check() && auth()->user()->role === 'karyawan') {
-            $itemQuery->whereHas('sale', function($q) {
+            $itemQuery->whereHas('sale', function ($q) {
                 $q->where('user_id', auth()->id());
             });
         }
@@ -76,10 +77,10 @@ class SaleController extends Controller
         $topProducts = $topProductsRaw->map(function ($item) {
             return [
                 'name' => $item->product ? $item->product->nama_produk : 'Produk Dihapus',
-                'value' => (int) $item->total_qty
+                'value' => (int) $item->total_qty,
             ];
         })->values()->toArray();
-        
+
         return Inertia::render('dashboard', [
             'chartData' => [
                 'monthly' => $monthlySales,
@@ -90,8 +91,8 @@ class SaleController extends Controller
                 'totalOmset' => $totalOmset,
                 'totalUntung' => $totalUntung,
                 'currentMonthSales' => $currentMonthSales,
-                'totalData' => Sale::selectRaw('DATE(tanggal) as tgl')->groupBy('tgl')->get()->count()
-            ]
+                'totalData' => Sale::selectRaw('DATE(tanggal) as tgl')->groupBy('tgl')->get()->count(),
+            ],
         ]);
     }
 
@@ -107,7 +108,7 @@ class SaleController extends Controller
             $parts = explode('-', $request->month);
             if (count($parts) == 2) {
                 $query->whereYear('tanggal', $parts[0])
-                      ->whereMonth('tanggal', $parts[1]);
+                    ->whereMonth('tanggal', $parts[1]);
             }
         }
 
@@ -122,7 +123,7 @@ class SaleController extends Controller
 
         $sales = $query->paginate(20)->withQueryString();
         $shifts = Shift::orderBy('nama_shift')->get();
-            
+
         return Inertia::render('Sales/Index', [
             'sales' => $sales,
             'shifts' => $shifts,
@@ -130,8 +131,8 @@ class SaleController extends Controller
             'summary' => [
                 'totalOmset' => $totalOmset,
                 'totalUntung' => $totalUntung,
-                'count' => $statsQuery->count()
-            ]
+                'count' => $statsQuery->count(),
+            ],
         ]);
     }
 
@@ -140,11 +141,20 @@ class SaleController extends Controller
         $shifts = Shift::orderBy('nama_shift')->get();
         $products = Product::orderBy('kategori')->get();
         $employees = Employee::orderBy('nama')->get();
-        
+
         return Inertia::render('Sales/Create', [
             'shifts' => $shifts,
             'products' => $products,
             'employees' => $employees,
+        ]);
+    }
+
+    public function show(Sale $sale)
+    {
+        $sale->load(['shift', 'saleItems.product', 'user']);
+
+        return Inertia::render('Sales/Show', [
+            'sale' => $sale,
         ]);
     }
 
@@ -154,49 +164,56 @@ class SaleController extends Controller
             'tanggal' => 'required|date',
             'shift_id' => 'required|exists:shifts,id',
             'modal_awal' => 'required|numeric',
-            'cash' => 'required|numeric',
-            'qris' => 'required|numeric',
-            'sf_out' => 'required|numeric',
-            'sf_in' => 'required|numeric',
-            'sf_selisih' => 'required|numeric',
+            'dana_keluar' => 'required|numeric',
+            'dana_masuk' => 'required|numeric',
+            'selisih_dana' => 'required|numeric',
             'omset_penjualan' => 'required|numeric',
-            'omset_bubuk' => 'required|numeric',
-            'omset_topping' => 'required|numeric',
-            'biaya_packaging' => 'required|numeric',
             'is_karyawan_hadir' => 'boolean',
             'employee_id' => 'nullable|exists:employees,id',
             'gaji_karyawan' => 'required|numeric',
-            'untung_kotor' => 'required|numeric',
-            'untung_bersih' => 'required|numeric',
-            'untung_bersih_tanpa_karyawan' => 'required|numeric',
-            'selisih_uang_penjualan' => 'required|numeric',
             'catatan' => 'nullable|string',
             'items' => 'array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.qty' => 'required|numeric|min:0',
         ]);
 
-        DB::transaction(function() use ($data) {
+        DB::transaction(function () use ($data) {
+            // Validasi stok cukup
+            if (isset($data['items'])) {
+                foreach ($data['items'] as $item) {
+                    if ($item['qty'] > 0) {
+                        $product = Product::find($item['product_id']);
+                        $currentStock = $product->stok ?? 0;
+
+                        if ($item['qty'] > $currentStock) {
+                            throw ValidationException::withMessages([
+                                'items' => "Stok {$product->nama_produk} tidak mencukupi. Stok tersedia: {$currentStock}, diminta: {$item['qty']}",
+                            ]);
+                        }
+                    }
+                }
+            }
+
             $sale = Sale::create([
                 'user_id' => auth()->id(),
                 'tanggal' => $data['tanggal'],
                 'shift_id' => $data['shift_id'],
                 'modal_awal' => $data['modal_awal'],
-                'cash' => $data['cash'],
-                'qris' => $data['qris'],
-                'sf_out' => $data['sf_out'],
-                'sf_in' => $data['sf_in'],
-                'sf_selisih' => $data['sf_selisih'],
+                'cash' => 0,
+                'qris' => 0,
+                'dana_keluar' => $data['dana_keluar'],
+                'dana_masuk' => $data['dana_masuk'],
+                'selisih_dana' => $data['selisih_dana'],
                 'omset_penjualan' => $data['omset_penjualan'],
-                'omset_bubuk' => $data['omset_bubuk'],
-                'omset_topping' => $data['omset_topping'],
-                'biaya_packaging' => $data['biaya_packaging'],
+                'omset_bubuk' => 0,
+                'omset_topping' => 0,
+                'biaya_packaging' => 0,
                 'is_karyawan_hadir' => $data['is_karyawan_hadir'] ?? false,
                 'gaji_karyawan' => $data['gaji_karyawan'],
-                'untung_kotor' => $data['untung_kotor'],
-                'untung_bersih' => $data['untung_bersih'],
-                'untung_bersih_tanpa_karyawan' => $data['untung_bersih_tanpa_karyawan'],
-                'selisih_uang_penjualan' => $data['selisih_uang_penjualan'],
+                'untung_kotor' => $data['omset_penjualan'],
+                'untung_bersih' => $data['omset_penjualan'],
+                'untung_bersih_tanpa_karyawan' => $data['omset_penjualan'],
+                'selisih_uang_penjualan' => 0,
                 'catatan' => $data['catatan'],
             ]);
 
@@ -204,22 +221,26 @@ class SaleController extends Controller
                 foreach ($data['items'] as $item) {
                     if ($item['qty'] > 0) {
                         $product = Product::find($item['product_id']);
+
+                        // Kurangi stok produk
+                        $product->decrement('stok', $item['qty']);
+
                         SaleItem::create([
                             'sale_id' => $sale->id,
                             'product_id' => $item['product_id'],
                             'qty' => $item['qty'],
                             'harga_satuan' => $product->harga,
-                            'subtotal' => $product->harga * $item['qty']
+                            'subtotal' => $product->harga * $item['qty'],
                         ]);
                     }
                 }
             }
 
-            if (($data['is_karyawan_hadir'] ?? false) && !empty($data['employee_id']) && $data['gaji_karyawan'] > 0) {
+            if (($data['is_karyawan_hadir'] ?? false) && ! empty($data['employee_id']) && $data['gaji_karyawan'] > 0) {
                 EmployeeSalary::create([
                     'employee_id' => $data['employee_id'],
                     'tanggal' => $data['tanggal'],
-                    'nominal_gaji' => $data['gaji_karyawan']
+                    'nominal_gaji' => $data['gaji_karyawan'],
                 ]);
             }
         });

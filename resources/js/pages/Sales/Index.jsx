@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Filter, Wallet, TrendingUp, Search, CalendarDays } from 'lucide-react';
+import { Filter, Wallet, TrendingUp, Search, CalendarDays, Eye } from 'lucide-react';
 
 export default function Index({ sales, shifts, filters, summary }) {
     const initialMonth = filters?.month ? filters.month.split('-')[1] : '';
@@ -11,7 +11,9 @@ export default function Index({ sales, shifts, filters, summary }) {
     const [shiftId, setShiftId] = useState(filters?.shift_id || '');
 
     const formatRp = (num) => {
-        return 'Rp ' + (num || 0).toLocaleString('id-ID');
+        if (num === null || num === undefined) return 'Rp 0';
+        const number = typeof num === 'string' ? parseInt(num, 10) || 0 : num;
+        return 'Rp ' + number.toLocaleString('id-ID');
     };
 
     // Apply filters when they change
@@ -170,6 +172,8 @@ export default function Index({ sales, shifts, filters, summary }) {
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modal Awal</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Omset Penjualan</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Untung Bersih</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dana (Masuk/Keluar)</th>
+                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -192,11 +196,24 @@ export default function Index({ sales, shifts, filters, summary }) {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600">
                                             {formatRp(sale.untung_bersih)}
                                         </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span className="text-emerald-600">+{formatRp(sale.dana_masuk || 0)}</span>
+                                            <span className="mx-1 text-gray-300">|</span>
+                                            <span className="text-red-600">-{formatRp(sale.dana_keluar || 0)}</span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <Link
+                                                href={`/sales/${sale.id}`}
+                                                className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                                            >
+                                                <Eye className="w-4 h-4 mr-1" /> Detail
+                                            </Link>
+                                        </td>
                                     </tr>
                                 ))}
                                 {sales.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                        <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
                                             <Search className="w-12 h-12 mx-auto text-slate-300 mb-3" />
                                             <p>Tidak ada data penjualan untuk filter tersebut.</p>
                                         </td>

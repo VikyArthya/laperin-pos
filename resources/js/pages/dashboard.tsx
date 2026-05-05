@@ -29,9 +29,10 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ chartData, stats }: DashboardProps) {
-    const formatRp = (num: number) => {
-        if (!num) return 'Rp 0';
-        return 'Rp ' + num.toLocaleString('id-ID');
+    const formatRp = (num: number | string | undefined | null) => {
+        if (num === null || num === undefined) return 'Rp 0';
+        const number = typeof num === 'string' ? parseInt(num, 10) || 0 : num;
+        return 'Rp ' + number.toLocaleString('id-ID');
     };
 
     const getGreeting = () => {
