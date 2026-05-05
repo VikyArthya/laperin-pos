@@ -228,23 +228,31 @@ export default function Create({ shifts, products, employees }) {
                                 <p className="text-xs text-slate-500">Masukkan Qty / Jumlah item yang laku</p>
                             </div>
                             <div className="p-4 flex-1 overflow-y-auto space-y-4">
-                                {products.map(product => (
-                                    <div key={product.id} className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 group">
-                                        <div className="flex-1">
-                                            <p className="font-semibold text-sm text-slate-800 group-hover:text-blue-700 transition-colors">{product.nama_produk}</p>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{product.kategori}</p>
+                                {products.map(product => {
+                                    const stock = product.stok || 0;
+                                    const stockColor = stock > 10 ? 'text-emerald-600 bg-emerald-50' : stock > 0 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
+                                    return (
+                                        <div key={product.id} className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 group">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-sm text-slate-800 group-hover:text-blue-700 transition-colors truncate">{product.nama_produk}</p>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{product.kategori}</p>
+                                                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>Stok: {stock}</span>
+                                                </div>
+                                            </div>
+                                            <div className="w-24 ml-2">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max={stock}
+                                                    value={getQty(product.id)}
+                                                    onChange={e => handleItemChange(product.id, e.target.value)}
+                                                    className="w-full text-center rounded-xl border-slate-200 py-2 bg-slate-50 font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="w-24">
-                                            <input 
-                                                type="number" 
-                                                min="0" 
-                                                value={getQty(product.id)} 
-                                                onChange={e => handleItemChange(product.id, e.target.value)}
-                                                className="w-full text-center rounded-xl border-slate-200 py-2 bg-slate-50 font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all shadow-sm" 
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
