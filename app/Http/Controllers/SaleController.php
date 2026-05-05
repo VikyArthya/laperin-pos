@@ -218,26 +218,38 @@ class SaleController extends Controller
                 }
             }
 
+            $modalAwal   = (int) $data['modal_awal'];
+            $danaMasuk   = (int) $data['dana_masuk'];
+            $danaKeluar  = (int) $data['dana_keluar'];
+            $gajiKaryawan = (int) $data['gaji_karyawan'];
+
+            // Total Omset = Modal Awal + Dana Masuk - Dana Keluar
+            $totalOmset = $modalAwal + $danaMasuk - $danaKeluar;
+            // Untung Bersih = Dana Masuk - Modal Awal - Gaji Karyawan
+            $untungBersih = $danaMasuk - $modalAwal - $gajiKaryawan;
+            // Untung Bersih Tanpa Karyawan = Dana Masuk - Modal Awal
+            $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
+
             $sale = Sale::create([
                 'user_id' => auth()->id(),
                 'tanggal' => $data['tanggal'],
                 'shift_id' => $data['shift_id'],
-                'modal_awal' => $data['modal_awal'],
+                'modal_awal' => $modalAwal,
                 'cash' => 0,
                 'qris' => 0,
-                'dana_keluar' => $data['dana_keluar'],
-                'dana_masuk' => $data['dana_masuk'],
+                'dana_keluar' => $danaKeluar,
+                'dana_masuk' => $danaMasuk,
                 'selisih_dana' => $data['selisih_dana'],
-                'omset_penjualan' => $data['omset_penjualan'],
+                'omset_penjualan' => $totalOmset,
                 'omset_bubuk' => 0,
                 'omset_topping' => 0,
                 'biaya_packaging' => 0,
                 'is_karyawan_hadir' => $data['is_karyawan_hadir'] ?? false,
                 'employee_id' => $employeeId,
-                'gaji_karyawan' => $data['gaji_karyawan'],
-                'untung_kotor' => $data['omset_penjualan'],
-                'untung_bersih' => $data['omset_penjualan'],
-                'untung_bersih_tanpa_karyawan' => $data['omset_penjualan'],
+                'gaji_karyawan' => $gajiKaryawan,
+                'untung_kotor' => $untungBersihTanpaKaryawan,
+                'untung_bersih' => $untungBersih,
+                'untung_bersih_tanpa_karyawan' => $untungBersihTanpaKaryawan,
                 'selisih_uang_penjualan' => 0,
                 'catatan' => $data['catatan'],
             ]);

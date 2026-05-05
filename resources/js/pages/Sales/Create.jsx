@@ -229,16 +229,21 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                     <div className="absolute -right-20 -top-20 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
                                     <div className="absolute -left-20 -bottom-20 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
                                         <div>
-                                            <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">TOTAL OMSET PRODUK</label>
-                                            <p className="text-3xl font-black text-blue-400">{formatRp(totalOmsetProduk)}</p>
-                                            <p className="text-xs text-slate-400 mt-2">Dihitung otomatis dari harga produk terjual</p>
+                                            <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">TOTAL OMSET</label>
+                                            <p className="text-2xl sm:text-3xl font-black text-blue-400">{formatRp(Number(data.modal_awal) + Number(data.dana_masuk) - Number(data.dana_keluar))}</p>
+                                            <p className="text-[10px] text-slate-400 mt-2">= Modal Awal + Dana Masuk - Dana Keluar</p>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">SELISIH DANA</label>
-                                            <p className="text-3xl font-black text-emerald-400">{formatRp(data.selisih_dana)}</p>
-                                            <p className="text-xs text-slate-400 mt-2">Dana Keluar - Dana Masuk</p>
+                                            <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">UNTUNG BERSIH</label>
+                                            <p className={`text-2xl sm:text-3xl font-black ${(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.gaji_karyawan)) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatRp(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.gaji_karyawan))}</p>
+                                            <p className="text-[10px] text-slate-400 mt-2">= Dana Masuk - Modal Awal - Gaji</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">UNTUNG TANPA GAJI</label>
+                                            <p className={`text-2xl sm:text-3xl font-black ${(Number(data.dana_masuk) - Number(data.modal_awal)) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{formatRp(Number(data.dana_masuk) - Number(data.modal_awal))}</p>
+                                            <p className="text-[10px] text-slate-400 mt-2">= Dana Masuk - Modal Awal</p>
                                         </div>
                                     </div>
                                 </div>
