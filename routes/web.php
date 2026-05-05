@@ -8,11 +8,12 @@ Route::get('/', function () {
 })->name('home');
 
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\LaporanPulangController;
 use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\PayrollController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [SaleController::class, 'dashboard'])->name('dashboard');
@@ -20,6 +21,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('sales/create', [SaleController::class, 'create'])->name('sales.create');
     Route::post('sales', [SaleController::class, 'store'])->name('sales.store');
     Route::get('sales/{sale}', [SaleController::class, 'show'])->name('sales.show');
+
+    // Laporan Pulang Routes
+    Route::get('laporan-pulang', [LaporanPulangController::class, 'index'])->name('laporan-pulang.index');
+    Route::get('laporan-pulang/create', [LaporanPulangController::class, 'create'])->name('laporan-pulang.create');
+    Route::post('laporan-pulang', [LaporanPulangController::class, 'store'])->name('laporan-pulang.store');
+    Route::get('laporan-pulang/{laporanPulang}', [LaporanPulangController::class, 'show'])->name('laporan-pulang.show');
 
     // Admin Only Routes
     Route::middleware(['admin'])->group(function () {
