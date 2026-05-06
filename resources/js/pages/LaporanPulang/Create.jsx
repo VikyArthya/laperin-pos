@@ -103,25 +103,49 @@ export default function Create({ shifts, products, materials, employees, authEmp
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Tabs */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 flex gap-2">
-                        {[
-                            { id: 'isian', label: 'Isian Produk', icon: Package },
-                            { id: 'pembayaran', label: 'Pembayaran', icon: Wallet },
-                            { id: 'stok', label: 'Catatan Stok', icon: CheckSquare },
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                type="button"
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id
-                                        ? 'bg-purple-600 text-white shadow-md'
-                                        : 'text-slate-600 hover:bg-slate-50'
-                                    }`}
-                            >
-                                <tab.icon className="w-4 h-4" />
-                                {tab.label}
-                            </button>
-                        ))}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-2">
+                        {/* Mobile - Scrollable Tabs */}
+                        <div className="sm:hidden flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                            {[
+                                { id: 'isian', label: 'Produk', icon: Package },
+                                { id: 'pembayaran', label: 'Bayar', icon: Wallet },
+                                { id: 'stok', label: 'Stok', icon: CheckSquare },
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id
+                                            ? 'bg-purple-600 text-white shadow-md'
+                                            : 'text-slate-600 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    <tab.icon className="w-4 h-4" />
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+                        {/* Desktop - Full Width Tabs */}
+                        <div className="hidden sm:flex gap-2">
+                            {[
+                                { id: 'isian', label: 'Isian Produk', icon: Package },
+                                { id: 'pembayaran', label: 'Pembayaran', icon: Wallet },
+                                { id: 'stok', label: 'Catatan Stok', icon: CheckSquare },
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id
+                                            ? 'bg-purple-600 text-white shadow-md'
+                                            : 'text-slate-600 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    <tab.icon className="w-4 h-4" />
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {/* General Info */}
@@ -183,44 +207,96 @@ export default function Create({ shifts, products, materials, employees, authEmp
                                                     const totalHarga = (product.harga || 0) * (item.qty_terjual || 0);
 
                                                     return (
-                                                        <div key={product.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                                            <div className="flex-shrink-0 w-8 text-center font-bold text-slate-400">
-                                                                {productInitial}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="font-medium text-slate-900 truncate">{product.nama_produk}</p>
-                                                                <p className="text-xs text-slate-500">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
-                                                            </div>
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="text-center">
-                                                                    <label className="block text-xs text-slate-500 mb-1">Terjual</label>
-                                                                    <input
-                                                                        type="number"
-                                                                        min="0"
-                                                                        value={item.qty_terjual || 0}
-                                                                        onChange={(e) => handleItemChange(product.id, 'qty_terjual', e.target.value)}
-                                                                        className="w-20 rounded-lg border border-slate-300 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                                    />
+                                                        <div key={product.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                                            {/* Mobile Layout - Vertical */}
+                                                            <div className="sm:hidden">
+                                                                <div className="flex items-center gap-3 mb-3">
+                                                                    <div className="flex-shrink-0 w-8 h-8 text-center font-bold text-slate-400 bg-white rounded-lg border border-slate-200 flex items-center justify-center">
+                                                                        {productInitial}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="font-semibold text-slate-900 text-sm">{product.nama_produk}</p>
+                                                                        <p className="text-xs text-slate-500 mt-0.5">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
+                                                                    </div>
                                                                 </div>
-                                                                <div className="text-center">
-                                                                    <label className="block text-xs text-slate-500 mb-1">Bawa</label>
-                                                                    <input
-                                                                        type="number"
-                                                                        min="0"
-                                                                        value={item.qty_bawa || 0}
-                                                                        onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
-                                                                        className="w-20 rounded-lg border border-slate-300 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                                    />
+                                                                <div className="grid grid-cols-2 gap-3">
+                                                                    <div>
+                                                                        <label className="block text-xs text-slate-500 mb-1">Terjual</label>
+                                                                        <input
+                                                                            type="number"
+                                                                            min="0"
+                                                                            value={item.qty_terjual || 0}
+                                                                            onChange={(e) => handleItemChange(product.id, 'qty_terjual', e.target.value)}
+                                                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-center text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="block text-xs text-slate-500 mb-1">Bawa</label>
+                                                                        <input
+                                                                            type="number"
+                                                                            min="0"
+                                                                            value={item.qty_bawa || 0}
+                                                                            onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
+                                                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-center text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                        />
+                                                                    </div>
                                                                 </div>
-                                                                <div className="text-center min-w-[120px]">
-                                                                    <p className="text-sm font-bold text-purple-600">
-                                                                        {item.qty_terjual || 0} ({item.qty_bawa || 0})
-                                                                    </p>
-                                                                    {item.qty_terjual > 0 && (
-                                                                        <p className="text-xs font-semibold text-emerald-600">
-                                                                            {formatRp(totalHarga)}
+                                                                <div className="mt-3 pt-3 border-t border-slate-200">
+                                                                    <div className="flex justify-between items-center">
+                                                                        <div>
+                                                                            <p className="text-sm font-bold text-purple-600">
+                                                                                {item.qty_terjual || 0} ({item.qty_bawa || 0})
+                                                                            </p>
+                                                                        </div>
+                                                                        {item.qty_terjual > 0 && (
+                                                                            <p className="text-sm font-semibold text-emerald-600">
+                                                                                {formatRp(totalHarga)}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Desktop Layout - Horizontal */}
+                                                            <div className="hidden sm:flex items-center gap-4">
+                                                                <div className="flex-shrink-0 w-8 text-center font-bold text-slate-400">
+                                                                    {productInitial}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="font-medium text-slate-900 truncate">{product.nama_produk}</p>
+                                                                    <p className="text-xs text-slate-500">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
+                                                                </div>
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="text-center">
+                                                                        <label className="block text-xs text-slate-500 mb-1">Terjual</label>
+                                                                        <input
+                                                                            type="number"
+                                                                            min="0"
+                                                                            value={item.qty_terjual || 0}
+                                                                            onChange={(e) => handleItemChange(product.id, 'qty_terjual', e.target.value)}
+                                                                            className="w-20 rounded-lg border border-slate-300 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <label className="block text-xs text-slate-500 mb-1">Bawa</label>
+                                                                        <input
+                                                                            type="number"
+                                                                            min="0"
+                                                                            value={item.qty_bawa || 0}
+                                                                            onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
+                                                                            className="w-20 rounded-lg border border-slate-300 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="text-center min-w-[120px]">
+                                                                        <p className="text-sm font-bold text-purple-600">
+                                                                            {item.qty_terjual || 0} ({item.qty_bawa || 0})
                                                                         </p>
-                                                                    )}
+                                                                        {item.qty_terjual > 0 && (
+                                                                            <p className="text-xs font-semibold text-emerald-600">
+                                                                                {formatRp(totalHarga)}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>

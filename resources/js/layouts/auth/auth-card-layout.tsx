@@ -20,27 +20,37 @@ export default function AuthCardLayout({
     description?: string;
 }>) {
     return (
-        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-6 md:p-10">
             <div className="flex w-full max-w-md flex-col gap-6">
                 <Link
                     href={home()}
-                    className="flex items-center gap-2 self-center font-medium"
+                    className="flex items-center gap-3 self-center font-medium group"
                 >
-                    <div className="flex h-9 w-9 items-center justify-center">
-                        <AppLogoIcon className="size-9 fill-current text-black dark:text-white" />
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-all duration-300">
+                        <AppLogoIcon className="size-10 fill-current text-white" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-2xl font-bold text-slate-800">Laper.In</span>
+                        <span className="text-sm text-slate-500">Point of Sale</span>
                     </div>
                 </Link>
 
                 <div className="flex flex-col gap-6">
-                    <Card className="rounded-xl">
-                        <CardHeader className="px-10 pt-8 pb-0 text-center">
-                            <CardTitle className="text-xl">{title}</CardTitle>
-                            <CardDescription>{description}</CardDescription>
+                    <Card className="rounded-2xl border-0 shadow-xl shadow-slate-200/50 bg-white/80 backdrop-blur-sm">
+                        <CardHeader className="px-12 pt-10 pb-0 text-center">
+                            <CardTitle className="text-3xl font-bold text-slate-800 mb-2">{title}</CardTitle>
+                            <CardDescription className="text-base text-slate-600">{description}</CardDescription>
                         </CardHeader>
-                        <CardContent className="px-10 py-8">
+                        <CardContent className="px-12 py-10">
                             {children}
                         </CardContent>
                     </Card>
+                </div>
+
+                <div className="text-center">
+                    <p className="text-sm text-slate-500">
+                        Sistem Point of Sale Modern untuk Kemudahan Usaha Anda
+                    </p>
                 </div>
             </div>
         </div>

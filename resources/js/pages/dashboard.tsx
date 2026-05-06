@@ -57,41 +57,41 @@ export default function Dashboard({ chartData, stats, auth }: DashboardProps) {
 
     return (
         <>
-            <Head title="Dashboard Analytics" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-y-auto bg-slate-50/50 p-6 md:p-8 rounded-xl dark:bg-slate-900/50">
-                
+            <Head title="Dashboard" />
+            <div className="flex h-full flex-1 flex-col gap-8 overflow-y-auto bg-gradient-to-br from-slate-50 via-emerald-50/20 to-teal-50/30 p-6 md:p-8 rounded-xl">
+
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         {isKaryawan && (
-                            <div className="inline-flex items-center gap-2 px-3 py-1 mb-2 rounded-full bg-amber-50 text-amber-600 text-sm font-medium border border-amber-100">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 mb-3 rounded-full bg-amber-50 text-amber-700 text-base font-semibold border-2 border-amber-200">
                                 👤 Login sebagai: <span className="font-bold">{auth?.user?.name}</span> (Karyawan)
                             </div>
                         )}
                         {!isKaryawan && (
-                            <div className="inline-flex items-center gap-2 px-3 py-1 mb-2 rounded-full bg-blue-50 text-blue-600 text-sm font-medium border border-blue-100">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 mb-3 rounded-full bg-blue-50 text-blue-700 text-base font-semibold border-2 border-blue-200">
                                 {greeting.emoji} {greeting.text}, Bos!
                             </div>
                         )}
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Overview Bisnis</h1>
-                        <p className="text-slate-500 dark:text-slate-400 mt-1">
-                            {!isKaryawan ? 'Pantau performa penjualan dan produk terlaris cabang Laper.in Anda.' : 'Data di bawah ini adalah penjualan yang Anda catat.'}
+                        <h1 className="text-4xl font-bold tracking-tight text-slate-900">Dashboard Bisnis</h1>
+                        <p className="text-lg text-slate-600 mt-2 leading-relaxed">
+                            {!isKaryawan ? 'Pantau performa penjualan dan produk terlaris cabang Laper.in Anda dalam satu tampilan.' : 'Data di bawah ini adalah penjualan yang Anda catat.'}
                         </p>
                         {isKaryawan && (
-                            <p className="text-xs text-amber-600 mt-1">Data hanya menampilkan penjualan yang Anda inputkan.</p>
+                            <p className="text-sm text-amber-700 mt-2 font-medium">Data hanya menampilkan penjualan yang Anda inputkan.</p>
                         )}
                     </div>
-                    <Link 
-                        href="/sales" 
-                        className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition-all shadow-sm ring-1 ring-slate-900/10 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 dark:ring-white/10"
+                    <Link
+                        href="/sales"
+                        className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-base font-semibold text-white hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
                     >
                         Lihat Semua Data
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
                 </div>
 
                 {/* KPI Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     
                     {/* Card 1: Total Omset */}
                     <div className="group relative overflow-hidden rounded-3xl bg-white bg-gradient-to-br from-white to-blue-50/30 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100/80 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgb(59,130,246,0.15)] dark:bg-slate-800 dark:from-slate-800 dark:to-slate-800/80 dark:ring-slate-700">

@@ -23,7 +23,13 @@ export default function Login({
 }: Props) {
     return (
         <>
-            <Head title="Log in" />
+            <Head title="Login" />
+
+            {status && (
+                <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+                    <p className="text-base font-semibold text-emerald-700">{status}</p>
+                </div>
+            )}
 
             <Form
                 {...store.form()}
@@ -33,8 +39,8 @@ export default function Login({
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                            <div className="grid gap-3">
+                                <Label htmlFor="email" className="text-base font-semibold text-slate-700">Email</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -43,21 +49,22 @@ export default function Login({
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="email"
-                                    placeholder="email@example.com"
+                                    placeholder="contoh@email.com"
+                                    className="h-12 text-base px-4"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                            <div className="grid gap-3">
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="password" className="text-base font-semibold text-slate-700">Password</Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm"
+                                            className="text-sm font-medium"
                                             tabIndex={5}
                                         >
-                                            Forgot password?
+                                            Lupa password?
                                         </TextLink>
                                     )}
                                 </div>
@@ -67,47 +74,43 @@ export default function Login({
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"
-                                    placeholder="Password"
+                                    placeholder="Masukkan password"
+                                    className="h-12 text-base px-4"
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-3 py-2">
                                 <Checkbox
                                     id="remember"
                                     name="remember"
                                     tabIndex={3}
+                                    className="h-5 w-5"
                                 />
-                                <Label htmlFor="remember">Remember me</Label>
+                                <Label htmlFor="remember" className="text-base font-medium text-slate-700 cursor-pointer">
+                                    Ingat saya
+                                </Label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className="mt-4 h-14 text-base font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/30"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
                             >
-                                {processing && <Spinner />}
-                                Log in
+                                {processing && <Spinner className="mr-2" />}
+                                {processing ? 'Memproses...' : 'Login'}
                             </Button>
                         </div>
-
-                        {/* Registration removed */}
                     </>
                 )}
             </Form>
-
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
         </>
     );
 }
 
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: 'Selamat Datang Kembali',
+    description: 'Masukkan email dan password untuk mengakses sistem',
 };
