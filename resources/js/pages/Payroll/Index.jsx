@@ -26,17 +26,18 @@ function formatTanggal(dateStr) {
     return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function Index({ payrollData, filters }) {
+export default function Index({ payrollData, weeklyPeriods, filters }) {
     const [expandedEmployee, setExpandedEmployee] = useState(null);
     const [month, setMonth] = useState(filters.month);
     const [year, setYear] = useState(filters.year);
+    const [weekPeriod, setWeekPeriod] = useState(filters.week_period || 'all');
 
     const toggleExpand = (employeeId) => {
         setExpandedEmployee(prev => prev === employeeId ? null : employeeId);
     };
 
     const handleFilter = () => {
-        router.get('/payroll', { month, year }, { preserveState: true, preserveScroll: true });
+        router.get('/payroll', { month, year, week_period: weekPeriod }, { preserveState: true, preserveScroll: true });
     };
 
     const currentYear = new Date().getFullYear();
@@ -83,7 +84,7 @@ export default function Index({ payrollData, filters }) {
                 {/* Filter */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
                     <div className="flex flex-col sm:flex-row gap-4 items-end">
-                        <div className="flex-1 grid grid-cols-2 gap-4">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Bulan</label>
                                 <select
@@ -105,6 +106,21 @@ export default function Index({ payrollData, filters }) {
                                 >
                                     {years.map(y => (
                                         <option key={y} value={y}>{y}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Periode Mingguan</label>
+                                <select
+                                    value={weekPeriod}
+                                    onChange={e => setWeekPeriod(e.target.value)}
+                                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none"
+                                >
+                                    <option value="all">Semua Periode</option>
+                                    {weeklyPeriods && weeklyPeriods.map((period) => (
+                                        <option key={period.payment_date} value={period.payment_date}>
+                                            {period.label}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -223,7 +239,9 @@ export default function Index({ payrollData, filters }) {
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
                             <Banknote className="w-14 h-14 mx-auto text-slate-300 mb-4" />
                             <p className="text-lg font-semibold text-slate-700">Tidak ada data gaji</p>
-                            <p className="text-sm text-slate-400 mt-1">Belum ada transaksi penjualan di bulan {MONTHS.find(m => m.value === filters.month)?.label} {filters.year}.</p>
+                            <p className="text-sm text-slate-400 mt-1">
+                                Belum ada transaksi penjualan di periode yang dipilih.
+                            </p>
                         </div>
                     )}
                 </div>

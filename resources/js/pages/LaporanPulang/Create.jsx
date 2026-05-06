@@ -105,19 +105,18 @@ export default function Create({ shifts, products, materials, employees, authEmp
                     {/* Tabs */}
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 flex gap-2">
                         {[
-                            { id: 'isian', label: '📦 Isian Produk', icon: Package },
-                            { id: 'pembayaran', label: '💰 Pembayaran', icon: Wallet },
-                            { id: 'stok', label: '✓ Catatan Stok', icon: CheckSquare },
+                            { id: 'isian', label: 'Isian Produk', icon: Package },
+                            { id: 'pembayaran', label: 'Pembayaran', icon: Wallet },
+                            { id: 'stok', label: 'Catatan Stok', icon: CheckSquare },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
                                 type="button"
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                                    activeTab === tab.id
+                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id
                                         ? 'bg-purple-600 text-white shadow-md'
                                         : 'text-slate-600 hover:bg-slate-50'
-                                }`}
+                                    }`}
                             >
                                 <tab.icon className="w-4 h-4" />
                                 {tab.label}
@@ -167,16 +166,15 @@ export default function Create({ shifts, products, materials, employees, authEmp
                                     return (
                                         <div key={category}>
                                             <h3 className="text-md font-bold text-slate-700 mb-4 uppercase tracking-wider flex items-center gap-2">
-                                                <span className={`inline-block w-2 h-2 rounded-full ${
-                                                    category === 'Menu Utama' ? 'bg-amber-500' :
-                                                    category === 'Topping' ? 'bg-rose-500' :
-                                                    category === 'Packaging' ? 'bg-slate-500' :
-                                                    'bg-blue-500'
-                                                }`} />
+                                                <span className={`inline-block w-2 h-2 rounded-full ${category === 'Menu Utama' ? 'bg-amber-500' :
+                                                        category === 'Topping' ? 'bg-rose-500' :
+                                                            category === 'Packaging' ? 'bg-slate-500' :
+                                                                'bg-blue-500'
+                                                    }`} />
                                                 {category === 'Menu Utama' ? '------ ISIAN -----' :
-                                                 category === 'Topping' ? '------ TOPPING -----' :
-                                                 category === 'Packaging' ? '------ PACKAGING -----' :
-                                                 `------ ${category.toUpperCase()} ------`}
+                                                    category === 'Topping' ? '------ TOPPING -----' :
+                                                        category === 'Packaging' ? '------ PACKAGING -----' :
+                                                            `------ ${category.toUpperCase()} ------`}
                                             </h3>
                                             <div className="space-y-3">
                                                 {categoryProducts.map((product) => {
@@ -296,11 +294,10 @@ export default function Create({ shifts, products, materials, employees, authEmp
                                         {materials.map((material) => {
                                             const stockColor = material.stok > 10 ? 'text-emerald-600 bg-emerald-50' : material.stok > 0 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
                                             return (
-                                                <div key={material.id} className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${
-                                                    isMaterialChecked(material.id)
+                                                <div key={material.id} className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${isMaterialChecked(material.id)
                                                         ? 'bg-amber-50 border-amber-300'
                                                         : 'bg-slate-50 border-slate-100'
-                                                }`}>
+                                                    }`}>
                                                     <input
                                                         type="checkbox"
                                                         checked={isMaterialChecked(material.id)}
