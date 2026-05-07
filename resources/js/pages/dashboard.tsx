@@ -81,13 +81,15 @@ export default function Dashboard({ chartData, stats, auth }: DashboardProps) {
                             <p className="text-sm text-amber-700 mt-2 font-medium">Data hanya menampilkan penjualan yang Anda inputkan.</p>
                         )}
                     </div>
-                    <Link
-                        href="/sales"
-                        className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-base font-semibold text-white hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
-                    >
-                        Lihat Semua Data
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
+                    {!isKaryawan && (
+                        <Link
+                            href="/sales"
+                            className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-6 py-3 text-base font-semibold text-white hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
+                        >
+                            Lihat Semua Data
+                            <ArrowRight className="ml-2 h-5 w-5" />
+                        </Link>
+                    )}
                 </div>
 
                 {/* KPI Cards Grid */}
