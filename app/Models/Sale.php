@@ -23,6 +23,11 @@ class Sale extends Model
         return $this->belongsTo(Employee::class);
     }
 
+    public function laporanPulang()
+    {
+        return $this->belongsTo(LaporanPulang::class);
+    }
+
     public function saleItems()
     {
         return $this->hasMany(SaleItem::class);

@@ -18,17 +18,23 @@ class LaporanPulangController extends Controller
 {
     public function index()
     {
-        $baseQuery = LaporanPulang::with(['shift', 'user', 'employee', 'items.product']);
+        $baseQuery = LaporanPulang::with(['shift', 'user', 'admin', 'employee', 'items.product']);
 
-        // Karyawan hanya bisa melihat laporan miliknya sendiri
-        if (auth()->check() && auth()->user()->role === 'karyawan') {
+        // Admin: lihat semua laporan
+        if (auth()->check() && auth()->user()->role === 'admin') {
+            $laporan = $baseQuery->orderBy('tanggal', 'desc')->get();
+        }
+        // Karyawan: hanya lihat laporan yang di-assign ke dia
+        elseif (auth()->check() && auth()->user()->role === 'karyawan') {
             $authEmployee = Employee::where('user_id', auth()->id())->first();
             if ($authEmployee) {
-                $baseQuery->where('employee_id', $authEmployee->id);
+                $laporan = $baseQuery->where('employee_id', $authEmployee->id)->orderBy('tanggal', 'desc')->get();
+            } else {
+                $laporan = collect();
             }
+        } else {
+            $laporan = collect();
         }
-
-        $laporan = $baseQuery->orderBy('tanggal', 'desc')->get();
 
         return Inertia::render('LaporanPulang/Index', [
             'laporan' => $laporan,
@@ -37,31 +43,137 @@ class LaporanPulangController extends Controller
 
     public function create()
     {
+        // Hanya admin yang bisa membuat laporan baru
+        if (auth()->check() && auth()->user()->role !== 'admin') {
+            abort(403, 'Hanya admin yang dapat membuat laporan baru.');
+        }
+
         $shifts = Shift::all();
         $products = Product::orderBy('nama_produk')->get();
         $materials = Material::orderBy('nama_bahan')->get();
-        $authEmployee = null;
-
-        if (auth()->check() && auth()->user()->role === 'karyawan') {
-            $authEmployee = Employee::where('user_id', auth()->id())->first();
-        }
-
-        $employees = Employee::all();
+        $employees = Employee::orderBy('nama')->get();
 
         return Inertia::render('LaporanPulang/Create', [
             'shifts' => $shifts,
             'products' => $products,
             'materials' => $materials,
             'employees' => $employees,
-            'authEmployee' => $authEmployee,
         ]);
     }
 
     public function store(Request $request)
     {
+        // Hanya admin yang bisa membuat laporan
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Hanya admin yang dapat membuat laporan.');
+        }
+
         $request->validate([
             'tanggal' => 'required|date',
             'shift_id' => 'required|exists:shifts,id',
+            'employee_id' => 'required|exists:employees,id',
+            'items' => 'required|array',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.qty_bawa' => 'required|integer|min:0',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            // Format tanggal untuk memastikan format yang benar dan avoid timezone issues
+            $tanggal = $request->tanggal;
+            if (is_string($tanggal)) {
+                // Parse tanggal tanpa timezone info
+                $parts = explode('-', $tanggal);
+                if (count($parts) === 3) {
+                    [$year, $month, $day] = $parts;
+                    // Create DateTime tanpa timezone (set ke UTC untuk menghindari konversi)
+                    $tanggal = sprintf('%04d-%02d-%02d', (int) $year, (int) $month, (int) $day);
+                }
+            }
+
+            $laporan = LaporanPulang::create([
+                'tanggal' => $tanggal,
+                'shift_id' => $request->shift_id,
+                'admin_id' => auth()->id(),
+                'user_id' => null, // Akan diisi saat karyawan submit
+                'employee_id' => $request->employee_id, // Admin assign ke karyawan
+                'status' => 'submitted_by_admin',
+                'cash' => 0,
+                'qris' => 0,
+                'sf' => 0,
+                'total_pembayaran' => 0,
+                'ma_50' => null,
+                'catatan_stok' => null,
+                'stock_refill_items' => [],
+            ]);
+
+            // Simpan stok bawa untuk setiap produk dan kurangi stok master
+            if ($request->has('items')) {
+                foreach ($request->items as $item) {
+                    if (isset($item['product_id']) && $item['qty_bawa'] > 0) {
+                        $qtyBawa = (int) $item['qty_bawa'];
+
+                        LaporanPulangItem::create([
+                            'laporan_pulang_id' => $laporan->id,
+                            'product_id' => $item['product_id'],
+                            'qty_bawa' => $qtyBawa,
+                            'qty_sisa' => 0, // Akan diisi oleh karyawan
+                        ]);
+
+                        // Kurangi stok master produk sejumlah qty_bawa
+                        $product = Product::find($item['product_id']);
+                        if ($product && $product->stok >= $qtyBawa) {
+                            $product->decrement('stok', $qtyBawa);
+                        }
+                    }
+                }
+            }
+        });
+
+        return redirect()->route('laporan-pulang.index');
+    }
+
+    public function edit(LaporanPulang $laporanPulang)
+    {
+        // Hanya karyawan yang bisa mengedit laporan
+        if (auth()->check() && auth()->user()->role === 'karyawan') {
+            if (! $laporanPulang->isSubmittedByAdmin()) {
+                abort(403, 'Laporan ini belum siap untuk diisi.');
+            }
+
+            // Cek apakah laporan di-assign ke karyawan yang sedang login
+            $authEmployee = Employee::where('user_id', auth()->id())->first();
+            if (! $authEmployee || $laporanPulang->employee_id !== $authEmployee->id) {
+                abort(403, 'Laporan ini tidak di-assign ke Anda.');
+            }
+        } else {
+            abort(403, 'Hanya karyawan yang dapat mengisi laporan.');
+        }
+
+        $laporanPulang->load(['shift', 'items.product']);
+
+        $materials = Material::orderBy('nama_bahan')->get();
+        $authEmployee = Employee::where('user_id', auth()->id())->first();
+
+        return Inertia::render('LaporanPulang/Edit', [
+            'laporan' => $laporanPulang,
+            'materials' => $materials,
+            'authEmployee' => $authEmployee,
+        ]);
+    }
+
+    public function update(Request $request, LaporanPulang $laporanPulang)
+    {
+        // Hanya karyawan yang bisa update laporan
+        if (auth()->user()->role !== 'karyawan') {
+            abort(403, 'Hanya karyawan yang dapat mengisi laporan.');
+        }
+
+        // Validasi status laporan
+        if (! $laporanPulang->isSubmittedByAdmin() && ! $laporanPulang->employee_id) {
+            abort(403, 'Laporan ini belum siap untuk diisi.');
+        }
+
+        $request->validate([
             'cash' => 'nullable|integer|min:0',
             'qris' => 'nullable|integer|min:0',
             'sf' => 'nullable|integer|min:0',
@@ -70,19 +182,14 @@ class LaporanPulangController extends Controller
             'stock_refill_items' => 'nullable|array',
             'stock_refill_items.*' => 'nullable|integer|exists:materials,id',
             'items' => 'nullable|array',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.qty_terjual' => 'nullable|integer|min:0',
-            'items.*.qty_bawa' => 'nullable|integer|min:0',
+            'items.*.id' => 'required|exists:laporan_pulang_items,id',
+            'items.*.qty_sisa' => 'nullable|integer|min:0',
         ]);
 
-        DB::transaction(function () use ($request) {
-            // Auto-set employee_id untuk role karyawan
-            $employeeId = $request->employee_id ?? null;
-            if (auth()->user()->role === 'karyawan') {
-                $authEmployee = Employee::where('user_id', auth()->id())->first();
-                if ($authEmployee) {
-                    $employeeId = $authEmployee->id;
-                }
+        DB::transaction(function () use ($request, $laporanPulang) {
+            $authEmployee = Employee::where('user_id', auth()->id())->first();
+            if (! $authEmployee) {
+                abort(403, 'Data karyawan tidak ditemukan.');
             }
 
             $cash = (int) ($request->cash ?? 0);
@@ -90,11 +197,10 @@ class LaporanPulangController extends Controller
             $sf = (int) ($request->sf ?? 0);
             $totalPembayaran = $cash + $qris + $sf;
 
-            $laporan = LaporanPulang::create([
-                'tanggal' => $request->tanggal,
-                'shift_id' => $request->shift_id,
+            // Update laporan
+            $laporanPulang->update([
                 'user_id' => auth()->id(),
-                'employee_id' => $employeeId,
+                'employee_id' => $authEmployee->id,
                 'cash' => $cash,
                 'qris' => $qris,
                 'sf' => $sf,
@@ -102,99 +208,137 @@ class LaporanPulangController extends Controller
                 'ma_50' => $request->ma_50,
                 'catatan_stok' => $request->catatan_stok,
                 'stock_refill_items' => $request->stock_refill_items ?? [],
+                'status' => 'completed',
             ]);
 
-            // Process items dan kembalikan stok
+            // Process items dan hitung qty_terjual
             $totalOmsetProduk = 0;
             $totalModalAwal = 0;
 
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
-                    if (isset($item['product_id']) && ($item['qty_terjual'] > 0 || $item['qty_bawa'] > 0)) {
-                        $qtyTerjual = (int) ($item['qty_terjual'] ?? 0);
-                        $qtyBawa = (int) ($item['qty_bawa'] ?? 0);
+                    if (isset($item['id'])) {
+                        $laporanItem = LaporanPulangItem::find($item['id']);
+                        if ($laporanItem && $laporanItem->laporan_pulang_id === $laporanPulang->id) {
+                            $qtySisa = (int) ($item['qty_sisa'] ?? 0);
+                            $qtyBawa = $laporanItem->qty_bawa;
 
-                        $product = Product::find($item['product_id']);
-                        if ($product) {
-                            // Hitung omset
-                            $totalOmsetProduk += $product->harga * $qtyTerjual;
+                            // Hitung qty_terjual = qty_bawa - qty_sisa
+                            $qtyTerjual = max(0, $qtyBawa - $qtySisa);
 
-                            // Modal awal = harga_beli × qty_terjual (sesuai menu Kasir)
-                            if ($product->harga_beli > 0) {
-                                $totalModalAwal += $product->harga_beli * $qtyTerjual;
+                            // Update item laporan pulang
+                            $laporanItem->update([
+                                'qty_sisa' => $qtySisa,
+                            ]);
+
+                            $product = $laporanItem->product;
+                            if ($product) {
+                                // Hitung omset
+                                $totalOmsetProduk += $product->harga * $qtyTerjual;
+
+                                // Modal awal = harga_beli × qty_terjual
+                                if ($product->harga_beli > 0) {
+                                    $totalModalAwal += $product->harga_beli * $qtyTerjual;
+                                }
+
+                                // Kembalikan sisa stok
+                                if ($qtySisa > 0) {
+                                    $product->increment('stok', $qtySisa);
+                                }
                             }
-                        }
-
-                        // Simpan item laporan pulang
-                        LaporanPulangItem::create([
-                            'laporan_pulang_id' => $laporan->id,
-                            'product_id' => $item['product_id'],
-                            'qty_terjual' => $qtyTerjual,
-                            'qty_bawa' => $qtyBawa,
-                        ]);
-
-                        // Kembalikan sisa stok
-                        $sisa = $qtyBawa - $qtyTerjual;
-                        if ($sisa > 0 && $product) {
-                            $product->increment('stok', $sisa);
                         }
                     }
                 }
             }
 
-            // Auto-create Sale record dari Laporan Pulang
-            $danaKeluar = 0; // Bisa disesuaikan jika ada dana keluar lain
-
-            // Hitung gaji karyawan berdasarkan rumus payroll
-            // gaji = (omset × 20%) + (floor(omset / 100.000) × 5.000)
+            // Auto-create/update Sale record dari Laporan Pulang
+            $danaKeluar = 0;
             $gajiKaryawan = 0;
-            if ($employeeId && $totalPembayaran > 0) {
+            if ($totalPembayaran > 0) {
                 $gajiBase = floor($totalPembayaran * 0.20);
                 $bonus = floor($totalPembayaran / 100000) * 5000;
                 $gajiKaryawan = $gajiBase + $bonus;
             }
 
-            $sale = Sale::create([
-                'user_id' => auth()->id(),
-                'tanggal' => $request->tanggal,
-                'shift_id' => $request->shift_id,
-                'modal_awal' => $totalModalAwal,
-                'cash' => $cash,
-                'qris' => $qris,
-                'sf' => $sf,
-                'dana_keluar' => $danaKeluar,
-                'dana_masuk' => $totalPembayaran,
-                'selisih_dana' => $danaKeluar - $totalPembayaran,
-                'omset_penjualan' => $totalPembayaran, // Omset = Dana Masuk
-                'omset_bubuk' => 0,
-                'omset_topping' => 0,
-                'biaya_packaging' => 0,
-                'is_karyawan_hadir' => $employeeId ? true : false,
-                'employee_id' => $employeeId,
-                'gaji_karyawan' => $gajiKaryawan,
-                'untung_kotor' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
-                'untung_bersih' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
-                'untung_bersih_tanpa_karyawan' => $totalPembayaran - $danaKeluar,
-                'selisih_uang_penjualan' => 0,
-                'catatan' => 'Otomatis dibuat dari Laporan Pulang #'.$laporan->id,
-            ]);
+            // Cek apakah sale sudah ada
+            $sale = Sale::where('laporan_pulang_id', $laporanPulang->id)->first();
+
+            if ($sale) {
+                // Update existing sale
+                $sale->update([
+                    'user_id' => auth()->id(),
+                    'modal_awal' => $totalModalAwal,
+                    'cash' => $cash,
+                    'qris' => $qris,
+                    'sf' => $sf,
+                    'dana_keluar' => $danaKeluar,
+                    'dana_masuk' => $totalPembayaran,
+                    'selisih_dana' => $danaKeluar - $totalPembayaran,
+                    'omset_penjualan' => $totalPembayaran,
+                    'is_karyawan_hadir' => true,
+                    'employee_id' => $authEmployee->id,
+                    'gaji_karyawan' => $gajiKaryawan,
+                    'untung_kotor' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
+                    'untung_bersih' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
+                    'untung_bersih_tanpa_karyawan' => $totalPembayaran - $danaKeluar,
+                    'catatan' => 'Diperbarui dari Laporan Pulang #'.$laporanPulang->id,
+                ]);
+
+                // Delete existing sale items
+                SaleItem::where('sale_id', $sale->id)->delete();
+            } else {
+                // Create new sale
+                $sale = Sale::create([
+                    'user_id' => auth()->id(),
+                    'tanggal' => $laporanPulang->tanggal,
+                    'shift_id' => $laporanPulang->shift_id,
+                    'laporan_pulang_id' => $laporanPulang->id,
+                    'modal_awal' => $totalModalAwal,
+                    'cash' => $cash,
+                    'qris' => $qris,
+                    'sf' => $sf,
+                    'dana_keluar' => $danaKeluar,
+                    'dana_masuk' => $totalPembayaran,
+                    'selisih_dana' => $danaKeluar - $totalPembayaran,
+                    'omset_penjualan' => $totalPembayaran,
+                    'omset_bubuk' => 0,
+                    'omset_topping' => 0,
+                    'biaya_packaging' => 0,
+                    'is_karyawan_hadir' => true,
+                    'employee_id' => $authEmployee->id,
+                    'gaji_karyawan' => $gajiKaryawan,
+                    'untung_kotor' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
+                    'untung_bersih' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
+                    'untung_bersih_tanpa_karyawan' => $totalPembayaran - $danaKeluar,
+                    'selisih_uang_penjualan' => 0,
+                    'catatan' => 'Otomatis dibuat dari Laporan Pulang #'.$laporanPulang->id,
+                ]);
+            }
 
             // Create SaleItems dari Laporan Pulang Items
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
-                    if (isset($item['product_id']) && $item['qty_terjual'] > 0) {
-                        $product = Product::find($item['product_id']);
-                        if ($product) {
-                            $qtyTerjual = (int) ($item['qty_terjual'] ?? 0);
-                            $subtotal = $product->harga * $qtyTerjual;
+                    if (isset($item['id'])) {
+                        $laporanItem = LaporanPulangItem::find($item['id']);
+                        if ($laporanItem && $laporanItem->laporan_pulang_id === $laporanPulang->id) {
+                            $product = $laporanItem->product;
+                            if ($product) {
+                                $qtyBawa = $laporanItem->qty_bawa;
+                                $qtySisa = (int) ($item['qty_sisa'] ?? 0);
+                                $qtyTerjual = max(0, $qtyBawa - $qtySisa);
 
-                            SaleItem::create([
-                                'sale_id' => $sale->id,
-                                'product_id' => $item['product_id'],
-                                'qty' => $qtyTerjual,
-                                'harga_satuan' => $product->harga,
-                                'subtotal' => $subtotal,
-                            ]);
+                                if ($qtyTerjual > 0) {
+                                    $subtotal = $product->harga * $qtyTerjual;
+
+                                    SaleItem::create([
+                                        'sale_id' => $sale->id,
+                                        'product_id' => $product->id,
+                                        'qty' => $qtyTerjual,
+                                        'harga_satuan' => $product->harga,
+                                        'subtotal' => $subtotal,
+                                    ]);
+                                }
+                            }
                         }
                     }
                 }
@@ -216,15 +360,16 @@ class LaporanPulangController extends Controller
 
     public function show(LaporanPulang $laporanPulang)
     {
-        // Karyawan hanya bisa melihat laporan miliknya sendiri
+        // Admin: bisa lihat semua laporan
+        // Karyawan: hanya bisa melihat laporan yang di-assign ke dia
         if (auth()->check() && auth()->user()->role === 'karyawan') {
             $authEmployee = Employee::where('user_id', auth()->id())->first();
-            if ($authEmployee && $laporanPulang->employee_id !== $authEmployee->id) {
+            if (! $authEmployee || $laporanPulang->employee_id !== $authEmployee->id) {
                 abort(403, 'Anda tidak memiliki akses ke laporan ini.');
             }
         }
 
-        $laporanPulang->load(['shift', 'user', 'employee', 'items.product']);
+        $laporanPulang->load(['shift', 'user', 'admin', 'employee', 'items.product']);
 
         // Load materials untuk stock refill items
         $stockRefillMaterials = [];

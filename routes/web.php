@@ -27,6 +27,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('laporan-pulang/create', [LaporanPulangController::class, 'create'])->name('laporan-pulang.create');
     Route::post('laporan-pulang', [LaporanPulangController::class, 'store'])->name('laporan-pulang.store');
     Route::get('laporan-pulang/{laporanPulang}', [LaporanPulangController::class, 'show'])->name('laporan-pulang.show');
+    Route::get('laporan-pulang/{laporanPulang}/edit', [LaporanPulangController::class, 'edit'])->name('laporan-pulang.edit');
+    Route::put('laporan-pulang/{laporanPulang}', [LaporanPulangController::class, 'update'])->name('laporan-pulang.update');
 
     // Admin Only Routes
     Route::middleware(['admin'])->group(function () {

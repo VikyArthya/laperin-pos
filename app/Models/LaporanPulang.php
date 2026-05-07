@@ -8,11 +8,26 @@ class LaporanPulang extends Model
 {
     protected $table = 'laporan_pulang';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tanggal',
+        'shift_id',
+        'user_id',
+        'admin_id',
+        'employee_id',
+        'cash',
+        'qris',
+        'sf',
+        'total_pembayaran',
+        'ma_50',
+        'catatan_stok',
+        'stock_refill_items',
+        'status',
+    ];
 
     protected $casts = [
-        'tanggal' => 'date',
         'stock_refill_items' => 'array',
+        'status' => 'string',
+        'tanggal' => 'date:Y-m-d', // Explicit format untuk avoid timezone issues
     ];
 
     public function shift()
@@ -25,6 +40,11 @@ class LaporanPulang extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'admin_id');
+    }
+
     public function employee()
     {
         return $this->belongsTo(Employee::class);
@@ -33,5 +53,25 @@ class LaporanPulang extends Model
     public function items()
     {
         return $this->hasMany(LaporanPulangItem::class);
+    }
+
+    public function scopeAvailableForEmployees($query)
+    {
+        return $query->where('status', 'submitted_by_admin');
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function isCompleted()
+    {
+        return $this->status === 'completed';
+    }
+
+    public function isSubmittedByAdmin()
+    {
+        return $this->status === 'submitted_by_admin';
     }
 }
