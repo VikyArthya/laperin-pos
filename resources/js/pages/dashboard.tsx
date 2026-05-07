@@ -112,20 +112,22 @@ export default function Dashboard({ chartData, stats, auth }: DashboardProps) {
                     </div>
 
                     {/* Card 2: Keuntungan Bersih */}
-                    <div className="group relative overflow-hidden rounded-3xl bg-white bg-gradient-to-br from-white to-emerald-50/30 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100/80 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgb(16,185,129,0.15)] dark:bg-slate-800 dark:from-slate-800 dark:to-slate-800/80 dark:ring-slate-700">
-                        <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 blur-2xl transition-transform duration-700 group-hover:scale-150"></div>
-                        <div className="relative flex items-start justify-between">
-                            <div>
-                                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-wide uppercase">Total Untung Bersih</p>
-                                <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white drop-shadow-sm">
-                                    {formatRp(stats?.totalUntung)}
-                                </p>
-                            </div>
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110">
-                                <TrendingUp className="h-6 w-6" />
+                    {!isKaryawan && (
+                        <div className="group relative overflow-hidden rounded-3xl bg-white bg-gradient-to-br from-white to-emerald-50/30 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100/80 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgb(16,185,129,0.15)] dark:bg-slate-800 dark:from-slate-800 dark:to-slate-800/80 dark:ring-slate-700">
+                            <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 blur-2xl transition-transform duration-700 group-hover:scale-150"></div>
+                            <div className="relative flex items-start justify-between">
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-wide uppercase">Total Untung Bersih</p>
+                                    <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white drop-shadow-sm">
+                                        {formatRp(stats?.totalUntung)}
+                                    </p>
+                                </div>
+                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110">
+                                    <TrendingUp className="h-6 w-6" />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Card 3: Omset Bulan Ini */}
                     <div className="group relative overflow-hidden rounded-3xl bg-white bg-gradient-to-br from-white to-violet-50/30 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100/80 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgb(139,92,246,0.15)] dark:bg-slate-800 dark:from-slate-800 dark:to-slate-800/80 dark:ring-slate-700">
@@ -183,7 +185,7 @@ export default function Dashboard({ chartData, stats, auth }: DashboardProps) {
                                     />
                                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
                                     <Bar dataKey="omset" name="Omset" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                                    <Bar dataKey="untung" name="Untung Bersih" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                                    {!isKaryawan && <Bar dataKey="untung" name="Untung Bersih" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />}
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -251,7 +253,7 @@ export default function Dashboard({ chartData, stats, auth }: DashboardProps) {
                                     />
                                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
                                     <Line type="monotone" dataKey="omset" name="Omset" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                                    <Line type="monotone" dataKey="untung" name="Untung Bersih" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                    {!isKaryawan && <Line type="monotone" dataKey="untung" name="Untung Bersih" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />}
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>

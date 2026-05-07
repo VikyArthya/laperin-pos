@@ -10,19 +10,19 @@ export default function Create({ shifts, products, employees, authEmployee }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         tanggal: new Date().toISOString().split('T')[0],
         shift_id: '',
-        modal_awal: 0,
-        dana_keluar: 0,
-        dana_masuk: 0,
-        selisih_dana: 0,
-        omset_penjualan: 0,
-        cash: 0,
-        qris: 0,
-        sf: 0,
+        modal_awal: '',
+        dana_keluar: '',
+        dana_masuk: '',
+        selisih_dana: '',
+        omset_penjualan: '',
+        cash: '',
+        qris: '',
+        sf: '',
         is_karyawan_hadir: isKaryawan ? true : false,
         employee_id: isKaryawan && authEmployee ? authEmployee.id : '',
-        gaji_karyawan: 0,
+        gaji_karyawan: '',
         catatan: '',
-        items: products.map(p => ({ product_id: p.id, qty: 0 })),
+        items: products.map(p => ({ product_id: p.id, qty: '' })),
     });
 
     // Hitung total omset dari harga jual produk
@@ -30,7 +30,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
-                return total + (product.harga * item.qty);
+                return total + (product.harga * (item.qty === '' ? 0 : Number(item.qty)));
             }
             return total;
         }, 0);
@@ -41,7 +41,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
-                return total + ((product.harga_beli || 0) * item.qty);
+                return total + ((product.harga_beli || 0) * (item.qty === '' ? 0 : Number(item.qty)));
             }
             return total;
         }, 0);
@@ -77,7 +77,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
             omset_penjualan: totalOmsetProduk,
             modal_awal: totalModalAwal,
             dana_masuk: totalOmsetProduk,
-            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : 0,
+            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : '',
         }));
     }, [totalOmsetProduk, totalModalAwal]);
 
@@ -85,20 +85,20 @@ export default function Create({ shifts, products, employees, authEmployee }) {
     useEffect(() => {
         setData(prev => ({
             ...prev,
-            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : 0,
+            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : '',
         }));
     }, [data.is_karyawan_hadir, autoGaji]);
 
     const handleItemChange = (productId, qty) => {
         const newItems = data.items.map(item =>
-            item.product_id === productId ? { ...item, qty: Number(qty) } : item
+            item.product_id === productId ? { ...item, qty: qty === '' ? '' : Number(qty) } : item
         );
         setData('items', newItems);
     };
 
     const getQty = (productId) => {
         const item = data.items.find(i => i.product_id === productId);
-        return item ? item.qty : 0;
+        return item ? item.qty : '';
     };
 
     const handleSubmit = (e) => {

@@ -11,12 +11,12 @@ export default function Index({ materials }) {
 
     const { data, setData, post, put, delete: destroy, processing, errors, reset, clearErrors } = useForm({
         nama_bahan: '',
-        nominal: 0,
-        stok: 0,
+        nominal: '',
+        stok: '',
     });
 
     const { data: stockData, setData: setStockDataData, post: stockPost, processing: stockProcessing, reset: stockReset, clearErrors: stockClearErrors } = useForm({
-        jumlah: 0,
+        jumlah: '',
     });
 
     const formatRp = (num) => {
@@ -36,8 +36,8 @@ export default function Index({ materials }) {
         setEditingId(material.id);
         setData({
             nama_bahan: material.nama_bahan,
-            nominal: material.nominal,
-            stok: material.stok || 0,
+            nominal: material.nominal || '',
+            stok: material.stok || '',
         });
         clearErrors();
         setIsModalOpen(true);
@@ -45,7 +45,7 @@ export default function Index({ materials }) {
 
     const openStockModal = (material, type) => {
         setStockItem({ ...material, type });
-        setStockDataData({ jumlah: 0 });
+        setStockDataData({ jumlah: '' });
         stockClearErrors();
         setIsStockModalOpen(true);
     };

@@ -9,23 +9,23 @@ export default function Edit({ sale, shifts, products, employees }) {
     const { data, setData, put, processing, errors } = useForm({
         tanggal: sale.tanggal,
         shift_id: sale.shift_id,
-        modal_awal: sale.modal_awal,
-        dana_keluar: sale.dana_keluar,
-        dana_masuk: sale.dana_masuk,
-        selisih_dana: sale.selisih_dana,
-        omset_penjualan: sale.omset_penjualan,
-        cash: sale.cash || 0,
-        qris: sale.qris || 0,
-        sf: sale.sf || 0,
+        modal_awal: sale.modal_awal || '',
+        dana_keluar: sale.dana_keluar || '',
+        dana_masuk: sale.dana_masuk || '',
+        selisih_dana: sale.selisih_dana || '',
+        omset_penjualan: sale.omset_penjualan || '',
+        cash: sale.cash || '',
+        qris: sale.qris || '',
+        sf: sale.sf || '',
         is_karyawan_hadir: sale.is_karyawan_hadir ? true : false,
         employee_id: sale.employee_id || '',
-        gaji_karyawan: sale.gaji_karyawan,
+        gaji_karyawan: sale.gaji_karyawan || '',
         catatan: sale.catatan || '',
         items: products.map(p => {
             const existingItem = sale.sale_items.find(si => si.product_id === p.id);
             return {
                 product_id: p.id,
-                qty: existingItem ? existingItem.qty : 0
+                qty: existingItem ? existingItem.qty : ''
             };
         }),
     });
@@ -35,7 +35,7 @@ export default function Edit({ sale, shifts, products, employees }) {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
-                return total + (product.harga * item.qty);
+                return total + (product.harga * (item.qty === '' ? 0 : Number(item.qty)));
             }
             return total;
         }, 0);
@@ -46,7 +46,7 @@ export default function Edit({ sale, shifts, products, employees }) {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
-                return total + ((product.harga_beli || 0) * item.qty);
+                return total + ((product.harga_beli || 0) * (item.qty === '' ? 0 : Number(item.qty)));
             }
             return total;
         }, 0);
@@ -79,7 +79,7 @@ export default function Edit({ sale, shifts, products, employees }) {
             omset_penjualan: totalOmsetProduk,
             modal_awal: totalModalAwal,
             dana_masuk: totalOmsetProduk,
-            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : 0,
+            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : '',
         }));
     }, [totalOmsetProduk, totalModalAwal]);
 
@@ -87,20 +87,20 @@ export default function Edit({ sale, shifts, products, employees }) {
     useEffect(() => {
         setData(prev => ({
             ...prev,
-            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : 0,
+            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : '',
         }));
     }, [data.is_karyawan_hadir, autoGaji]);
 
     const handleItemChange = (productId, qty) => {
         const newItems = data.items.map(item =>
-            item.product_id === productId ? { ...item, qty: Number(qty) } : item
+            item.product_id === productId ? { ...item, qty: qty === '' ? '' : Number(qty) } : item
         );
         setData('items', newItems);
     };
 
     const getQty = (productId) => {
         const item = data.items.find(i => i.product_id === productId);
-        return item ? item.qty : 0;
+        return item ? item.qty : '';
     };
 
     const handleSubmit = (e) => {

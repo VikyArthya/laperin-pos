@@ -1,11 +1,11 @@
-import React from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, FileText, Package, Wallet, CheckSquare, CheckCircle, Clock } from 'lucide-react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
+import { ArrowLeft, FileText, Package, Wallet, CheckSquare, CheckCircle, Clock, Edit, Trash2 } from 'lucide-react';
 
 export default function Show({ laporan, itemsByCategory, stockRefillMaterials }) {
     const { props } = usePage();
     const authUser = props.auth?.user;
     const isKaryawan = authUser?.role === 'karyawan';
+    const isAdmin = authUser?.role === 'admin';
 
     const formatRp = (num) => {
         if (num === null || num === undefined) return 'Rp 0';
@@ -28,7 +28,11 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
         return `${sisa} (${bawa})`;
     };
 
-
+    const handleDelete = () => {
+        if (confirm('Apakah Anda yakin ingin menghapus laporan ini? Seluruh data penjualan terkait akan dihapus dan stok akan dikembalikan.')) {
+            router.delete(`/laporan-pulang/${laporan.id}`);
+        }
+    };
 
     const getStatusBadge = (status) => {
         switch (status) {
@@ -67,12 +71,28 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                             <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
                                 <FileText className="w-6 h-6" />
                             </div>
-                            Laporan Pulang (Peleburan)
+                            Laporan Pulang
                         </h1>
                         <p className="mt-1 text-slate-600 font-medium">{formatDateFull(laporan.tanggal)}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {getStatusBadge(laporan.status)}
+                        {isAdmin && (
+                            <>
+                                <Link
+                                    href={`/laporan-pulang/${laporan.id}/edit`}
+                                    className="inline-flex items-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm transition-colors"
+                                >
+                                    <Edit className="mr-2 h-4 w-4" /> Edit
+                                </Link>
+                                <button
+                                    onClick={handleDelete}
+                                    className="inline-flex items-center text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg shadow-sm transition-colors"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Hapus
+                                </button>
+                            </>
+                        )}
                         <Link
                             href="/laporan-pulang"
                             className="inline-flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm transition-colors"

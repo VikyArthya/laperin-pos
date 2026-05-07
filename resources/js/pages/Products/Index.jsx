@@ -13,13 +13,13 @@ export default function Index({ products, categories }) {
         nama_produk: '',
         category_id: '',
         kategori: '', // Untuk backward compatibility
-        harga_beli: 0,
-        harga: 0,
-        stok: 0,
+        harga_beli: '',
+        harga: '',
+        stok: '',
     });
 
     const { data: stockData, setData: setStockDataData, post: stockPost, processing: stockProcessing, reset: stockReset, clearErrors: stockClearErrors } = useForm({
-        jumlah: 0,
+        jumlah: '',
     });
 
     const formatRp = (num) => {
@@ -41,9 +41,9 @@ export default function Index({ products, categories }) {
             nama_produk: product.nama_produk,
             category_id: product.category_id || '',
             kategori: product.kategori || '', // Untuk backward compatibility
-            harga_beli: product.harga_beli || 0,
-            harga: product.harga,
-            stok: product.stok || 0,
+            harga_beli: product.harga_beli || '',
+            harga: product.harga || '',
+            stok: product.stok || '',
         });
         clearErrors();
         setIsModalOpen(true);
@@ -51,7 +51,7 @@ export default function Index({ products, categories }) {
 
     const openStockModal = (product, type) => {
         setStockItem({ ...product, type });
-        setStockDataData({ jumlah: 0 });
+        setStockDataData({ jumlah: '' });
         stockClearErrors();
         setIsStockModalOpen(true);
     };

@@ -16,16 +16,16 @@ export default function Create({ shifts, products, materials, employees }) {
         tanggal: getLocalDateString(),
         shift_id: '',
         employee_id: '',
-        dana_keluar: 0,
+        dana_keluar: '',
         items: products.map(p => ({
             product_id: p.id,
-            qty_bawa: 0,
+            qty_bawa: '',
         })),
     });
 
     const handleItemChange = (productId, field, value) => {
         const newItems = data.items.map(item =>
-            item.product_id === productId ? { ...item, [field]: Number(value) } : item
+            item.product_id === productId ? { ...item, [field]: value === '' ? '' : Number(value) } : item
         );
         setData('items', newItems);
     };
@@ -167,7 +167,7 @@ export default function Create({ shifts, products, materials, employees }) {
                                                                 <input
                                                                     type="number"
                                                                     min="0"
-                                                                    value={item.qty_bawa || 0}
+                                                                    value={item.qty_bawa}
                                                                     onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
                                                                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-center text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                                                 />
@@ -185,7 +185,7 @@ export default function Create({ shifts, products, materials, employees }) {
                                                                 <input
                                                                     type="number"
                                                                     min="0"
-                                                                    value={item.qty_bawa || 0}
+                                                                    value={item.qty_bawa}
                                                                     onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
                                                                     className="w-20 rounded-lg border border-slate-300 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                                                 />

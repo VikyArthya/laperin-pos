@@ -8,6 +8,10 @@ export default function Edit({ laporan, materials }) {
 
     const [activeTab, setActiveTab] = useState('isian');
 
+    const isAdmin = authUser?.role === 'admin';
+    const isSubmittedByAdmin = laporan.status === 'submitted_by_admin';
+    const canEditQtyBawa = isAdmin && isSubmittedByAdmin;
+
     // Format tanggal untuk input date HTML
     const formatDateForInput = (dateValue) => {
         if (!dateValue) return '';
@@ -27,10 +31,10 @@ export default function Edit({ laporan, materials }) {
     const { data, setData, put, processing, errors, reset } = useForm({
         tanggal: formatDateForInput(laporan.tanggal),
         shift_id: laporan.shift_id,
-        cash: laporan.cash || 0,
-        qris: laporan.qris || 0,
-        sf: laporan.sf || 0,
-        dana_keluar: laporan.dana_keluar || 0,
+        cash: laporan.cash || '',
+        qris: laporan.qris || '',
+        sf: laporan.sf || '',
+        dana_keluar: laporan.dana_keluar || '',
         catatan_dana_keluar: laporan.catatan_dana_keluar || '',
         ma_50: laporan.ma_50 || '50000',
         catatan_stok: laporan.catatan_stok || '',
@@ -39,7 +43,7 @@ export default function Edit({ laporan, materials }) {
             id: item.id,
             product_id: item.product_id,
             qty_bawa: item.qty_bawa,
-            qty_sisa: item.qty_sisa || 0,
+            qty_sisa: item.qty_sisa || '',
         })),
     });
 
@@ -59,7 +63,7 @@ export default function Edit({ laporan, materials }) {
 
     const handleItemChange = (itemId, field, value) => {
         const newItems = data.items.map(item =>
-            item.id === itemId ? { ...item, [field]: Number(value) } : item
+            item.id === itemId ? { ...item, [field]: value === '' ? '' : Number(value) } : item
         );
         setData('items', newItems);
     };
@@ -253,9 +257,11 @@ export default function Edit({ laporan, materials }) {
                                                                         <label className="block text-xs text-slate-500 mb-1">Bawa</label>
                                                                         <input
                                                                             type="number"
+                                                                            min="1"
                                                                             value={qtyBawa}
-                                                                            disabled
-                                                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-center text-base bg-slate-100 text-slate-600"
+                                                                            onChange={(e) => handleItemChange(item.id, 'qty_bawa', e.target.value)}
+                                                                            disabled={!canEditQtyBawa}
+                                                                            className={`w-full rounded-lg border border-slate-300 px-3 py-2 text-center text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent ${!canEditQtyBawa ? 'bg-slate-100 text-slate-600' : 'bg-white text-slate-900'}`}
                                                                         />
                                                                     </div>
                                                                 </div>
@@ -298,9 +304,11 @@ export default function Edit({ laporan, materials }) {
                                                                         <label className="block text-xs text-slate-500 mb-1">Bawa</label>
                                                                         <input
                                                                             type="number"
+                                                                            min="1"
                                                                             value={qtyBawa}
-                                                                            disabled
-                                                                            className="w-20 rounded-lg border border-slate-300 px-2 py-1 text-center text-sm bg-slate-100 text-slate-600"
+                                                                            onChange={(e) => handleItemChange(item.id, 'qty_bawa', e.target.value)}
+                                                                            disabled={!canEditQtyBawa}
+                                                                            className={`w-20 rounded-lg border border-slate-300 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent ${!canEditQtyBawa ? 'bg-slate-100 text-slate-600' : 'bg-white text-slate-900'}`}
                                                                         />
                                                                     </div>
                                                                     <div className="text-center min-w-[120px]">
