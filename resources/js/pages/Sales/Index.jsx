@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Filter, Wallet, TrendingUp, Search, CalendarDays, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Filter, Wallet, TrendingUp, Search, CalendarDays, Eye } from 'lucide-react';
 
 export default function Index({ sales, shifts, filters, summary, auth }) {
     const initialMonth = filters?.month ? filters.month.split('-')[1] : '';
@@ -41,11 +41,7 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
         setSelectedYear(new Date().getFullYear().toString());
         setShiftId('');
     };
-    const deleteSale = (id) => {
-        if (confirm('Apakah Anda yakin ingin menghapus data penjualan ini? Stok produk akan dikembalikan.')) {
-            router.delete(`/sales/${id}`);
-        }
-    };
+
     return (
         <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
             <Head title="Summary" />
@@ -61,9 +57,6 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                     <div className="flex items-center gap-3">
                         <Link href="/dashboard" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-4 py-2 bg-white rounded-lg border border-slate-200 shadow-sm transition-colors">
                             Kembali
-                        </Link>
-                        <Link href="/sales/create" className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-all shadow-sm shadow-blue-600/20">
-                            + Input Transaksi Baru
                         </Link>
                     </div>
                 </div>
@@ -206,30 +199,12 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                                             <span className="text-red-600">-{formatRp(sale.dana_keluar || 0)}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex justify-end items-center gap-2">
-                                                <Link
-                                                    href={`/sales/${sale.id}`}
-                                                    className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
-                                                >
-                                                    <Eye className="w-4 h-4 mr-1" /> Detail
-                                                </Link>
-                                                {auth.user.role === 'admin' && (
-                                                    <>
-                                                        <Link
-                                                            href={`/sales/${sale.id}/edit`}
-                                                            className="inline-flex items-center text-amber-600 hover:text-amber-800 hover:bg-amber-50 px-3 py-2 rounded-lg transition-colors"
-                                                        >
-                                                            <Pencil className="w-4 h-4 mr-1" /> Edit
-                                                        </Link>
-                                                        <button
-                                                            onClick={() => deleteSale(sale.id)}
-                                                            className="inline-flex items-center text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
-                                                        >
-                                                            <Trash2 className="w-4 h-4 mr-1" /> Hapus
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
+                                            <Link
+                                                href={`/sales/${sale.id}`}
+                                                className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                                            >
+                                                <Eye className="w-4 h-4 mr-1" /> Detail
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))}
