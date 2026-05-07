@@ -61,7 +61,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
 
     return (
         <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-            <Head title={`Laporan Pulang - ${laporan.tanggal}`} />
+            <Head title={`Laporan Penjualan - ${laporan.tanggal}`} />
 
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
@@ -71,7 +71,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                             <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
                                 <FileText className="w-6 h-6" />
                             </div>
-                            Laporan Pulang
+                            Laporan Penjualan
                         </h1>
                         <p className="mt-1 text-slate-600 font-medium">{formatDateFull(laporan.tanggal)}</p>
                     </div>

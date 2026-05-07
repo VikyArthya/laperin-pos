@@ -56,7 +56,7 @@ export default function Create({ shifts, products, materials, employees }) {
 
     return (
         <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-50 via-slate-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
-            <Head title="Buat Laporan Pulang" />
+            <Head title="Buat Laporan Penjualan" />
 
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
@@ -66,9 +66,9 @@ export default function Create({ shifts, products, materials, employees }) {
                             <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
                                 <FileText className="w-6 h-6" />
                             </div>
-                            Buat Laporan Pulang
+                            Buat Laporan Penjualan
                         </h1>
-                        <p className="mt-1 text-slate-500">Input stok bawa untuk laporan pulang.</p>
+                        <p className="mt-1 text-slate-500">Input stok bawa untuk laporan penjualan.</p>
                     </div>
                     <Link href="/laporan-pulang" className="inline-flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm transition-colors">
                         <ArrowLeft className="mr-2 h-4 w-4" /> Batal & Kembali

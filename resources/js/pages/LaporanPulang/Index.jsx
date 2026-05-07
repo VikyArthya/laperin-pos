@@ -52,7 +52,7 @@ export default function Index({ laporan }) {
 
     return (
         <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-            <Head title="Laporan Pulang" />
+            <Head title="Laporan Penjualan" />
 
             <div className="max-w-7xl mx-auto">
                 {/* Header Section */}
@@ -72,12 +72,12 @@ export default function Index({ laporan }) {
                             <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
                                 <FileText className="w-6 h-6" />
                             </div>
-                            Laporan Pulang
+                            Laporan Penjualan
                         </h1>
                         <p className="mt-1 text-slate-500">
                             {isKaryawan
                                 ? 'Daftar laporan yang di-assign ke Anda.'
-                                : 'Daftar semua laporan pulang.'}
+                                : 'Daftar semua laporan penjualan.'}
                         </p>
                         {isKaryawan && (
                             <p className="text-xs text-purple-600 mt-1">Silakan isi laporan yang statusnya "Menunggu Karyawan".</p>
@@ -177,7 +177,7 @@ export default function Index({ laporan }) {
                                         <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
                                             <FileText className="w-12 h-12 mx-auto text-slate-300 mb-3" />
                                             <p className="text-sm">
-                                                {isKaryawan ? 'Belum ada laporan yang tersedia untuk Anda.' : 'Belum ada laporan pulang.'}
+                                                {isKaryawan ? 'Belum ada laporan yang tersedia untuk Anda.' : 'Belum ada laporan penjualan.'}
                                             </p>
                                             {isAdmin && (
                                                 <Link

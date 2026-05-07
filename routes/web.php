@@ -40,8 +40,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('payroll', [PayrollController::class, 'index'])->name('payroll.index');
 
         // Stock adjustment routes
-        Route::post('materials/{material}/add-stock', [MaterialController::class, 'addStock'])->name('materials.add-stock');
-        Route::post('materials/{material}/reduce-stock', [MaterialController::class, 'reduceStock'])->name('materials.reduce-stock');
         Route::post('products/{product}/add-stock', [ProductController::class, 'addStock'])->name('products.add-stock');
         Route::post('products/{product}/reduce-stock', [ProductController::class, 'reduceStock'])->name('products.reduce-stock');
     });

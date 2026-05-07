@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Save, FileText, Package, Wallet, CheckSquare } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Package, Wallet } from 'lucide-react';
 
 export default function Edit({ laporan, materials }) {
     const { props } = usePage();
@@ -37,7 +37,6 @@ export default function Edit({ laporan, materials }) {
         dana_keluar: laporan.dana_keluar || '',
         catatan_dana_keluar: laporan.catatan_dana_keluar || '',
         ma_50: laporan.ma_50 || '50000',
-        catatan_stok: laporan.catatan_stok || '',
         stock_refill_items: laporan.stock_refill_items || [],
         items: laporan.items.map(item => ({
             id: item.id,
@@ -114,7 +113,7 @@ export default function Edit({ laporan, materials }) {
 
     return (
         <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-50 via-slate-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
-            <Head title="Isi Laporan Pulang" />
+            <Head title="Isi Laporan Penjualan" />
 
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
@@ -124,7 +123,7 @@ export default function Edit({ laporan, materials }) {
                             <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
                                 <FileText className="w-6 h-6" />
                             </div>
-                            Isi Laporan Pulang
+                            Isi Laporan Penjualan
                         </h1>
                         <p className="mt-1 text-slate-500">Lapor stok sisa dan pembayaran.</p>
                     </div>
@@ -156,7 +155,7 @@ export default function Edit({ laporan, materials }) {
                             {[
                                 { id: 'isian', label: 'Sisa Stok', icon: Package },
                                 { id: 'pembayaran', label: 'Bayar', icon: Wallet },
-                                { id: 'stok', label: 'Catatan', icon: CheckSquare },
+                                { id: 'stok', label: 'Stok', icon: Package },
                             ].map((tab) => (
                                 <button
                                     key={tab.id}
@@ -178,7 +177,7 @@ export default function Edit({ laporan, materials }) {
                                 { id: 'isian', label: 'Sisa Stok', icon: Package },
                                 { id: 'pembayaran', label: 'Pembayaran', icon: Wallet },
                                 { id: 'dana_keluar', label: 'Dana Keluar', icon: Wallet },
-                                { id: 'stok', label: 'Catatan Stok', icon: CheckSquare },
+                                { id: 'stok', label: 'Stok', icon: Package },
                             ].map((tab) => (
                                 <button
                                     key={tab.id}
@@ -464,51 +463,33 @@ export default function Edit({ laporan, materials }) {
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                             <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">STOK</h2>
 
-                            <div className="mb-6">
+                            <div>
                                 <p className="text-sm text-slate-600 mb-2">Tandai item yang perlu direfill:</p>
                                 <p className="text-xs text-amber-600 mb-4 flex items-center gap-1">
                                     <span>⚠️</span> Stok akan berkurang 1 setiap item yang dicentang
                                 </p>
                                 {materials && materials.length > 0 ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                                        {materials.map((material) => {
-                                            const stockColor = material.stok > 10 ? 'text-emerald-600 bg-emerald-50' : material.stok > 0 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
-                                            return (
-                                                <div key={material.id} className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${isMaterialChecked(material.id)
-                                                    ? 'bg-amber-50 border-amber-300'
-                                                    : 'bg-slate-50 border-slate-100'
-                                                    }`}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isMaterialChecked(material.id)}
-                                                        onChange={() => handleStockRefillToggle(material.id)}
-                                                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 focus:ring-2"
-                                                    />
-                                                    <div className="flex-1 min-w-0">
-                                                        <span className="text-xs text-slate-700 block truncate">{material.nama_bahan}</span>
-                                                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>
-                                                            Stok: {material.stok}
-                                                        </span>
-                                                    </div>
+                                        {materials.map((material) => (
+                                            <div key={material.id} className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${isMaterialChecked(material.id)
+                                                ? 'bg-amber-50 border-amber-300'
+                                                : 'bg-slate-50 border-slate-100'
+                                                }`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isMaterialChecked(material.id)}
+                                                    onChange={() => handleStockRefillToggle(material.id)}
+                                                    className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 focus:ring-2"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <span className="text-xs text-slate-700 block truncate">{material.nama_bahan}</span>
                                                 </div>
-                                            );
-                                        })}
+                                            </div>
+                                        ))}
                                     </div>
                                 ) : (
                                     <p className="text-sm text-slate-400 italic">Belum ada data bahan pokok.</p>
                                 )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">CATATAN STOK</label>
-                                <p className="text-xs text-slate-500 mb-2">( ! ) perlu direfill &nbsp; (   ) kosongi jika masih banyak</p>
-                                <textarea
-                                    value={data.catatan_stok}
-                                    onChange={e => setData('catatan_stok', e.target.value)}
-                                    rows="6"
-                                    className={inputClasses}
-                                    placeholder="Tulis catatan stok di sini...&#10;Contoh:&#10;! Bawang Goreng&#10;! Saus&#10;  Kecap&#10;  Sambal"
-                                ></textarea>
                             </div>
                         </div>
                     )}

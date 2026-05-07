@@ -48,12 +48,12 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
     };
     return (
         <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-            <Head title="Rekap Penjualan & Laporan" />
+            <Head title="Summary" />
             
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Laporan Rekap Penjualan</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Summary</h1>
                         <p className="mt-2 text-sm text-gray-600">
                             Analisis data omset berdasarkan bulan dan cabang operasional.
                         </p>

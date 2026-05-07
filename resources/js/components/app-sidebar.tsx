@@ -24,13 +24,13 @@ const allNavItems = [
         role: 'all'
     },
     {
-        title: 'Rekap Penjualan',
+        title: 'Summary',
         href: '/sales',
         icon: Receipt,
         role: 'admin'
     },
     {
-        title: 'Laporan Pulang',
+        title: 'Laporan Penjualan',
         href: '/laporan-pulang',
         icon: FileText,
         role: 'all'

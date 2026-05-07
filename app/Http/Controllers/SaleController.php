@@ -18,7 +18,7 @@ class SaleController extends Controller
     public function dashboard()
     {
         $baseQuery = Sale::query();
-        
+
         // Karyawan hanya bisa melihat sales miliknya sendiri berdasarkan employee_id
         if (auth()->check() && auth()->user()->role === 'karyawan') {
             $authEmployee = Employee::where('user_id', auth()->id())->first();
@@ -29,8 +29,6 @@ class SaleController extends Controller
                 $baseQuery->where('employee_id', 0);
             }
         }
-
-
 
         $totalOmset = (clone $baseQuery)->sum('omset_penjualan');
         $totalUntung = (clone $baseQuery)->sum('untung_bersih');
@@ -84,8 +82,6 @@ class SaleController extends Controller
             });
         }
 
-
-
         $topProductsRaw = $itemQuery->groupBy('product_id')
             ->orderByDesc('total_qty')
             ->take(5)
@@ -125,8 +121,6 @@ class SaleController extends Controller
     {
         $query = Sale::with('shift')->orderBy('created_at', 'desc');
 
-
-
         if ($request->filled('month')) {
             $parts = explode('-', $request->month);
             if (count($parts) == 2) {
@@ -164,8 +158,6 @@ class SaleController extends Controller
         $shifts = Shift::orderBy('nama_shift')->get();
         $products = Product::orderBy('kategori')->get();
         $employees = Employee::orderBy('nama')->get();
-
-
 
         return Inertia::render('Sales/Create', [
             'shifts' => $shifts,
@@ -241,6 +233,8 @@ class SaleController extends Controller
             $qris = (int) ($data['qris'] ?? 0);
             $sf = (int) ($data['sf'] ?? 0);
 
+            // Untung Bersih = Omset Penjualan - Gaji Karyawan - Modal Awal
+            // Note: Modal Awal sudah termasuk biaya operasional 33.000 dari frontend
             $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal;
             $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
 
@@ -377,7 +371,8 @@ class SaleController extends Controller
 
             // Total Omset = Dana Masuk
             $totalOmset = $danaMasuk;
-            // Untung Bersih = Dana Masuk - Dana Keluar - Gaji Karyawan
+            // Untung Bersih = Omset Penjualan - Gaji Karyawan - Modal Awal
+            // Note: Modal Awal sudah termasuk biaya operasional 33.000 dari frontend
             $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal;
             $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
 
