@@ -10,6 +10,7 @@ export default function Index({ users }) {
     const { data, setData, post, put, delete: destroy, processing, errors, reset, clearErrors } = useForm({
         name: '',
         email: '',
+        phone: '',
         password: '',
         role: 'karyawan',
     });
@@ -27,7 +28,8 @@ export default function Index({ users }) {
         setEditingId(user.id);
         setData({
             name: user.name,
-            email: user.email,
+            email: user.email || '',
+            phone: user.phone || '',
             password: '', // Leave empty if not changing
             role: user.role,
         });
@@ -94,7 +96,7 @@ export default function Index({ users }) {
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50/80">
                                 <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama / Email</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama / Kontak</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Role Hak Akses</th>
                                     <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
@@ -110,7 +112,11 @@ export default function Index({ users }) {
                                                     </div>
                                                     <div>
                                                         <div className="text-sm font-medium text-slate-900">{user.name}</div>
-                                                        <div className="text-sm text-slate-500">{user.email}</div>
+                                                        <div className="text-xs text-slate-500">
+                                                            {user.email && <span className="block">{user.email}</span>}
+                                                            {user.phone && <span className="block font-mono text-indigo-600">{user.phone}</span>}
+                                                            {!user.email && !user.phone && <span className="text-red-400 italic">Tidak ada kontak</span>}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -176,15 +182,28 @@ export default function Index({ users }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Email (Untuk Login)</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
                                     <input
                                         type="email"
                                         value={data.email}
                                         onChange={e => setData('email', e.target.value)}
                                         className={`w-full rounded-lg border px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all ${errors.email ? 'border-red-500 ring-red-500/20' : 'border-slate-300'}`}
-                                        required
+                                        placeholder="Kosongkan jika hanya pakai No HP"
                                     />
                                     {errors.email && <p className="mt-1.5 text-sm text-red-600">{errors.email}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Nomor HP (WhatsApp)</label>
+                                    <input
+                                        type="text"
+                                        value={data.phone}
+                                        onChange={e => setData('phone', e.target.value)}
+                                        className={`w-full rounded-lg border px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all ${errors.phone ? 'border-red-500 ring-red-500/20' : 'border-slate-300'}`}
+                                        placeholder="08123xxxxxxx"
+                                    />
+                                    {errors.phone && <p className="mt-1.5 text-sm text-red-600">{errors.phone}</p>}
+                                    <p className="mt-1 text-[10px] text-slate-400">*Wajib isi salah satu (Email atau No HP)</p>
                                 </div>
 
                                 <div>

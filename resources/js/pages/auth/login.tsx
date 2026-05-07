@@ -40,16 +40,16 @@ export default function Login({
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-3">
-                                <Label htmlFor="email" className="text-base font-semibold text-slate-700">Email</Label>
+                                <Label htmlFor="email" className="text-base font-semibold text-slate-700">Email atau Nomor HP</Label>
                                 <Input
                                     id="email"
-                                    type="email"
+                                    type="text"
                                     name="email"
                                     required
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="email"
-                                    placeholder="contoh@email.com"
+                                    placeholder="Email atau No HP"
                                     className="h-12 text-base px-4"
                                 />
                                 <InputError message={errors.email} />
@@ -112,5 +112,5 @@ export default function Login({
 
 Login.layout = {
     title: 'Selamat Datang Kembali',
-    description: 'Masukkan email dan password untuk mengakses sistem',
+    description: 'Masukkan email/nomor HP dan password untuk mengakses sistem',
 };

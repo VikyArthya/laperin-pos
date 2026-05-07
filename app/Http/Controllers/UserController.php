@@ -21,7 +21,8 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required_without:phone|nullable|string|email|max:255|unique:users',
+            'phone' => 'required_without:email|nullable|string|max:255|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|in:admin,karyawan',
         ]);
@@ -36,7 +37,8 @@ class UserController extends Controller
     {
         $rules = [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required_without:phone|nullable|string|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'required_without:email|nullable|string|max:255|unique:users,phone,' . $user->id,
             'role' => 'required|in:admin,karyawan',
         ];
 

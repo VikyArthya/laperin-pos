@@ -262,7 +262,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                                         </div>
                                     )}
                                     <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg border border-amber-200">
-                                        <span className="font-medium text-amber-800">Dana Bersih:</span>
+                                        <span className="font-medium text-amber-800">Keuntungan:</span>
                                         <span className="font-bold text-amber-900">{formatRp(laporan.total_pembayaran - laporan.dana_keluar)}</span>
                                     </div>
                                 </div>
