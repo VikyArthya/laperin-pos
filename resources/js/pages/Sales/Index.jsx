@@ -92,16 +92,16 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
                     {/* Filters Bar */}
-                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
                         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                             <div className="relative">
-                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Pilih Bulan</label>
-                                <select 
-                                    value={selectedMonth} 
+                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Pilih Bulan</label>
+                                <select
+                                    value={selectedMonth}
                                     onChange={(e) => setSelectedMonth(e.target.value)}
-                                    className="w-full sm:w-40 rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2"
+                                    className="w-full sm:w-40 rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm focus:ring-blue-500 focus:border-blue-500 dark:text-white py-2"
                                 >
                                     <option value="">Semua Bulan</option>
                                     <option value="01">Januari</option>
@@ -118,13 +118,13 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                                     <option value="12">Desember</option>
                                 </select>
                             </div>
-                            
+
                             <div className="relative">
-                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Pilih Tahun</label>
-                                <select 
-                                    value={selectedYear} 
+                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Pilih Tahun</label>
+                                <select
+                                    value={selectedYear}
                                     onChange={(e) => setSelectedYear(e.target.value)}
-                                    className="w-full sm:w-32 rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2"
+                                    className="w-full sm:w-32 rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm focus:ring-blue-500 focus:border-blue-500 dark:text-white py-2"
                                 >
                                     <option value="2025">2025</option>
                                     <option value="2026">2026</option>
@@ -136,11 +136,11 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                             </div>
 
                             <div className="relative">
-                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Filter Cabang</label>
-                                <select 
-                                    value={shiftId} 
+                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Filter Cabang</label>
+                                <select
+                                    value={shiftId}
                                     onChange={(e) => setShiftId(e.target.value)}
-                                    className="w-full sm:w-48 rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500 py-2"
+                                    className="w-full sm:w-48 rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm focus:ring-blue-500 focus:border-blue-500 dark:text-white py-2"
                                 >
                                     <option value="">Semua Cabang</option>
                                     {shifts.map(shift => (
@@ -149,11 +149,11 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                                 </select>
                             </div>
                         </div>
-                        
+
                         {(selectedMonth || shiftId) && (
-                            <button 
+                            <button
                                 onClick={resetFilters}
-                                className="text-sm text-red-500 font-medium hover:text-red-700 mt-4 sm:mt-0"
+                                className="text-sm text-red-500 dark:text-red-400 font-medium hover:text-red-700 dark:hover:text-red-300 mt-4 sm:mt-0"
                             >
                                 Hapus Filter
                             </button>
@@ -161,47 +161,47 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                            <thead className="bg-gray-50 dark:bg-slate-800">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modal Produk</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Omset Penjualan</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Untung Bersih</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dana (Masuk/Keluar)</th>
-                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Tanggal</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Shift</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Modal Produk</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Omset Penjualan</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Untung Bersih</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Dana (Masuk/Keluar)</th>
+                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-700">
                                 {sales.data.map((sale) => (
-                                    <tr key={sale.id} className="hover:bg-slate-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <tr key={sale.id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                             {sale.tanggal}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">
                                                 {sale.shift?.nama_shift || '-'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
                                             {formatRp(sale.modal_awal)}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
                                             {formatRp(sale.omset_penjualan)}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600 dark:text-emerald-400">
                                             {formatRp(sale.untung_bersih)}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span className="text-emerald-600">+{formatRp(sale.dana_masuk || 0)}</span>
-                                            <span className="mx-1 text-gray-300">|</span>
-                                            <span className="text-red-600">-{formatRp(sale.dana_keluar || 0)}</span>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
+                                            <span className="text-emerald-600 dark:text-emerald-400">+{formatRp(sale.dana_masuk || 0)}</span>
+                                            <span className="mx-1 text-gray-300 dark:text-slate-600">|</span>
+                                            <span className="text-red-600 dark:text-red-400">-{formatRp(sale.dana_keluar || 0)}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <Link
                                                 href={`/sales/${sale.id}`}
-                                                className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                                                className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-3 py-2 rounded-lg transition-colors"
                                             >
                                                 <Eye className="w-4 h-4 mr-1" /> Detail
                                             </Link>
@@ -210,8 +210,8 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                                 ))}
                                 {sales.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
-                                            <Search className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                                        <td colSpan="7" className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                            <Search className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
                                             <p>Tidak ada data penjualan untuk filter tersebut.</p>
                                         </td>
                                     </tr>
@@ -221,25 +221,25 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                     </div>
 
                     {/* Pagination Links */}
-                    <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <span className="text-sm text-slate-600">
-                            Menampilkan <span className="font-semibold text-slate-900">{sales.from || 0}</span> - <span className="font-semibold text-slate-900">{sales.to || 0}</span> dari <span className="font-semibold text-slate-900">{sales.total}</span>
+                    <div className="bg-slate-50 dark:bg-slate-800 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">
+                            Menampilkan <span className="font-semibold text-slate-900 dark:text-white">{sales.from || 0}</span> - <span className="font-semibold text-slate-900 dark:text-white">{sales.to || 0}</span> dari <span className="font-semibold text-slate-900 dark:text-white">{sales.total}</span>
                         </span>
                         <div className="flex space-x-2">
                             {sales.prev_page_url ? (
-                                <Link href={sales.prev_page_url} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 shadow-sm">
+                                <Link href={sales.prev_page_url} className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm">
                                     Sebelumnya
                                 </Link>
                             ) : (
-                                <button disabled className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-400 bg-slate-50">Sebelumnya</button>
+                                <button disabled className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800">Sebelumnya</button>
                             )}
-                            
+
                             {sales.next_page_url ? (
-                                <Link href={sales.next_page_url} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 shadow-sm">
+                                <Link href={sales.next_page_url} className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm">
                                     Selanjutnya
                                 </Link>
                             ) : (
-                                <button disabled className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-400 bg-slate-50">Selanjutnya</button>
+                                <button disabled className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800">Selanjutnya</button>
                             )}
                         </div>
                     </div>
