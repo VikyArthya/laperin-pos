@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Receipt, ArrowLeft, Save, Calculator, Lock } from 'lucide-react';
 
@@ -10,23 +10,23 @@ export default function Create({ shifts, products, employees, authEmployee }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         tanggal: new Date().toISOString().split('T')[0],
         shift_id: '',
-        modal_awal: '',
-        dana_keluar: '',
-        dana_masuk: '',
-        selisih_dana: '',
-        omset_penjualan: '',
-        cash: '',
-        qris: '',
-        sf: '',
+        modal_awal: '0',
+        dana_keluar: '0',
+        dana_masuk: '0',
+        selisih_dana: '0',
+        omset_penjualan: '0',
+        cash: '0',
+        qris: '0',
+        sf: '0',
         is_karyawan_hadir: isKaryawan ? true : false,
         employee_id: isKaryawan && authEmployee ? authEmployee.id : '',
-        gaji_karyawan: '',
+        gaji_karyawan: '0',
         catatan: '',
         items: products.map(p => ({ product_id: p.id, qty: '' })),
     });
 
     // Hitung total omset dari harga jual produk
-    const calculateTotalOmset = () => {
+    const totalOmsetProduk = useMemo(() => {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
@@ -34,60 +34,40 @@ export default function Create({ shifts, products, employees, authEmployee }) {
             }
             return total;
         }, 0);
-    };
+    }, [data.items, products]);
 
-    // Hitung modal awal dari harga beli produk
-    const calculateModalAwal = () => {
-        return data.items.reduce((total, item) => {
+    // Hitung modal awal dari harga beli produk + biaya operasional (bensin dll: Rp 33.000)
+    const totalModalAwal = useMemo(() => {
+        const modalProduk = data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
                 return total + ((product.harga_beli || 0) * (item.qty === '' ? 0 : Number(item.qty)));
             }
             return total;
         }, 0);
-    };
+        return modalProduk + 33000; // Biaya operasional tetap per transaksi
+    }, [data.items, products]);
 
     // Hitung gaji otomatis berdasarkan rumus: (omset × 20%) + (floor(omset / 100rb) × 5rb)
-    const calculateGaji = (omset) => {
-        const gajiBase = Math.floor(omset * 0.20);
-        const bonus = Math.floor(omset / 100000) * 5000;
+    const autoGaji = useMemo(() => {
+        const gajiBase = Math.floor(totalOmsetProduk * 0.20);
+        const bonus = Math.floor(totalOmsetProduk / 100000) * 5000;
         return gajiBase + bonus;
-    };
+    }, [totalOmsetProduk]);
 
-    const totalOmsetProduk = calculateTotalOmset();
-    const totalModalAwal = calculateModalAwal();
-    const autoGaji = calculateGaji(totalOmsetProduk);
+    // Hitung selisih dana
+    const selisihDana = useMemo(() => {
+        return Number(data.dana_keluar || 0) - Number(totalOmsetProduk);
+    }, [data.dana_keluar, totalOmsetProduk]);
 
-    // Auto calculate selisih dana
+    // Update semua field computed saat dependencies berubah
     useEffect(() => {
-        const selisihDana = Number(data.dana_keluar) - Number(data.dana_masuk);
-
-        setData(prev => ({
-            ...prev,
-            selisih_dana: selisihDana,
-            omset_penjualan: totalOmsetProduk,
-            modal_awal: totalModalAwal,
-        }));
-    }, [data.dana_keluar, data.dana_masuk]);
-
-    // Update omset, modal, dana_masuk & gaji saat qty berubah
-    useEffect(() => {
-        setData(prev => ({
-            ...prev,
-            omset_penjualan: totalOmsetProduk,
-            modal_awal: totalModalAwal,
-            dana_masuk: totalOmsetProduk,
-            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : '',
-        }));
-    }, [totalOmsetProduk, totalModalAwal]);
-
-    // Update gaji saat toggle karyawan hadir
-    useEffect(() => {
-        setData(prev => ({
-            ...prev,
-            gaji_karyawan: prev.is_karyawan_hadir ? autoGaji : '',
-        }));
-    }, [data.is_karyawan_hadir, autoGaji]);
+        setData('omset_penjualan', totalOmsetProduk);
+        setData('modal_awal', totalModalAwal);
+        setData('dana_masuk', totalOmsetProduk);
+        setData('gaji_karyawan', data.is_karyawan_hadir ? autoGaji : 0);
+        setData('selisih_dana', selisihDana);
+    }, [totalOmsetProduk, totalModalAwal, autoGaji, data.is_karyawan_hadir, selisihDana]);
 
     const handleItemChange = (productId, qty) => {
         const newItems = data.items.map(item =>
@@ -210,7 +190,8 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                     <div>
                                         <label className="block text-xs font-medium text-slate-500 mb-1">Modal Produk <span className="text-emerald-500">(Auto)</span></label>
                                         <input type="number" value={data.modal_awal} readOnly className={`${inputClasses} bg-slate-100 cursor-not-allowed`} />
-                                        <p className="text-[10px] text-emerald-500 mt-1">= Σ(Harga Beli × Qty) = {formatRp(totalModalAwal)}</p>
+                                        <p className="text-[10px] text-emerald-500 mt-1">= Σ(Harga Beli × Qty) + Rp 33.000</p>
+                                        <p className="text-[10px] text-slate-400">Biaya operasional (bensin, dll) termasuk</p>
                                     </div>
 
                                     <div>
