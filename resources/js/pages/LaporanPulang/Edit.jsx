@@ -30,6 +30,8 @@ export default function Edit({ laporan, materials }) {
         cash: laporan.cash || 0,
         qris: laporan.qris || 0,
         sf: laporan.sf || 0,
+        dana_keluar: laporan.dana_keluar || 0,
+        catatan_dana_keluar: laporan.catatan_dana_keluar || '',
         ma_50: laporan.ma_50 || '',
         catatan_stok: laporan.catatan_stok || '',
         stock_refill_items: laporan.stock_refill_items || [],
@@ -159,6 +161,7 @@ export default function Edit({ laporan, materials }) {
                             {[
                                 { id: 'isian', label: 'Sisa Stok', icon: Package },
                                 { id: 'pembayaran', label: 'Pembayaran', icon: Wallet },
+                                { id: 'dana_keluar', label: 'Dana Keluar', icon: Wallet },
                                 { id: 'stok', label: 'Catatan Stok', icon: CheckSquare },
                             ].map((tab) => (
                                 <button
@@ -358,6 +361,52 @@ export default function Edit({ laporan, materials }) {
                                     <div className="text-right text-sm opacity-75">
                                         <p>Cash + Qris + SF</p>
                                         <p className="font-medium">{formatRp(totalPembayaran)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'dana_keluar' && (
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                            <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">------- DANA KELUAR -------</h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">💸 Dana Keluar</label>
+                                    <input
+                                        type="number"
+                                        name="dana_keluar"
+                                        value={data.dana_keluar}
+                                        onChange={e => setData('dana_keluar', e.target.value)}
+                                        className={inputClasses}
+                                        placeholder="0"
+                                        min="0"
+                                    />
+                                    <p className="text-xs text-slate-400 mt-1">{formatRp(data.dana_keluar)}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Catatan Dana Keluar</label>
+                                    <input
+                                        type="text"
+                                        name="catatan_dana_keluar"
+                                        value={data.catatan_dana_keluar}
+                                        onChange={e => setData('catatan_dana_keluar', e.target.value)}
+                                        className={inputClasses}
+                                        placeholder="Opsional: Jelaskan pengeluaran"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-6 text-white">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-sm font-medium opacity-90">Total Dana Keluar</p>
+                                        <p className="text-3xl font-black mt-1">{formatRp(data.dana_keluar)}</p>
+                                    </div>
+                                    <div className="text-right text-sm opacity-75">
+                                        <p>Akan otomatis masuk ke menu Kasir</p>
+                                        <p className="font-medium">Sebagai pengurang dana</p>
                                     </div>
                                 </div>
                             </div>

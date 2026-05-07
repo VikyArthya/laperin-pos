@@ -225,6 +225,31 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                             </div>
                         </div>
 
+                        {/* DANA KELUAR Section */}
+                        {laporan.status === 'completed' && laporan.dana_keluar > 0 && (
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-800 mb-4 pb-2 border-b-2 border-slate-200">
+                                    ------- DANA KELUAR -------
+                                </h2>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                                        <span className="font-medium text-slate-700">💸 Dana Keluar:</span>
+                                        <span className="font-bold text-red-600">{formatRp(laporan.dana_keluar)}</span>
+                                    </div>
+                                    {laporan.catatan_dana_keluar && (
+                                        <div className="p-3 bg-slate-50 rounded-lg">
+                                            <p className="text-sm font-semibold text-slate-700 mb-1">Catatan Dana Keluar:</p>
+                                            <p className="text-sm text-slate-600">{laporan.catatan_dana_keluar}</p>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg border border-amber-200">
+                                        <span className="font-medium text-amber-800">Dana Bersih:</span>
+                                        <span className="font-bold text-amber-900">{formatRp(laporan.total_pembayaran - laporan.dana_keluar)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* STOK Section */}
                         {laporan.status === 'completed' && (
                             <div>

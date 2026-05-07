@@ -16,6 +16,7 @@ export default function Create({ shifts, products, materials, employees }) {
         tanggal: getLocalDateString(),
         shift_id: '',
         employee_id: '',
+        dana_keluar: 0,
         items: products.map(p => ({
             product_id: p.id,
             qty_bawa: 0,
@@ -203,6 +204,37 @@ export default function Create({ shifts, products, materials, employees }) {
                                     </div>
                                 );
                             })}
+                        </div>
+                    </div>
+
+                    {/* Dana Keluar */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">Dana Keluar</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">💸 Dana Keluar</label>
+                                <input
+                                    type="number"
+                                    name="dana_keluar"
+                                    value={data.dana_keluar}
+                                    onChange={e => setData('dana_keluar', e.target.value)}
+                                    className={inputClasses}
+                                    placeholder="0"
+                                    min="0"
+                                />
+                                <p className="text-xs text-slate-400 mt-1">{formatRp(data.dana_keluar)}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Catatan Dana Keluar</label>
+                                <input
+                                    type="text"
+                                    name="catatan_dana_keluar"
+                                    value={data.catatan_dana_keluar || ''}
+                                    onChange={e => setData('catatan_dana_keluar', e.target.value)}
+                                    className={inputClasses}
+                                    placeholder="Opsional: Jelaskan pengeluaran"
+                                />
+                            </div>
                         </div>
                     </div>
 

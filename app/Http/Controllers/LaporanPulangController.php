@@ -72,6 +72,8 @@ class LaporanPulangController extends Controller
             'tanggal' => 'required|date',
             'shift_id' => 'required|exists:shifts,id',
             'employee_id' => 'required|exists:employees,id',
+            'dana_keluar' => 'nullable|integer|min:0',
+            'catatan_dana_keluar' => 'nullable|string',
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.qty_bawa' => 'required|integer|min:0',
@@ -101,6 +103,8 @@ class LaporanPulangController extends Controller
                 'qris' => 0,
                 'sf' => 0,
                 'total_pembayaran' => 0,
+                'dana_keluar' => (int) ($request->dana_keluar ?? 0),
+                'catatan_dana_keluar' => $request->catatan_dana_keluar,
                 'ma_50' => null,
                 'catatan_stok' => null,
                 'stock_refill_items' => [],
@@ -177,6 +181,8 @@ class LaporanPulangController extends Controller
             'cash' => 'nullable|integer|min:0',
             'qris' => 'nullable|integer|min:0',
             'sf' => 'nullable|integer|min:0',
+            'dana_keluar' => 'nullable|integer|min:0',
+            'catatan_dana_keluar' => 'nullable|string',
             'ma_50' => 'nullable|string',
             'catatan_stok' => 'nullable|string',
             'stock_refill_items' => 'nullable|array',
@@ -195,6 +201,7 @@ class LaporanPulangController extends Controller
             $cash = (int) ($request->cash ?? 0);
             $qris = (int) ($request->qris ?? 0);
             $sf = (int) ($request->sf ?? 0);
+            $danaKeluar = (int) ($request->dana_keluar ?? 0);
             $totalPembayaran = $cash + $qris + $sf;
 
             // Update laporan
@@ -205,6 +212,8 @@ class LaporanPulangController extends Controller
                 'qris' => $qris,
                 'sf' => $sf,
                 'total_pembayaran' => $totalPembayaran,
+                'dana_keluar' => $danaKeluar,
+                'catatan_dana_keluar' => $request->catatan_dana_keluar,
                 'ma_50' => $request->ma_50,
                 'catatan_stok' => $request->catatan_stok,
                 'stock_refill_items' => $request->stock_refill_items ?? [],
@@ -252,7 +261,6 @@ class LaporanPulangController extends Controller
             }
 
             // Auto-create/update Sale record dari Laporan Pulang
-            $danaKeluar = 0;
             $gajiKaryawan = 0;
             if ($totalPembayaran > 0) {
                 $gajiBase = floor($totalPembayaran * 0.20);

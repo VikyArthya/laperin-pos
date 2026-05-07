@@ -18,6 +18,8 @@ class LaporanPulang extends Model
         'qris',
         'sf',
         'total_pembayaran',
+        'dana_keluar',
+        'catatan_dana_keluar',
         'ma_50',
         'catatan_stok',
         'stock_refill_items',
