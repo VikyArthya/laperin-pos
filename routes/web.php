@@ -26,6 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('laporan-pulang/{laporanPulang}', [LaporanPulangController::class, 'show'])->name('laporan-pulang.show');
     Route::get('laporan-pulang/{laporanPulang}/edit', [LaporanPulangController::class, 'edit'])->name('laporan-pulang.edit');
     Route::put('laporan-pulang/{laporanPulang}', [LaporanPulangController::class, 'update'])->name('laporan-pulang.update');
+    Route::delete('laporan-pulang/{laporanPulang}', [LaporanPulangController::class, 'destroy'])->name('laporan-pulang.destroy');
 
     // Admin Only Routes
     Route::middleware(['admin'])->group(function () {

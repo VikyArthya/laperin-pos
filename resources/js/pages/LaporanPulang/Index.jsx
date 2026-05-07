@@ -1,6 +1,5 @@
-import React from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Plus, Eye, Edit, FileText, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
+import { Plus, Eye, Edit, FileText, Calendar, CheckCircle, Clock, Trash2 } from 'lucide-react';
 
 export default function Index({ laporan }) {
     const { props } = usePage();
@@ -18,6 +17,12 @@ export default function Index({ laporan }) {
         if (!dateStr) return '-';
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateStr).toLocaleDateString('id-ID', options);
+    };
+
+    const handleDelete = (id) => {
+        if (confirm('Apakah Anda yakin ingin menghapus laporan ini? Seluruh data penjualan terkait akan dihapus dan stok akan dikembalikan.')) {
+            router.delete(`/laporan-pulang/${id}`);
+        }
     };
 
     const getStatusBadge = (status) => {
@@ -50,7 +55,7 @@ export default function Index({ laporan }) {
             <Head title="Laporan Pulang" />
 
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
+                {/* Header Section */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
                         {isKaryawan && (
@@ -67,7 +72,7 @@ export default function Index({ laporan }) {
                             <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
                                 <FileText className="w-6 h-6" />
                             </div>
-                            Laporan Pulang (Peleburan)
+                            Laporan Pulang
                         </h1>
                         <p className="mt-1 text-slate-500">
                             {isKaryawan
@@ -89,7 +94,7 @@ export default function Index({ laporan }) {
                     )}
                 </div>
 
-                {/* Table */}
+                {/* Table Card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-slate-200">
@@ -126,33 +131,44 @@ export default function Index({ laporan }) {
                                                 {formatRp(item.total_pembayaran)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                                {isKaryawan && item.status === 'submitted_by_admin' && (
-                                                    <Link
-                                                        href={`/laporan-pulang/${item.id}/edit`}
-                                                        className="inline-flex items-center text-purple-600 hover:text-purple-900"
-                                                    >
-                                                        <Edit className="w-4 h-4 mr-1" />
-                                                        Isi Laporan
-                                                    </Link>
-                                                )}
-                                                {isKaryawan && item.status === 'completed' && (
-                                                    <Link
-                                                        href={`/laporan-pulang/${item.id}`}
-                                                        className="inline-flex items-center text-slate-600 hover:text-slate-900"
-                                                    >
-                                                        <Eye className="w-4 h-4 mr-1" />
-                                                        Lihat
-                                                    </Link>
-                                                )}
-                                                {isAdmin && (
-                                                    <Link
-                                                        href={`/laporan-pulang/${item.id}`}
-                                                        className="inline-flex items-center text-purple-600 hover:text-purple-900"
-                                                    >
-                                                        <Eye className="w-4 h-4 mr-1" />
-                                                        Lihat
-                                                    </Link>
-                                                )}
+                                                <div className="flex justify-center items-center gap-3">
+                                                    {isKaryawan && item.status === 'submitted_by_admin' && (
+                                                        <Link
+                                                            href={`/laporan-pulang/${item.id}/edit`}
+                                                            className="inline-flex items-center text-purple-600 hover:text-purple-900"
+                                                        >
+                                                            <Edit className="w-4 h-4 mr-1" />
+                                                            Isi Laporan
+                                                        </Link>
+                                                    )}
+                                                    {(item.status === 'completed' || isAdmin) && (
+                                                        <Link
+                                                            href={`/laporan-pulang/${item.id}`}
+                                                            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                                            title="Lihat Detail"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                        </Link>
+                                                    )}
+                                                    {isAdmin && (
+                                                        <>
+                                                            <Link
+                                                                href={`/laporan-pulang/${item.id}/edit`}
+                                                                className="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                title="Edit Laporan"
+                                                            >
+                                                                <Edit className="w-4 h-4" />
+                                                            </Link>
+                                                            <button
+                                                                onClick={() => handleDelete(item.id)}
+                                                                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                title="Hapus Laporan"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
