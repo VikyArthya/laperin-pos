@@ -4,16 +4,16 @@ namespace App\Exports;
 
 use App\Models\Sale;
 use Maatwebsite\Excel\Concerns\FromQuery;
-use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SalesExport implements FromQuery, WithColumnFormatting, WithHeadings, WithMapping, WithStyles, WithTitle
+class SalesExport implements FromQuery, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     protected $filters;
 
@@ -70,19 +70,19 @@ class SalesExport implements FromQuery, WithColumnFormatting, WithHeadings, With
         return [
             $sale->tanggal,
             $sale->shift->nama_shift ?? '-',
-            $sale->modal_awal,
-            $sale->cash ?? 0,
-            $sale->qris ?? 0,
-            $sale->sf ?? 0,
-            $sale->dana_masuk,
-            $sale->dana_keluar,
-            $sale->selisih_dana,
-            $sale->omset_penjualan,
-            $sale->gaji_karyawan,
-            $sale->untung_kotor,
-            $sale->untung_bersih,
-            $sale->selisih_pembayaran ?? 0,
-            ($sale->untung_bersih ?? 0) + ($sale->selisih_pembayaran ?? 0),
+            'Rp '.number_format($sale->modal_awal, 0, ',', '.'),
+            'Rp '.number_format($sale->cash ?? 0, 0, ',', '.'),
+            'Rp '.number_format($sale->qris ?? 0, 0, ',', '.'),
+            'Rp '.number_format($sale->sf ?? 0, 0, ',', '.'),
+            'Rp '.number_format($sale->dana_masuk, 0, ',', '.'),
+            'Rp '.number_format($sale->dana_keluar, 0, ',', '.'),
+            'Rp '.number_format($sale->selisih_dana, 0, ',', '.'),
+            'Rp '.number_format($sale->omset_penjualan, 0, ',', '.'),
+            'Rp '.number_format($sale->gaji_karyawan, 0, ',', '.'),
+            'Rp '.number_format($sale->untung_kotor, 0, ',', '.'),
+            'Rp '.number_format($sale->untung_bersih, 0, ',', '.'),
+            'Rp '.number_format($sale->selisih_pembayaran ?? 0, 0, ',', '.'),
+            'Rp '.number_format(($sale->untung_bersih ?? 0) + ($sale->selisih_pembayaran ?? 0), 0, ',', '.'),
             $sale->is_karyawan_hadir ? 'Ya' : 'Tidak',
             $sale->employee->nama ?? '-',
             $sale->catatan ?? '-',
@@ -103,25 +103,6 @@ class SalesExport implements FromQuery, WithColumnFormatting, WithHeadings, With
                     'bold' => true,
                 ],
             ],
-        ];
-    }
-
-    public function columnFormats(): array
-    {
-        return [
-            'C' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'D' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'E' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'F' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'G' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'H' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'I' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'J' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'K' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'L' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'M' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'N' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-            'O' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
         ];
     }
 
@@ -149,5 +130,72 @@ class SalesExport implements FromQuery, WithColumnFormatting, WithHeadings, With
         }
 
         return $title;
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $highestRow = $sheet->getHighestRow();
+
+                // Get all data to calculate totals
+                $sales = $this->query()->get();
+
+                if ($sales->isEmpty()) {
+                    return;
+                }
+
+                // Calculate totals
+                $totals = [
+                    'modal_awal' => $sales->sum('modal_awal'),
+                    'cash' => $sales->sum('cash'),
+                    'qris' => $sales->sum('qris'),
+                    'sf' => $sales->sum('sf'),
+                    'dana_masuk' => $sales->sum('dana_masuk'),
+                    'dana_keluar' => $sales->sum('dana_keluar'),
+                    'selisih_dana' => $sales->sum('selisih_dana'),
+                    'omset_penjualan' => $sales->sum('omset_penjualan'),
+                    'gaji_karyawan' => $sales->sum('gaji_karyawan'),
+                    'untung_kotor' => $sales->sum('untung_kotor'),
+                    'untung_bersih' => $sales->sum('untung_bersih'),
+                    'selisih_pembayaran' => $sales->sum('selisih_pembayaran'),
+                ];
+
+                $totalUntung = $totals['untung_bersih'] + $totals['selisih_pembayaran'];
+                $karyawanHadirCount = $sales->where('is_karyawan_hadir', true)->count();
+
+                // Add totals row
+                $totalRow = $highestRow + 1;
+                $sheet->setCellValue('A'.$totalRow, 'TOTAL:');
+                $sheet->setCellValue('C'.$totalRow, 'Rp '.number_format($totals['modal_awal'], 0, ',', '.'));
+                $sheet->setCellValue('D'.$totalRow, 'Rp '.number_format($totals['cash'], 0, ',', '.'));
+                $sheet->setCellValue('E'.$totalRow, 'Rp '.number_format($totals['qris'], 0, ',', '.'));
+                $sheet->setCellValue('F'.$totalRow, 'Rp '.number_format($totals['sf'], 0, ',', '.'));
+                $sheet->setCellValue('G'.$totalRow, 'Rp '.number_format($totals['dana_masuk'], 0, ',', '.'));
+                $sheet->setCellValue('H'.$totalRow, 'Rp '.number_format($totals['dana_keluar'], 0, ',', '.'));
+                $sheet->setCellValue('I'.$totalRow, 'Rp '.number_format($totals['selisih_dana'], 0, ',', '.'));
+                $sheet->setCellValue('J'.$totalRow, 'Rp '.number_format($totals['omset_penjualan'], 0, ',', '.'));
+                $sheet->setCellValue('K'.$totalRow, 'Rp '.number_format($totals['gaji_karyawan'], 0, ',', '.'));
+                $sheet->setCellValue('L'.$totalRow, 'Rp '.number_format($totals['untung_kotor'], 0, ',', '.'));
+                $sheet->setCellValue('M'.$totalRow, 'Rp '.number_format($totals['untung_bersih'], 0, ',', '.'));
+                $sheet->setCellValue('N'.$totalRow, 'Rp '.number_format($totals['selisih_pembayaran'], 0, ',', '.'));
+                $sheet->setCellValue('O'.$totalRow, 'Rp '.number_format($totalUntung, 0, ',', '.'));
+                $sheet->setCellValue('P'.$totalRow, $karyawanHadirCount.' Hari');
+
+                // Style the totals row
+                $sheet->getStyle('A'.$totalRow.':R'.$totalRow)->applyFromArray([
+                    'font' => ['bold' => true, 'size' => 11],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => '10B981'],
+                    ],
+                    'font' => [
+                        'color' => ['rgb' => 'FFFFFF'],
+                        'bold' => true,
+                    ],
+                ]);
+            },
+        ];
     }
 }
