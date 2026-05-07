@@ -31,7 +31,7 @@ class SaleController extends Controller
         }
 
         $totalOmset = (clone $baseQuery)->sum('omset_penjualan');
-        $totalUntung = (clone $baseQuery)->sum('untung_bersih');
+        $totalUntung = (clone $baseQuery)->selectRaw('SUM(untung_bersih + selisih_pembayaran) as total')->value('total') ?? 0;
 
         // Sembunyikan untung jika role karyawan
         if (auth()->check() && auth()->user()->role === 'karyawan') {
@@ -42,13 +42,13 @@ class SaleController extends Controller
             ->whereYear('tanggal', date('Y'))
             ->sum('omset_penjualan');
 
-        $monthlySalesRaw = (clone $baseQuery)->selectRaw('MONTH(tanggal) as month, SUM(omset_penjualan) as omset, SUM(untung_bersih) as untung')
+        $monthlySalesRaw = (clone $baseQuery)->selectRaw('MONTH(tanggal) as month, SUM(omset_penjualan) as omset, SUM(untung_bersih + selisih_pembayaran) as untung')
             ->whereYear('tanggal', date('Y'))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
-        $yearlySalesRaw = (clone $baseQuery)->selectRaw('YEAR(tanggal) as year, SUM(omset_penjualan) as omset, SUM(untung_bersih) as untung')
+        $yearlySalesRaw = (clone $baseQuery)->selectRaw('YEAR(tanggal) as year, SUM(omset_penjualan) as omset, SUM(untung_bersih + selisih_pembayaran) as untung')
             ->groupBy('year')
             ->orderBy('year')
             ->take(5)
@@ -136,7 +136,7 @@ class SaleController extends Controller
         // Clone query for analytics stats before pagination
         $statsQuery = clone $query;
         $totalOmset = $statsQuery->sum('omset_penjualan');
-        $totalUntung = $statsQuery->sum('untung_bersih');
+        $totalUntung = $statsQuery->selectRaw('SUM(untung_bersih + selisih_pembayaran) as total')->value('total') ?? 0;
 
         $sales = $query->paginate(20)->withQueryString();
         $shifts = Shift::orderBy('nama_shift')->get();

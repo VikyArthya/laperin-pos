@@ -288,7 +288,7 @@ class LaporanPulangController extends Controller
                 }
 
                 // Process items dan hitung qty_terjual
-                $totalOmsetProduk = 0;
+                $totalHargaTerjual = 0;
                 $totalModalAwal = 0;
 
                 if ($request->has('items')) {
@@ -309,8 +309,8 @@ class LaporanPulangController extends Controller
 
                                 $product = $laporanItem->product;
                                 if ($product) {
-                                    // Hitung omset
-                                    $totalOmsetProduk += $product->harga * $qtyTerjual;
+                                    // Hitung total harga terjual dari harga produk × qty terjual
+                                    $totalHargaTerjual += $product->harga * $qtyTerjual;
 
                                     // Modal awal = harga_beli × qty_terjual
                                     if ($product->harga_beli > 0) {
@@ -327,7 +327,12 @@ class LaporanPulangController extends Controller
                     }
                 }
 
-                // Auto-create/update Sale record dari Laporan Pulang
+                // Hitung selisih pembayaran (Total Pembayaran - Total Harga Terjual)
+                // Positif = Lebih bayar (bonus dari ShopeeFood)
+                // Negatif = Kurang bayar
+                $selisihPembayaran = $totalPembayaran - $totalHargaTerjual;
+
+                // Hitung gaji karyawan berdasarkan total pembayaran
                 $gajiKaryawan = 0;
                 if ($totalPembayaran > 0) {
                     $gajiBase = floor($totalPembayaran * 0.20);
@@ -335,59 +340,57 @@ class LaporanPulangController extends Controller
                     $gajiKaryawan = $gajiBase + $bonus;
                 }
 
+                // PERHITUNGAN PENJUALAN:
+                // Omset Penjualan = Total Harga Terjual (harga produk yang terjual)
+                // Untung Kotor = Omset Penjualan - Modal Awal
+                // Untung Bersih = (Untung Kotor - Gaji Karyawan) + Selisih Pembayaran
+                $omsetPenjualan = $totalHargaTerjual;
+                $untungKotor = $omsetPenjualan - $totalModalAwal;
+                $untungBersihTanpaKaryawan = $untungKotor + $selisihPembayaran;
+                $untungBersih = ($untungKotor - $gajiKaryawan) + $selisihPembayaran;
+
                 // Cek apakah sale sudah ada
                 $sale = Sale::where('laporan_pulang_id', $laporanPulang->id)->first();
 
+                $saleData = [
+                    'user_id' => auth()->id(),
+                    'modal_awal' => $totalModalAwal,
+                    'cash' => $cash,
+                    'qris' => $qris,
+                    'sf' => $sf,
+                    'dana_keluar' => $danaKeluar,
+                    'dana_masuk' => $totalPembayaran,
+                    'selisih_dana' => $danaKeluar - $totalPembayaran,
+                    'omset_penjualan' => $omsetPenjualan,
+                    'is_karyawan_hadir' => true,
+                    'employee_id' => $authEmployee?->id,
+                    'gaji_karyawan' => $gajiKaryawan,
+                    'untung_kotor' => $untungKotor,
+                    'untung_bersih' => $untungBersih,
+                    'untung_bersih_tanpa_karyawan' => $untungBersihTanpaKaryawan,
+                    'selisih_pembayaran' => $selisihPembayaran,
+                    'selisih_uang_penjualan' => 0,
+                ];
+
                 if ($sale) {
                     // Update existing sale
-                    $sale->update([
-                        'user_id' => auth()->id(),
-                        'modal_awal' => $totalModalAwal,
-                        'cash' => $cash,
-                        'qris' => $qris,
-                        'sf' => $sf,
-                        'dana_keluar' => $danaKeluar,
-                        'dana_masuk' => $totalPembayaran,
-                        'selisih_dana' => $danaKeluar - $totalPembayaran,
-                        'omset_penjualan' => $totalPembayaran,
-                        'is_karyawan_hadir' => true,
-                        'employee_id' => $authEmployee?->id,
-                        'gaji_karyawan' => $gajiKaryawan,
-                        'untung_kotor' => $totalPembayaran - $totalModalAwal,
-                        'untung_bersih' => $totalPembayaran - $totalModalAwal - $gajiKaryawan,
-                        'untung_bersih_tanpa_karyawan' => $totalPembayaran - $totalModalAwal,
+                    $sale->update(array_merge($saleData, [
                         'catatan' => 'Diperbarui dari Laporan Pulang #'.$laporanPulang->id,
-                    ]);
+                    ]));
 
                     // Delete existing sale items
                     SaleItem::where('sale_id', $sale->id)->delete();
                 } else {
                     // Create new sale
-                    $sale = Sale::create([
-                        'user_id' => auth()->id(),
+                    $sale = Sale::create(array_merge($saleData, [
                         'tanggal' => $laporanPulang->tanggal,
                         'shift_id' => $laporanPulang->shift_id,
                         'laporan_pulang_id' => $laporanPulang->id,
-                        'modal_awal' => $totalModalAwal,
-                        'cash' => $cash,
-                        'qris' => $qris,
-                        'sf' => $sf,
-                        'dana_keluar' => $danaKeluar,
-                        'dana_masuk' => $totalPembayaran,
-                        'selisih_dana' => $danaKeluar - $totalPembayaran,
-                        'omset_penjualan' => $totalPembayaran,
                         'omset_bubuk' => 0,
                         'omset_topping' => 0,
                         'biaya_packaging' => 0,
-                        'is_karyawan_hadir' => true,
-                        'employee_id' => $authEmployee?->id,
-                        'gaji_karyawan' => $gajiKaryawan,
-                        'untung_kotor' => $totalPembayaran - $totalModalAwal,
-                        'untung_bersih' => $totalPembayaran - $totalModalAwal - $gajiKaryawan,
-                        'untung_bersih_tanpa_karyawan' => $totalPembayaran - $totalModalAwal,
-                        'selisih_uang_penjualan' => 0,
                         'catatan' => 'Otomatis dibuat dari Laporan Pulang #'.$laporanPulang->id,
-                    ]);
+                    ]));
                 }
 
                 // Create SaleItems dari Laporan Pulang Items

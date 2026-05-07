@@ -191,7 +191,7 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                                             {formatRp(sale.omset_penjualan)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                                            {formatRp(sale.untung_bersih)}
+                                            {formatRp((sale.untung_bersih || 0) + (sale.selisih_pembayaran || 0))}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
                                             <span className="text-emerald-600 dark:text-emerald-400">+{formatRp(sale.dana_masuk || 0)}</span>

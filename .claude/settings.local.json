@@ -11,7 +11,8 @@
       "mcp__laravel-boost__database-schema",
       "mcp__laravel-boost__browser-logs",
       "mcp__laravel-boost__last-error",
-      "mcp__laravel-boost__read-log-entries"
+      "mcp__laravel-boost__read-log-entries",
+      "mcp__laravel-boost__database-query"
     ],
     "deny": [],
     "ask": []

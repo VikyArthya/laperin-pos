@@ -387,27 +387,58 @@ export default function Edit({ laporan, materials }) {
                                         <p className="text-xs opacity-75 mt-1">Total dari semua produk yang terjual</p>
                                     </div>
                                     <div className="text-right text-sm opacity-75">
-                                        <p>📊 Validasi</p>
-                                        <p className="font-medium">Cash + Qris + SF</p>
-                                        <p className="text-xs opacity-75">harus mendekati {formatRp(totalTerjual)}</p>
+                                        <p>📊 Dasar Omset</p>
+                                        <p className="font-medium">Penjualan Produk</p>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Selisih Info */}
-                            {totalPembayaran > 0 && totalTerjual > 0 && (
-                                <div className={`rounded-xl p-4 text-center ${Math.abs(totalPembayaran - totalTerjual) <= 1000
-                                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-                                        : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
-                                    }`}>
+                            {/* Selisih Info - Jika ada lebih */}
+                            {totalPembayaran > 0 && totalTerjual > 0 && totalPembayaran > totalTerjual && (
+                                <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white mb-4">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <p className="text-sm font-medium opacity-90">🎉 Kelebihan Pembayaran (Bonus)</p>
+                                            <p className="text-3xl font-black mt-1">{formatRp(totalPembayaran - totalTerjual)}</p>
+                                            <p className="text-xs opacity-75 mt-1">ShopeeFood memberikan lebih dari harga produk</p>
+                                        </div>
+                                        <div className="text-right text-sm opacity-75">
+                                            <p>💵 Masuk ke</p>
+                                            <p className="font-medium">Untung Bersih</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Selisih Info - Jika ada kurang */}
+                            {totalPembayaran > 0 && totalTerjual > 0 && totalPembayaran < totalTerjual && (
+                                <div className={`rounded-xl p-4 text-center bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 mb-4`}>
                                     <p className="text-sm font-medium">
-                                        {totalPembayaran > totalTerjual
-                                            ? `⚠️ Pembayaran Rp ${formatRp(totalPembayaran - totalTerjual)} lebih besar dari terjual`
-                                            : totalPembayaran < totalTerjual
-                                                ? `⚠️ Pembayaran Rp ${formatRp(totalTerjual - totalPembayaran)} lebih kecil dari terjual`
-                                                : '✅ Pembayaran sesuai dengan total terjual'
-                                        }
+                                        ⚠️ Pembayaran Rp {formatRp(totalTerjual - totalPembayaran)} lebih kecil dari terjual
                                     </p>
+                                </div>
+                            )}
+
+                            {/* Info Perhitungan Omset dan Untung */}
+                            {totalPembayaran > 0 && totalTerjual > 0 && (
+                                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">📊 Perhitungan Penjualan</p>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-600 dark:text-slate-400">Omset Penjualan:</span>
+                                            <span className="font-semibold text-slate-900 dark:text-white">{formatRp(totalTerjual)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-600 dark:text-slate-400">Kelebihan (Bonus SF):</span>
+                                            <span className="font-semibold text-green-600 dark:text-green-400">{totalPembayaran > totalTerjual ? '+' : ''}{formatRp(totalPembayaran - totalTerjual)}</span>
+                                        </div>
+                                        <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mt-2">
+                                            <div className="flex justify-between">
+                                                <span className="font-semibold text-slate-700 dark:text-slate-300">Total Dana Masuk:</span>
+                                                <span className="font-bold text-slate-900 dark:text-white">{formatRp(totalPembayaran)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
