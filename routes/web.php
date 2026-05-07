@@ -4,7 +4,7 @@ use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect('/dashboard');
 })->name('home');
 
 use App\Http\Controllers\CategoryController;

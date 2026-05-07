@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Save, FileText, Package, Wallet, CheckSquare } from 'lucide-react';
 
@@ -44,6 +44,18 @@ export default function Edit({ laporan, materials }) {
     });
 
     const totalPembayaran = Number(data.cash) + Number(data.qris) + Number(data.sf);
+
+    // Hitung total harga terjual secara reaktif
+    const totalTerjual = useMemo(() => {
+        return data.items.reduce((total, item) => {
+            const qtyBawa = Number(item.qty_bawa);
+            const qtySisa = Number(item.qty_sisa);
+            const qtyTerjual = Math.max(0, qtyBawa - qtySisa);
+            const product = laporan.items.find(i => i.id === item.id)?.product;
+            const harga = product?.harga || 0;
+            return total + (qtyTerjual * harga);
+        }, 0);
+    }, [data.items, laporan.items]);
 
     const handleItemChange = (itemId, field, value) => {
         const newItems = data.items.map(item =>
@@ -352,7 +364,7 @@ export default function Edit({ laporan, materials }) {
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
+                            <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white mb-4">
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <p className="text-sm font-medium opacity-90">Total Pembayaran</p>
@@ -364,6 +376,40 @@ export default function Edit({ laporan, materials }) {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Total Terjual - Informasi untuk karyawan */}
+                            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl p-6 text-white mb-4">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-sm font-medium opacity-90">💰 Total Harga Terjual</p>
+                                        <p className="text-3xl font-black mt-1">{formatRp(totalTerjual)}</p>
+                                        <p className="text-xs opacity-75 mt-1">Total dari semua produk yang terjual</p>
+                                    </div>
+                                    <div className="text-right text-sm opacity-75">
+                                        <p>📊 Validasi</p>
+                                        <p className="font-medium">Cash + Qris + SF</p>
+                                        <p className="text-xs opacity-75">harus mendekati {formatRp(totalTerjual)}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Selisih Info */}
+                            {totalPembayaran > 0 && totalTerjual > 0 && (
+                                <div className={`rounded-xl p-4 text-center ${
+                                    Math.abs(totalPembayaran - totalTerjual) <= 1000
+                                        ? 'bg-green-50 text-green-700 border border-green-200'
+                                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                }`}>
+                                    <p className="text-sm font-medium">
+                                        {totalPembayaran > totalTerjual
+                                            ? `⚠️ Pembayaran Rp ${formatRp(totalPembayaran - totalTerjual)} lebih besar dari terjual`
+                                            : totalPembayaran < totalTerjual
+                                                ? `⚠️ Pembayaran Rp ${formatRp(totalTerjual - totalPembayaran)} lebih kecil dari terjual`
+                                                : '✅ Pembayaran sesuai dengan total terjual'
+                                        }
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
 

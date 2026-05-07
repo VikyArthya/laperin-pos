@@ -18,8 +18,16 @@ class SaleController extends Controller
     public function dashboard()
     {
         $baseQuery = Sale::query();
+
+        // Karyawan hanya bisa melihat sales miliknya sendiri berdasarkan employee_id
         if (auth()->check() && auth()->user()->role === 'karyawan') {
-            $baseQuery->where('user_id', auth()->id());
+            $authEmployee = Employee::where('user_id', auth()->id())->first();
+            if ($authEmployee) {
+                $baseQuery->where('employee_id', $authEmployee->id);
+            } else {
+                // Jika tidak ada employee terkait, return empty query
+                $baseQuery->where('employee_id', 0);
+            }
         }
 
         $totalOmset = (clone $baseQuery)->sum('omset_penjualan');
