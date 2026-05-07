@@ -31,10 +31,10 @@ export default function Edit({ laporan, materials }) {
     const { data, setData, put, processing, errors, reset } = useForm({
         tanggal: formatDateForInput(laporan.tanggal),
         shift_id: laporan.shift_id,
-        cash: laporan.cash || 0,
-        qris: laporan.qris || 0,
-        sf: laporan.sf || 0,
-        dana_keluar: laporan.dana_keluar || 0,
+        cash: laporan.cash || '',
+        qris: laporan.qris || '',
+        sf: laporan.sf || '',
+        dana_keluar: laporan.dana_keluar || '',
         catatan_dana_keluar: laporan.catatan_dana_keluar || '',
         ma_50: laporan.ma_50 || '50000',
         catatan_stok: laporan.catatan_stok || '',
@@ -43,7 +43,7 @@ export default function Edit({ laporan, materials }) {
             id: item.id,
             product_id: item.product_id,
             qty_bawa: item.qty_bawa,
-            qty_sisa: item.qty_sisa || 0,
+            qty_sisa: item.qty_sisa || '',
         })),
     });
 
@@ -63,7 +63,7 @@ export default function Edit({ laporan, materials }) {
 
     const handleItemChange = (itemId, field, value) => {
         const newItems = data.items.map(item =>
-            item.id === itemId ? { ...item, [field]: Number(value) } : item
+            item.id === itemId ? { ...item, [field]: value === '' ? '' : Number(value) } : item
         );
         setData('items', newItems);
     };

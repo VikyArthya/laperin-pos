@@ -35,6 +35,11 @@ class SaleController extends Controller
         $totalOmset = (clone $baseQuery)->sum('omset_penjualan');
         $totalUntung = (clone $baseQuery)->sum('untung_bersih');
 
+        // Sembunyikan untung jika role karyawan
+        if (auth()->check() && auth()->user()->role === 'karyawan') {
+            $totalUntung = 0;
+        }
+
         $currentMonthSales = (clone $baseQuery)->whereMonth('tanggal', date('m'))
             ->whereYear('tanggal', date('Y'))
             ->sum('omset_penjualan');
@@ -58,7 +63,7 @@ class SaleController extends Controller
             $monthlySales[] = [
                 'name' => $months[$i - 1],
                 'omset' => $data ? (int) $data->omset : 0,
-                'untung' => $data ? (int) $data->untung : 0,
+                'untung' => (auth()->user()->role === 'admin') ? ($data ? (int) $data->untung : 0) : 0,
             ];
         }
 
@@ -66,7 +71,7 @@ class SaleController extends Controller
             return [
                 'name' => (string) $item->year,
                 'omset' => (int) $item->omset,
-                'untung' => (int) $item->untung,
+                'untung' => (auth()->user()->role === 'admin') ? (int) $item->untung : 0,
             ];
         })->values()->toArray();
 
@@ -334,6 +339,9 @@ class SaleController extends Controller
             'employee_id' => 'nullable|exists:employees,id',
             'gaji_karyawan' => 'required|numeric',
             'catatan' => 'nullable|string',
+            'cash' => 'nullable|numeric',
+            'qris' => 'nullable|numeric',
+            'sf' => 'nullable|numeric',
             'items' => 'array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.qty' => 'required|numeric|min:0',
@@ -358,15 +366,14 @@ class SaleController extends Controller
 
             // Auto-set employee_id untuk role karyawan
             $employeeId = $data['employee_id'] ?? null;
-            $employeeId = $data['employee_id'] ?? null;
 
-            $modalAwal = (int) $data['modal_awal'];
-            $danaMasuk = (int) $data['dana_masuk'];
-            $danaKeluar = (int) $data['dana_keluar'];
-            $gajiKaryawan = (int) $data['gaji_karyawan'];
-            $cash = (int) $data['cash'] ?? 0;
-            $qris = (int) $data['qris'] ?? 0;
-            $sf = (int) $data['sf'] ?? 0;
+            $modalAwal = (int) ($data['modal_awal'] ?? 0);
+            $danaMasuk = (int) ($data['dana_masuk'] ?? 0);
+            $danaKeluar = (int) ($data['dana_keluar'] ?? 0);
+            $gajiKaryawan = (int) ($data['gaji_karyawan'] ?? 0);
+            $cash = (int) ($data['cash'] ?? 0);
+            $qris = (int) ($data['qris'] ?? 0);
+            $sf = (int) ($data['sf'] ?? 0);
 
             // Total Omset = Dana Masuk
             $totalOmset = $danaMasuk;
