@@ -43,19 +43,19 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
             <Head title="Summary" />
-            
+
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Summary</h1>
-                        <p className="mt-2 text-sm text-gray-600">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Summary</h1>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                             Analisis data omset berdasarkan bulan dan cabang operasional.
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Link href="/dashboard" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-4 py-2 bg-white rounded-lg border border-slate-200 shadow-sm transition-colors">
+                        <Link href="/dashboard" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
                             Kembali
                         </Link>
                     </div>
@@ -63,31 +63,31 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
 
                 {/* Analytics Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                             <Wallet className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-slate-500">Total Omset Filter</p>
-                            <p className="text-2xl font-bold text-slate-900">{formatRp(summary.totalOmset)}</p>
+                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Omset Filter</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatRp(summary.totalOmset)}</p>
                         </div>
                     </div>
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <TrendingUp className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-slate-500">Total Untung Bersih Filter</p>
-                            <p className="text-2xl font-bold text-slate-900">{formatRp(summary.totalUntung)}</p>
+                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Untung Bersih Filter</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatRp(summary.totalUntung)}</p>
                         </div>
                     </div>
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
                             <CalendarDays className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-slate-500">Jumlah Transaksi Filter</p>
-                            <p className="text-2xl font-bold text-slate-900">{summary.count} Hari Shift</p>
+                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Jumlah Transaksi Filter</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-white">{summary.count} Hari Shift</p>
                         </div>
                     </div>
                 </div>

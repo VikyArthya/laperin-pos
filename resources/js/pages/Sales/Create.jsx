@@ -92,24 +92,24 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         return 'Rp ' + number.toLocaleString('id-ID');
     };
 
-    const inputClasses = "w-full rounded-lg border border-slate-300 px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all";
+    const inputClasses = "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all";
 
     return (
-        <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-slate-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8 px-4 sm:px-6 lg:px-8">
             <Head title="Input Transaksi Kasir" />
 
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+                            <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
                                 <Receipt className="w-6 h-6" />
                             </div>
                             Input Transaksi Baru
                         </h1>
-                        <p className="mt-1 text-slate-500">Catat rekap penjualan harian untuk sebuah cabang / shift.</p>
+                        <p className="mt-1 text-gray-600 dark:text-gray-400">Catat rekap penjualan harian untuk sebuah cabang / shift.</p>
                     </div>
-                    <Link href="/sales" className="inline-flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm transition-colors">
+                    <Link href="/sales" className="inline-flex items-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
                         <ArrowLeft className="mr-2 h-4 w-4" /> Batal & Kembali
                     </Link>
                 </div>
@@ -117,42 +117,42 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                 <form onSubmit={handleSubmit} className="space-y-6">
 
                     {/* General Info & Staffing */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <h2 className="text-lg font-semibold text-slate-900 mb-4 border-b pb-2">Informasi Umum & Shift</h2>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">Informasi Umum & Shift</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal Transaksi</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Transaksi</label>
                                 <input type="date" value={data.tanggal} onChange={e => setData('tanggal', e.target.value)} className={inputClasses} required />
-                                {errors.tanggal && <p className="mt-1 text-sm text-red-600">{errors.tanggal}</p>}
+                                {errors.tanggal && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.tanggal}</p>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Cabang / Shift</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cabang / Shift</label>
                                 <select value={data.shift_id} onChange={e => setData('shift_id', e.target.value)} className={inputClasses} required>
                                     <option value="">Pilih Cabang</option>
                                     {shifts.map(s => <option key={s.id} value={s.id}>{s.nama_shift}</option>)}
                                 </select>
-                                {errors.shift_id && <p className="mt-1 text-sm text-red-600">{errors.shift_id}</p>}
+                                {errors.shift_id && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.shift_id}</p>}
                             </div>
                         </div>
 
-                        <div className="mt-6 border-t pt-4">
+                        <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4">
                             {!isKaryawan && (
                                 <div className="flex items-center mb-4">
-                                    <input type="checkbox" id="karyawan_hadir" checked={data.is_karyawan_hadir} onChange={e => setData('is_karyawan_hadir', e.target.checked)} className="h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
-                                    <label htmlFor="karyawan_hadir" className="ml-2 block text-sm text-slate-900 font-medium">Karyawan Hadir?</label>
+                                    <input type="checkbox" id="karyawan_hadir" checked={data.is_karyawan_hadir} onChange={e => setData('is_karyawan_hadir', e.target.checked)} className="h-4 w-4 text-blue-600 rounded border-slate-300 dark:border-slate-600 focus:ring-blue-500" />
+                                    <label htmlFor="karyawan_hadir" className="ml-2 block text-sm text-gray-900 dark:text-white font-medium">Karyawan Hadir?</label>
                                 </div>
                             )}
 
                             {data.is_karyawan_hadir && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Nama Karyawan</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Karyawan</label>
                                         {isKaryawan ? (
                                             <input
                                                 type="text"
                                                 value={authEmployee?.nama || authUser?.name || 'Tidak ada data karyawan'}
                                                 disabled
-                                                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-400 bg-slate-100 cursor-not-allowed"
+                                                className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2.5 text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-900/50 cursor-not-allowed"
                                                 readOnly
                                             />
                                         ) : (
@@ -162,15 +162,15 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                             </select>
                                         )}
                                         {isKaryawan && (
-                                            <p className="text-[10px] text-amber-600 mt-1">🔒 Terkait akun Anda (tidak bisa diubah)</p>
+                                            <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">🔒 Terkait akun Anda (tidak bisa diubah)</p>
                                         )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Gaji Dibayarkan <span className="text-emerald-500">(Auto)</span></label>
-                                        <input type="number" value={data.gaji_karyawan} readOnly className={`${inputClasses} bg-slate-100 cursor-not-allowed`} min="0" />
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gaji Dibayarkan <span className="text-emerald-600 dark:text-emerald-400">(Auto)</span></label>
+                                        <input type="number" value={data.gaji_karyawan} readOnly className={`${inputClasses} bg-slate-100 dark:bg-slate-900/50 cursor-not-allowed`} min="0" />
                                         <div className="mt-1.5 space-y-0.5">
-                                            <p className="text-[10px] text-emerald-600 font-semibold">{formatRp(autoGaji)}</p>
-                                            <p className="text-[10px] text-slate-400">= (Omset {formatRp(totalOmsetProduk)} × 20%) + ({Math.floor(totalOmsetProduk / 100000)} × Rp 5.000)</p>
+                                            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">{formatRp(autoGaji)}</p>
+                                            <p className="text-[10px] text-gray-500 dark:text-gray-400">= (Omset {formatRp(totalOmsetProduk)} × 20%) + ({Math.floor(totalOmsetProduk / 100000)} × Rp 5.000)</p>
                                         </div>
                                     </div>
                                 </div>
@@ -181,55 +181,55 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         {/* Financial Inputs */}
                         <div className="lg:col-span-8 space-y-6">
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                                <h2 className="text-lg font-semibold text-slate-900 mb-4 border-b pb-2 flex items-center gap-2">
-                                    <Calculator className="w-5 h-5 text-emerald-500" /> Rincian Keuangan
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-slate-200 dark:border-slate-800 pb-2 flex items-center gap-2">
+                                    <Calculator className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> Rincian Keuangan
                                 </h2>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Modal Produk <span className="text-emerald-500">(Auto)</span></label>
-                                        <input type="number" value={data.modal_awal} readOnly className={`${inputClasses} bg-slate-100 cursor-not-allowed`} />
-                                        <p className="text-[10px] text-emerald-500 mt-1">= Σ(Harga Beli × Qty) + Rp 33.000</p>
-                                        <p className="text-[10px] text-slate-400">Biaya operasional (bensin, dll) termasuk</p>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Modal Produk <span className="text-emerald-600 dark:text-emerald-400">(Auto)</span></label>
+                                        <input type="number" value={data.modal_awal} readOnly className={`${inputClasses} bg-slate-100 dark:bg-slate-900/50 cursor-not-allowed`} />
+                                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">= Σ(Harga Beli × Qty) + Rp 33.000</p>
+                                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Biaya operasional (bensin, dll) termasuk</p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Dana Masuk <span className="text-blue-500">(Auto)</span></label>
-                                        <input type="number" value={data.dana_masuk} readOnly className={`${inputClasses} bg-slate-100 cursor-not-allowed`} />
-                                        <p className="text-[10px] text-blue-500 mt-1">= Σ(Harga Jual × Qty) = {formatRp(totalOmsetProduk)}</p>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Dana Masuk <span className="text-blue-600 dark:text-blue-400">(Auto)</span></label>
+                                        <input type="number" value={data.dana_masuk} readOnly className={`${inputClasses} bg-slate-100 dark:bg-slate-900/50 cursor-not-allowed`} />
+                                        <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1">= Σ(Harga Jual × Qty) = {formatRp(totalOmsetProduk)}</p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Dana Keluar</label>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Dana Keluar</label>
                                         <input type="number" value={data.dana_keluar} onChange={e => setData('dana_keluar', e.target.value)} className={inputClasses} />
-                                        <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.dana_keluar)}</p>
+                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{formatRp(data.dana_keluar)}</p>
                                     </div>
                                 </div>
 
                                 {/* Payment Methods */}
-                                <div className="mt-6 pt-6 border-t border-slate-100">
-                                    <h3 className="text-sm font-semibold text-slate-700 mb-3">Metode Pembayaran</h3>
+                                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Metode Pembayaran</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div>
-                                            <label className="block text-xs font-medium text-slate-500 mb-1">💵 Cash</label>
+                                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">💵 Cash</label>
                                             <input type="number" value={data.cash} onChange={e => setData('cash', e.target.value)} className={inputClasses} placeholder="0" />
-                                            <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.cash)}</p>
+                                            <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{formatRp(data.cash)}</p>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-medium text-slate-500 mb-1">📱 QRIS</label>
+                                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">📱 QRIS</label>
                                             <input type="number" value={data.qris} onChange={e => setData('qris', e.target.value)} className={inputClasses} placeholder="0" />
-                                            <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.qris)}</p>
+                                            <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{formatRp(data.qris)}</p>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-medium text-slate-500 mb-1">🍔 ShopeeFood (SF)</label>
+                                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">🍔 ShopeeFood (SF)</label>
                                             <input type="number" value={data.sf} onChange={e => setData('sf', e.target.value)} className={inputClasses} placeholder="0" />
-                                            <p className="text-[10px] text-slate-400 mt-1">{formatRp(data.sf)}</p>
+                                            <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{formatRp(data.sf)}</p>
                                         </div>
                                     </div>
-                                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                        <p className="text-xs text-blue-800 font-medium">Total Pembayaran: {formatRp(Number(data.cash) + Number(data.qris) + Number(data.sf))}</p>
-                                        <p className="text-[10px] text-blue-600 mt-1">Cash + QRIS + SF = {formatRp(Number(data.cash) + Number(data.qris) + Number(data.sf))}</p>
+                                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
+                                        <p className="text-xs text-blue-800 dark:text-blue-300 font-medium">Total Pembayaran: {formatRp(Number(data.cash) + Number(data.qris) + Number(data.sf))}</p>
+                                        <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1">Cash + QRIS + SF = {formatRp(Number(data.cash) + Number(data.qris) + Number(data.sf))}</p>
                                     </div>
                                 </div>
 
@@ -261,30 +261,30 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                         </div>
 
                         {/* Menu Input */}
-                        <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[500px] lg:h-[800px]">
-                            <div className="p-4 border-b bg-slate-50">
-                                <h2 className="text-lg font-semibold text-slate-900">Input Porsi Terjual</h2>
-                                <p className="text-xs text-slate-500">Masukkan Qty / Jumlah item yang laku</p>
+                        <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[500px] lg:h-[800px]">
+                            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Input Porsi Terjual</h2>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">Masukkan Qty / Jumlah item yang laku</p>
                             </div>
                             <div className="p-4 flex-1 overflow-y-auto space-y-4">
                                 {products.map(product => {
                                     const stock = product.stok || 0;
                                     const qty = getQty(product.id);
                                     const isOverStock = qty > stock && stock > 0;
-                                    const stockColor = stock > 10 ? 'text-emerald-600 bg-emerald-50' : stock > 0 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
+                                    const stockColor = stock > 10 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30' : stock > 0 ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30' : 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30';
                                     return (
                                         <div key={product.id} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-300 group ${
-                                            isOverStock ? 'border-red-300 bg-red-50/50' : 'border-slate-100 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-md hover:shadow-blue-500/5'
+                                            isOverStock ? 'border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 hover:shadow-md hover:shadow-blue-500/5'
                                         }`}>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-sm text-slate-800 group-hover:text-blue-700 transition-colors truncate">{product.nama_produk}</p>
+                                                <p className="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors truncate">{product.nama_produk}</p>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{product.kategori}</p>
+                                                    <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{product.kategori}</p>
                                                     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>Stok: {stock}</span>
                                                 </div>
-                                                <p className="text-[10px] text-slate-500 mt-1">Beli: {formatRp(product.harga_beli)} · Jual: {formatRp(product.harga)}</p>
+                                                <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-1">Beli: {formatRp(product.harga_beli)} · Jual: {formatRp(product.harga)}</p>
                                                 {isOverStock && (
-                                                    <p className="text-[10px] font-bold text-red-600 mt-1 flex items-center gap-1">
+                                                    <p className="text-[10px] font-bold text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
                                                         <span>⚠️</span> Melebihi stok! (max: {stock})
                                                     </p>
                                                 )}
@@ -296,10 +296,10 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                                     max={stock}
                                                     value={qty}
                                                     onChange={e => handleItemChange(product.id, e.target.value)}
-                                                    className={`w-full text-center rounded-xl border py-2 font-bold focus:ring-2 focus:bg-white transition-all shadow-sm ${
+                                                    className={`w-full text-center rounded-xl border py-2 font-bold focus:ring-2 focus:bg-white dark:focus:bg-slate-800 transition-all shadow-sm ${
                                                         isOverStock
-                                                            ? 'border-red-400 text-red-600 bg-red-50 focus:ring-red-500 focus:border-red-500'
-                                                            : 'border-slate-200 text-slate-900 bg-slate-50 focus:ring-blue-500 focus:border-blue-500'
+                                                            ? 'border-red-400 dark:border-red-700 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 focus:ring-red-500 focus:border-red-500'
+                                                            : 'border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white bg-slate-50 dark:bg-slate-800 focus:ring-blue-500 focus:border-blue-500'
                                                     }`}
                                                 />
                                             </div>
@@ -310,16 +310,16 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Catatan Tambahan</label>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catatan Tambahan</label>
                         <textarea value={data.catatan} onChange={e => setData('catatan', e.target.value)} rows="3" className={inputClasses} placeholder="Tulis keterangan atau kendala hari ini..."></textarea>
                     </div>
 
                     <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
-                        <Link href="/sales" className="w-full sm:w-auto text-center px-6 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200 sm:border-transparent">
+                        <Link href="/sales" className="w-full sm:w-auto text-center px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700 sm:border-transparent">
                             Batal
                         </Link>
-                        <button type="submit" disabled={processing} className="w-full sm:w-auto justify-center inline-flex items-center px-8 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-600/20 disabled:opacity-70 transition-all">
+                        <button type="submit" disabled={processing} className="w-full sm:w-auto justify-center inline-flex items-center px-8 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-600 rounded-xl shadow-md shadow-blue-600/20 dark:shadow-blue-600/30 disabled:opacity-70 transition-all">
                             <Save className="w-5 h-5 mr-2" />
                             {processing ? 'Menyimpan...' : 'Simpan Transaksi'}
                         </button>
