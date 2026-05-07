@@ -10,8 +10,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
     const formatRp = (num) => {
         if (num === null || num === undefined) return 'Rp 0';
         const number = typeof num === 'string' ? parseInt(num, 10) || 0 : num;
-        const ribuan = (number / 1000).toFixed(1);
-        return number > 0 ? `${ribuan}k` : '0';
+        return 'Rp ' + number.toLocaleString('id-ID');
     };
 
     const formatDateFull = (dateStr) => {
@@ -29,9 +28,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
         return `${sisa} (${bawa})`;
     };
 
-    const getInitial = (nama) => {
-        return nama.split(' ')[0].toUpperCase();
-    };
+
 
     const getStatusBadge = (status) => {
         switch (status) {
@@ -93,7 +90,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                         {itemsByCategory['Menu Utama'] && itemsByCategory['Menu Utama'].length > 0 && (
                             <div>
                                 <h2 className="text-lg font-bold text-slate-800 mb-4 pb-2 border-b-2 border-slate-200">
-                                    ———— ISIAN ——---
+                                    ISIAN
                                 </h2>
                                 <div className="space-y-2">
                                     {itemsByCategory['Menu Utama'].map((item) => {
@@ -105,9 +102,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                                         return (
                                             <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="text-sm font-bold text-slate-400 w-6 text-center">
-                                                        {getInitial(product?.nama_produk || '')}
-                                                    </span>
+
                                                     <div>
                                                         <span className="text-slate-700">{product?.nama_produk || '-'}</span>
                                                         {laporan.status === 'completed' && (
@@ -138,7 +133,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                         {itemsByCategory['Topping'] && itemsByCategory['Topping'].length > 0 && (
                             <div>
                                 <h2 className="text-lg font-bold text-slate-800 mb-4 pb-2 border-b-2 border-slate-200">
-                                    ------ TOPPING ------
+                                    TOPPING
                                 </h2>
                                 <div className="space-y-2">
                                     {itemsByCategory['Topping'].map((item) => {
@@ -149,14 +144,26 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                                         return (
                                             <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="text-sm font-bold text-slate-400 w-6 text-center">
-                                                        {getInitial(item.product?.nama_produk || '')}
-                                                    </span>
-                                                    <span className="text-slate-700">{item.product?.nama_produk || '-'}</span>
+
+                                                    <div>
+                                                        <span className="text-slate-700">{item.product?.nama_produk || '-'}</span>
+                                                        {laporan.status === 'completed' && (
+                                                            <span className="ml-2 text-xs text-emerald-600 font-medium">
+                                                                Terjual: {qtyTerjual}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <span className="font-semibold text-purple-600">
-                                                    {qtySisa} ({qtyBawa})
-                                                </span>
+                                                <div className="text-right">
+                                                    <span className="font-semibold text-purple-600">
+                                                        {qtySisa} ({qtyBawa})
+                                                    </span>
+                                                    {laporan.status === 'completed' && qtyTerjual > 0 && item.product && (
+                                                        <div className="text-xs text-emerald-600 font-medium">
+                                                            {formatRp(item.product.harga * qtyTerjual)}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         );
                                     })}
@@ -168,7 +175,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                         {itemsByCategory['Packaging'] && itemsByCategory['Packaging'].length > 0 && (
                             <div>
                                 <h2 className="text-lg font-bold text-slate-800 mb-4 pb-2 border-b-2 border-slate-200">
-                                    ------ PACKAGING -----
+                                    PACKAGING
                                 </h2>
                                 <div className="space-y-2">
                                     {itemsByCategory['Packaging'].map((item) => {
@@ -179,14 +186,26 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                                         return (
                                             <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="text-sm font-bold text-slate-400 w-6 text-center">
-                                                        {getInitial(item.product?.nama_produk || '')}
-                                                    </span>
-                                                    <span className="text-slate-700">{item.product?.nama_produk || '-'}</span>
+
+                                                    <div>
+                                                        <span className="text-slate-700">{item.product?.nama_produk || '-'}</span>
+                                                        {laporan.status === 'completed' && (
+                                                            <span className="ml-2 text-xs text-emerald-600 font-medium">
+                                                                Terjual: {qtyTerjual}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <span className="font-semibold text-purple-600">
-                                                    {formatItem(item.qty_sisa, item.qty_bawa)}
-                                                </span>
+                                                <div className="text-right">
+                                                    <span className="font-semibold text-purple-600">
+                                                        {formatItem(item.qty_sisa, item.qty_bawa)}
+                                                    </span>
+                                                    {laporan.status === 'completed' && qtyTerjual > 0 && item.product && (
+                                                        <div className="text-xs text-emerald-600 font-medium">
+                                                            {formatRp(item.product.harga * qtyTerjual)}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         );
                                     })}
@@ -197,12 +216,12 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                         {/* CASH Section */}
                         <div>
                             <h2 className="text-lg font-bold text-slate-800 mb-4 pb-2 border-b-2 border-slate-200">
-                                -------- CASH ---------
+                                CASH
                             </h2>
                             <div className="space-y-3">
                                 {laporan.ma_50 && (
                                     <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-                                        <span className="font-medium text-slate-700">Ma 50</span>
+                                        <span className="font-medium text-slate-700">Modal Awal (50)</span>
                                         <span className="font-bold text-slate-900">{laporan.ma_50}</span>
                                     </div>
                                 )}
@@ -229,7 +248,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                         {laporan.status === 'completed' && laporan.dana_keluar > 0 && (
                             <div>
                                 <h2 className="text-lg font-bold text-slate-800 mb-4 pb-2 border-b-2 border-slate-200">
-                                    ------- DANA KELUAR -------
+                                    DANA KELUAR
                                 </h2>
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
@@ -254,7 +273,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                         {laporan.status === 'completed' && (
                             <div>
                                 <h2 className="text-lg font-bold text-slate-800 mb-4 pb-2 border-b-2 border-slate-200">
-                                    ------- STOK -------
+                                    STOK
                                 </h2>
                                 {stockRefillMaterials && stockRefillMaterials.length > 0 ? (
                                     <div className="p-4 bg-slate-50 rounded-lg">

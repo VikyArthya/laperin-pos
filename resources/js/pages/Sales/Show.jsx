@@ -86,7 +86,7 @@ export default function Show({ sale }) {
                     <div className="p-6">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                             <div className="bg-slate-50 rounded-xl p-4">
-                                <p className="text-xs text-slate-500 mb-1">Modal Awal</p>
+                                <p className="text-xs text-slate-500 mb-1">Modal Produk</p>
                                 <p className="font-bold text-slate-900">{formatRp(sale.modal_awal)}</p>
                             </div>
                             <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">

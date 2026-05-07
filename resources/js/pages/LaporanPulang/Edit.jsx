@@ -32,7 +32,7 @@ export default function Edit({ laporan, materials }) {
         sf: laporan.sf || 0,
         dana_keluar: laporan.dana_keluar || 0,
         catatan_dana_keluar: laporan.catatan_dana_keluar || '',
-        ma_50: laporan.ma_50 || '',
+        ma_50: laporan.ma_50 || '50000',
         catatan_stok: laporan.catatan_stok || '',
         stock_refill_items: laporan.stock_refill_items || [],
         items: laporan.items.map(item => ({
@@ -159,8 +159,8 @@ export default function Edit({ laporan, materials }) {
                                     type="button"
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id
-                                            ? 'bg-purple-600 text-white shadow-md'
-                                            : 'text-slate-600 hover:bg-slate-50'
+                                        ? 'bg-purple-600 text-white shadow-md'
+                                        : 'text-slate-600 hover:bg-slate-50'
                                         }`}
                                 >
                                     <tab.icon className="w-4 h-4" />
@@ -181,8 +181,8 @@ export default function Edit({ laporan, materials }) {
                                     type="button"
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id
-                                            ? 'bg-purple-600 text-white shadow-md'
-                                            : 'text-slate-600 hover:bg-slate-50'
+                                        ? 'bg-purple-600 text-white shadow-md'
+                                        : 'text-slate-600 hover:bg-slate-50'
                                         }`}
                                 >
                                     <tab.icon className="w-4 h-4" />
@@ -207,21 +207,21 @@ export default function Edit({ laporan, materials }) {
                                         <div key={category}>
                                             <h3 className="text-md font-bold text-slate-700 mb-4 uppercase tracking-wider flex items-center gap-2">
                                                 <span className={`inline-block w-2 h-2 rounded-full ${category === 'Menu Utama' ? 'bg-amber-500' :
-                                                        category === 'Topping' ? 'bg-rose-500' :
-                                                            category === 'Packaging' ? 'bg-slate-500' :
-                                                                'bg-blue-500'
+                                                    category === 'Topping' ? 'bg-rose-500' :
+                                                        category === 'Packaging' ? 'bg-slate-500' :
+                                                            'bg-blue-500'
                                                     }`} />
-                                                {category === 'Menu Utama' ? '------ ISIAN -----' :
-                                                    category === 'Topping' ? '------ TOPPING -----' :
-                                                        category === 'Packaging' ? '------ PACKAGING -----' :
-                                                            `------ ${category.toUpperCase()} ------`}
+                                                {category === 'Menu Utama' ? 'ISIAN' :
+                                                    category === 'Topping' ? 'TOPPING' :
+                                                        category === 'Packaging' ? 'PACKAGING' :
+                                                            `${category.toUpperCase()}`}
                                             </h3>
                                             <div className="space-y-3">
                                                 {categoryItems.map((item) => {
                                                     const product = item.product;
                                                     if (!product) return null;
 
-                                                    const productInitial = product.nama_produk.split(' ')[0].toUpperCase();
+
                                                     const qtyBawa = data.items.find(i => i.id === item.id)?.qty_bawa || item.qty_bawa;
                                                     const qtySisa = data.items.find(i => i.id === item.id)?.qty_sisa || 0;
                                                     const qtyTerjual = Math.max(0, qtyBawa - qtySisa);
@@ -232,9 +232,6 @@ export default function Edit({ laporan, materials }) {
                                                             {/* Mobile Layout - Vertical */}
                                                             <div className="sm:hidden">
                                                                 <div className="flex items-center gap-3 mb-3">
-                                                                    <div className="flex-shrink-0 w-8 h-8 text-center font-bold text-slate-400 bg-white rounded-lg border border-slate-200 flex items-center justify-center">
-                                                                        {productInitial}
-                                                                    </div>
                                                                     <div className="flex-1 min-w-0">
                                                                         <p className="font-semibold text-slate-900 text-sm">{product.nama_produk}</p>
                                                                         <p className="text-xs text-slate-500 mt-0.5">Harga: {formatRp(product.harga)}</p>
@@ -281,9 +278,6 @@ export default function Edit({ laporan, materials }) {
 
                                                             {/* Desktop Layout - Horizontal */}
                                                             <div className="hidden sm:flex items-center gap-4">
-                                                                <div className="flex-shrink-0 w-8 text-center font-bold text-slate-400">
-                                                                    {productInitial}
-                                                                </div>
                                                                 <div className="flex-1 min-w-0">
                                                                     <p className="font-medium text-slate-900 truncate">{product.nama_produk}</p>
                                                                     <p className="text-xs text-slate-500">Harga: {formatRp(product.harga)}</p>
@@ -335,13 +329,13 @@ export default function Edit({ laporan, materials }) {
 
                     {activeTab === 'pembayaran' && (
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                            <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">-------- CASH ---------</h2>
+                            <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">CASH</h2>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Ma 50</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Modal Awal (50)</label>
                                     <input type="text" value={data.ma_50} onChange={e => setData('ma_50', e.target.value)} className={inputClasses} placeholder="Kosongkan jika tidak ada" />
-                                    <p className="text-xs text-slate-400 mt-1">Khusus untuk Ma 50</p>
+                                    <p className="text-xs text-slate-400 mt-1">Khusus untuk Modal Awal 50rb</p>
                                 </div>
                                 <div></div>
                             </div>
@@ -395,11 +389,10 @@ export default function Edit({ laporan, materials }) {
 
                             {/* Selisih Info */}
                             {totalPembayaran > 0 && totalTerjual > 0 && (
-                                <div className={`rounded-xl p-4 text-center ${
-                                    Math.abs(totalPembayaran - totalTerjual) <= 1000
+                                <div className={`rounded-xl p-4 text-center ${Math.abs(totalPembayaran - totalTerjual) <= 1000
                                         ? 'bg-green-50 text-green-700 border border-green-200'
                                         : 'bg-amber-50 text-amber-700 border border-amber-200'
-                                }`}>
+                                    }`}>
                                     <p className="text-sm font-medium">
                                         {totalPembayaran > totalTerjual
                                             ? `⚠️ Pembayaran Rp ${formatRp(totalPembayaran - totalTerjual)} lebih besar dari terjual`
@@ -415,7 +408,7 @@ export default function Edit({ laporan, materials }) {
 
                     {activeTab === 'dana_keluar' && (
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                            <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">------- DANA KELUAR -------</h2>
+                            <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">DANA KELUAR</h2>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
@@ -461,7 +454,7 @@ export default function Edit({ laporan, materials }) {
 
                     {activeTab === 'stok' && (
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                            <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">------- STOK -------</h2>
+                            <h2 className="text-lg font-semibold text-slate-900 mb-4 pb-2">STOK</h2>
 
                             <div className="mb-6">
                                 <p className="text-sm text-slate-600 mb-2">Tandai item yang perlu direfill:</p>
@@ -474,8 +467,8 @@ export default function Edit({ laporan, materials }) {
                                             const stockColor = material.stok > 10 ? 'text-emerald-600 bg-emerald-50' : material.stok > 0 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
                                             return (
                                                 <div key={material.id} className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${isMaterialChecked(material.id)
-                                                        ? 'bg-amber-50 border-amber-300'
-                                                        : 'bg-slate-50 border-slate-100'
+                                                    ? 'bg-amber-50 border-amber-300'
+                                                    : 'bg-slate-50 border-slate-100'
                                                     }`}>
                                                     <input
                                                         type="checkbox"

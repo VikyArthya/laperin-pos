@@ -142,24 +142,21 @@ export default function Create({ shifts, products, materials, employees }) {
                                                         category === 'Packaging' ? 'bg-slate-500' :
                                                             'bg-blue-500'
                                                 }`} />
-                                            {category === 'Menu Utama' ? '------ ISIAN -----' :
-                                                category === 'Topping' ? '------ TOPPING -----' :
-                                                    category === 'Packaging' ? '------ PACKAGING -----' :
-                                                        `------ ${category.toUpperCase()} ------`}
+                                            {category === 'Menu Utama' ? 'ISIAN' :
+                                                category === 'Topping' ? 'TOPPING' :
+                                                    category === 'Packaging' ? 'PACKAGING' :
+                                                        `${category.toUpperCase()}`}
                                         </h3>
                                         <div className="space-y-3">
                                             {categoryProducts.map((product) => {
                                                 const item = data.items.find(i => i.product_id === product.id) || {};
-                                                const productInitial = product.nama_produk.split(' ')[0].toUpperCase();
+
 
                                                 return (
                                                     <div key={product.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                                         {/* Mobile Layout - Vertical */}
                                                         <div className="sm:hidden">
                                                             <div className="flex items-center gap-3 mb-3">
-                                                                <div className="flex-shrink-0 w-8 h-8 text-center font-bold text-slate-400 bg-white rounded-lg border border-slate-200 flex items-center justify-center">
-                                                                    {productInitial}
-                                                                </div>
                                                                 <div className="flex-1 min-w-0">
                                                                     <p className="font-semibold text-slate-900 text-sm">{product.nama_produk}</p>
                                                                     <p className="text-xs text-slate-500 mt-0.5">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
@@ -179,9 +176,6 @@ export default function Create({ shifts, products, materials, employees }) {
 
                                                         {/* Desktop Layout - Horizontal */}
                                                         <div className="hidden sm:flex items-center gap-4">
-                                                            <div className="flex-shrink-0 w-8 text-center font-bold text-slate-400">
-                                                                {productInitial}
-                                                            </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="font-medium text-slate-900 truncate">{product.nama_produk}</p>
                                                                 <p className="text-xs text-slate-500">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
