@@ -18,10 +18,6 @@ use App\Http\Controllers\UserController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [SaleController::class, 'dashboard'])->name('dashboard');
-    Route::get('sales', [SaleController::class, 'index'])->name('sales.index');
-    Route::get('sales/create', [SaleController::class, 'create'])->name('sales.create');
-    Route::post('sales', [SaleController::class, 'store'])->name('sales.store');
-    Route::get('sales/{sale}', [SaleController::class, 'show'])->name('sales.show');
 
     // Laporan Pulang Routes
     Route::get('laporan-pulang', [LaporanPulangController::class, 'index'])->name('laporan-pulang.index');
@@ -33,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin Only Routes
     Route::middleware(['admin'])->group(function () {
+        Route::resource('sales', SaleController::class);
         Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
         Route::resource('categories', CategoryController::class);
         Route::resource('products', ProductController::class)->except(['create', 'show', 'edit']);

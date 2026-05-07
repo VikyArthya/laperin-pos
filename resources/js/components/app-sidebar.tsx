@@ -27,7 +27,7 @@ const allNavItems = [
         title: 'Kasir / Penjualan',
         href: '/sales',
         icon: Receipt,
-        role: 'all'
+        role: 'admin'
     },
     {
         title: 'Laporan Pulang',

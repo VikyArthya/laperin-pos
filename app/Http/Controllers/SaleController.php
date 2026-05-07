@@ -18,7 +18,7 @@ class SaleController extends Controller
     public function dashboard()
     {
         $baseQuery = Sale::query();
-
+        
         // Karyawan hanya bisa melihat sales miliknya sendiri berdasarkan employee_id
         if (auth()->check() && auth()->user()->role === 'karyawan') {
             $authEmployee = Employee::where('user_id', auth()->id())->first();
@@ -29,6 +29,8 @@ class SaleController extends Controller
                 $baseQuery->where('employee_id', 0);
             }
         }
+
+
 
         $totalOmset = (clone $baseQuery)->sum('omset_penjualan');
         $totalUntung = (clone $baseQuery)->sum('untung_bersih');
@@ -77,6 +79,8 @@ class SaleController extends Controller
             });
         }
 
+
+
         $topProductsRaw = $itemQuery->groupBy('product_id')
             ->orderByDesc('total_qty')
             ->take(5)
@@ -116,16 +120,7 @@ class SaleController extends Controller
     {
         $query = Sale::with('shift')->orderBy('created_at', 'desc');
 
-        // Karyawan hanya bisa melihat sales miliknya sendiri berdasarkan employee_id
-        if (auth()->check() && auth()->user()->role === 'karyawan') {
-            $authEmployee = Employee::where('user_id', auth()->id())->first();
-            if ($authEmployee) {
-                $query->where('employee_id', $authEmployee->id);
-            } else {
-                // Jika tidak ada employee terkait, return empty
-                $query->where('employee_id', 0);
-            }
-        }
+
 
         if ($request->filled('month')) {
             $parts = explode('-', $request->month);
@@ -165,17 +160,12 @@ class SaleController extends Controller
         $products = Product::orderBy('kategori')->get();
         $employees = Employee::orderBy('nama')->get();
 
-        // Get current logged in employee for karyawan role
-        $authEmployee = null;
-        if (auth()->user()->role === 'karyawan') {
-            $authEmployee = Employee::where('user_id', auth()->id())->first();
-        }
+
 
         return Inertia::render('Sales/Create', [
             'shifts' => $shifts,
             'products' => $products,
             'employees' => $employees,
-            'authEmployee' => $authEmployee,
         ]);
     }
 
@@ -186,6 +176,148 @@ class SaleController extends Controller
         return Inertia::render('Sales/Show', [
             'sale' => $sale,
         ]);
+    }
+
+    public function edit(Sale $sale)
+    {
+        $sale->load(['saleItems.product']);
+        $shifts = Shift::orderBy('nama_shift')->get();
+        $products = Product::orderBy('kategori')->get();
+        $employees = Employee::orderBy('nama')->get();
+
+        return Inertia::render('Sales/Edit', [
+            'sale' => $sale,
+            'shifts' => $shifts,
+            'products' => $products,
+            'employees' => $employees,
+        ]);
+    }
+
+    public function update(Request $request, Sale $sale)
+    {
+        $data = $request->validate([
+            'tanggal' => 'required|date',
+            'shift_id' => 'required|exists:shifts,id',
+            'modal_awal' => 'required|numeric',
+            'dana_keluar' => 'required|numeric',
+            'dana_masuk' => 'required|numeric',
+            'selisih_dana' => 'required|numeric',
+            'omset_penjualan' => 'required|numeric',
+            'is_karyawan_hadir' => 'boolean',
+            'employee_id' => 'nullable|exists:employees,id',
+            'gaji_karyawan' => 'required|numeric',
+            'catatan' => 'nullable|string',
+            'cash' => 'nullable|numeric',
+            'qris' => 'nullable|numeric',
+            'sf' => 'nullable|numeric',
+            'items' => 'array',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.qty' => 'required|numeric|min:0',
+        ]);
+
+        DB::transaction(function () use ($data, $sale) {
+            // Restore old stock
+            foreach ($sale->saleItems as $oldItem) {
+                $product = Product::find($oldItem->product_id);
+                if ($product) {
+                    $product->increment('stok', $oldItem->qty);
+                }
+            }
+
+            // Delete old items
+            $sale->saleItems()->delete();
+
+            // Update sale
+            $modalAwal = (int) $data['modal_awal'];
+            $danaMasuk = (int) $data['dana_masuk'];
+            $danaKeluar = (int) $data['dana_keluar'];
+            $gajiKaryawan = (int) $data['gaji_karyawan'];
+            $cash = (int) ($data['cash'] ?? 0);
+            $qris = (int) ($data['qris'] ?? 0);
+            $sf = (int) ($data['sf'] ?? 0);
+
+            $untungBersih = $danaMasuk - $danaKeluar - $gajiKaryawan;
+            $untungBersihTanpaKaryawan = $danaMasuk - $danaKeluar;
+
+            $sale->update([
+                'tanggal' => $data['tanggal'],
+                'shift_id' => $data['shift_id'],
+                'modal_awal' => $modalAwal,
+                'cash' => $cash,
+                'qris' => $qris,
+                'sf' => $sf,
+                'dana_keluar' => $danaKeluar,
+                'dana_masuk' => $danaMasuk,
+                'selisih_dana' => $data['selisih_dana'],
+                'omset_penjualan' => $danaMasuk,
+                'is_karyawan_hadir' => $data['is_karyawan_hadir'] ?? false,
+                'employee_id' => $data['employee_id'],
+                'gaji_karyawan' => $gajiKaryawan,
+                'untung_kotor' => $untungBersihTanpaKaryawan,
+                'untung_bersih' => $untungBersih,
+                'untung_bersih_tanpa_karyawan' => $untungBersihTanpaKaryawan,
+                'catatan' => $data['catatan'],
+            ]);
+
+            // Add new items and reduce stock
+            if (isset($data['items'])) {
+                foreach ($data['items'] as $item) {
+                    if ($item['qty'] > 0) {
+                        $product = Product::find($item['product_id']);
+                        if ($product) {
+                            $product->decrement('stok', $item['qty']);
+
+                            SaleItem::create([
+                                'sale_id' => $sale->id,
+                                'product_id' => $item['product_id'],
+                                'qty' => $item['qty'],
+                                'harga_satuan' => $product->harga,
+                                'subtotal' => $product->harga * $item['qty'],
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Handle salary update
+            EmployeeSalary::where('employee_id', $sale->getOriginal('employee_id'))
+                ->where('tanggal', $sale->getOriginal('tanggal'))
+                ->where('nominal_gaji', $sale->getOriginal('gaji_karyawan'))
+                ->delete();
+
+            if (($data['is_karyawan_hadir'] ?? false) && ! empty($data['employee_id']) && $data['gaji_karyawan'] > 0) {
+                EmployeeSalary::create([
+                    'employee_id' => $data['employee_id'],
+                    'tanggal' => $data['tanggal'],
+                    'nominal_gaji' => $data['gaji_karyawan'],
+                ]);
+            }
+        });
+
+        return redirect()->route('sales.index');
+    }
+
+    public function destroy(Sale $sale)
+    {
+        DB::transaction(function () use ($sale) {
+            // Restore stock
+            foreach ($sale->saleItems as $item) {
+                $product = Product::find($item->product_id);
+                if ($product) {
+                    $product->increment('stok', $item->qty);
+                }
+            }
+
+            // Delete salary record
+            EmployeeSalary::where('employee_id', $sale->employee_id)
+                ->where('tanggal', $sale->tanggal)
+                ->where('nominal_gaji', $sale->gaji_karyawan)
+                ->delete();
+
+            $sale->delete();
+        });
+
+        return redirect()->route('sales.index');
     }
 
     public function store(Request $request)
@@ -226,12 +358,7 @@ class SaleController extends Controller
 
             // Auto-set employee_id untuk role karyawan
             $employeeId = $data['employee_id'] ?? null;
-            if (auth()->user()->role === 'karyawan') {
-                $authEmployee = Employee::where('user_id', auth()->id())->first();
-                if ($authEmployee) {
-                    $employeeId = $authEmployee->id;
-                }
-            }
+            $employeeId = $data['employee_id'] ?? null;
 
             $modalAwal = (int) $data['modal_awal'];
             $danaMasuk = (int) $data['dana_masuk'];
