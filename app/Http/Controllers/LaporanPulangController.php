@@ -353,9 +353,9 @@ class LaporanPulangController extends Controller
                         'is_karyawan_hadir' => true,
                         'employee_id' => $authEmployee?->id,
                         'gaji_karyawan' => $gajiKaryawan,
-                        'untung_kotor' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
-                        'untung_bersih' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
-                        'untung_bersih_tanpa_karyawan' => $totalPembayaran - $danaKeluar,
+                        'untung_kotor' => $totalPembayaran - $totalModalAwal,
+                        'untung_bersih' => $totalPembayaran - $totalModalAwal - $gajiKaryawan,
+                        'untung_bersih_tanpa_karyawan' => $totalPembayaran - $totalModalAwal,
                         'catatan' => 'Diperbarui dari Laporan Pulang #'.$laporanPulang->id,
                     ]);
 
@@ -382,9 +382,9 @@ class LaporanPulangController extends Controller
                         'is_karyawan_hadir' => true,
                         'employee_id' => $authEmployee?->id,
                         'gaji_karyawan' => $gajiKaryawan,
-                        'untung_kotor' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
-                        'untung_bersih' => $totalPembayaran - $danaKeluar - $gajiKaryawan,
-                        'untung_bersih_tanpa_karyawan' => $totalPembayaran - $danaKeluar,
+                        'untung_kotor' => $totalPembayaran - $totalModalAwal,
+                        'untung_bersih' => $totalPembayaran - $totalModalAwal - $gajiKaryawan,
+                        'untung_bersih_tanpa_karyawan' => $totalPembayaran - $totalModalAwal,
                         'selisih_uang_penjualan' => 0,
                         'catatan' => 'Otomatis dibuat dari Laporan Pulang #'.$laporanPulang->id,
                     ]);

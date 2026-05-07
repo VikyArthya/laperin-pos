@@ -241,8 +241,8 @@ class SaleController extends Controller
             $qris = (int) ($data['qris'] ?? 0);
             $sf = (int) ($data['sf'] ?? 0);
 
-            $untungBersih = $danaMasuk - $danaKeluar - $gajiKaryawan;
-            $untungBersihTanpaKaryawan = $danaMasuk - $danaKeluar;
+            $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal;
+            $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
 
             $sale->update([
                 'tanggal' => $data['tanggal'],
@@ -378,9 +378,8 @@ class SaleController extends Controller
             // Total Omset = Dana Masuk
             $totalOmset = $danaMasuk;
             // Untung Bersih = Dana Masuk - Dana Keluar - Gaji Karyawan
-            $untungBersih = $danaMasuk - $danaKeluar - $gajiKaryawan;
-            // Untung Bersih Tanpa Karyawan = Dana Masuk - Dana Keluar
-            $untungBersihTanpaKaryawan = $danaMasuk - $danaKeluar;
+            $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal;
+            $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
 
             $sale = Sale::create([
                 'user_id' => auth()->id(),
