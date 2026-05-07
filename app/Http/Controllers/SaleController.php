@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SalesExport;
 use App\Models\Employee;
 use App\Models\EmployeeSalary;
 use App\Models\Product;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SaleController extends Controller
 {
@@ -151,6 +154,22 @@ class SaleController extends Controller
                 'count' => $statsQuery->count(),
             ],
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $filters = $request->only(['month', 'shift_id']);
+
+        $filename = 'laporan-penjualan-';
+        if (! empty($filters['month'])) {
+            $filename .= $filters['month'].'-';
+        }
+        if (! empty($filters['shift_id'])) {
+            $filename .= 'shift-'.$filters['shift_id'].'-';
+        }
+        $filename .= now()->format('Y-m-d-His').'.xlsx';
+
+        return Excel::download(new SalesExport($filters), $filename);
     }
 
     public function create()

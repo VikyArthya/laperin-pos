@@ -30,6 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin Only Routes
     Route::middleware(['admin'])->group(function () {
+        Route::get('sales/export', [SaleController::class, 'export'])->name('sales.export');
         Route::resource('sales', SaleController::class);
         Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
         Route::resource('categories', CategoryController::class);

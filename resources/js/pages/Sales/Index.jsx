@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Filter, Wallet, TrendingUp, Search, CalendarDays, Eye } from 'lucide-react';
+import { Filter, Wallet, TrendingUp, Search, CalendarDays, Eye, Download } from 'lucide-react';
 
 export default function Index({ sales, shifts, filters, summary, auth }) {
     const initialMonth = filters?.month ? filters.month.split('-')[1] : '';
@@ -42,6 +42,17 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
         setShiftId('');
     };
 
+    const handleExport = () => {
+        const params = new URLSearchParams();
+        if (selectedMonth) {
+            params.append('month', `${selectedYear}-${selectedMonth}`);
+        }
+        if (shiftId) {
+            params.append('shift_id', shiftId);
+        }
+        window.location.href = `/sales/export?${params.toString()}`;
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
             <Head title="Summary" />
@@ -55,6 +66,13 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
+                        <button
+                            onClick={handleExport}
+                            className="inline-flex items-center gap-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg shadow-sm transition-colors"
+                        >
+                            <Download className="w-4 h-4" />
+                            Export Excel
+                        </button>
                         <Link href="/dashboard" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
                             Kembali
                         </Link>
