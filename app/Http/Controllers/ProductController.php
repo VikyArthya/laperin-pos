@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -10,12 +11,17 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::orderBy('kategori', 'asc')
+        $products = Product::with('category')
             ->orderBy('nama_produk', 'asc')
             ->paginate(10);
 
+        $categories = Category::active()
+            ->orderBy('nama_kategori')
+            ->get();
+
         return Inertia::render('Products/Index', [
             'products' => $products,
+            'categories' => $categories,
         ]);
     }
 
@@ -23,7 +29,8 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'nama_produk' => 'required|string|max:255',
-            'kategori' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+            'kategori' => 'nullable|string|max:255', // Untuk backward compatibility
             'harga_beli' => 'required|integer|min:0',
             'harga' => 'required|integer|min:0',
             'stok' => 'required|integer|min:0',
@@ -38,7 +45,8 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'nama_produk' => 'required|string|max:255',
-            'kategori' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+            'kategori' => 'nullable|string|max:255', // Untuk backward compatibility
             'harga_beli' => 'required|integer|min:0',
             'harga' => 'required|integer|min:0',
             'stok' => 'required|integer|min:0',

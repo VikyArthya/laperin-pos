@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Plus, Edit2, Trash2, X, Package, Minus, PlusCircle } from 'lucide-react';
 
-export default function Index({ products }) {
+export default function Index({ products, categories }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isStockModalOpen, setIsStockModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
@@ -11,7 +11,8 @@ export default function Index({ products }) {
 
     const { data, setData, post, put, delete: destroy, processing, errors, reset, clearErrors } = useForm({
         nama_produk: '',
-        kategori: '',
+        category_id: '',
+        kategori: '', // Untuk backward compatibility
         harga_beli: 0,
         harga: 0,
         stok: 0,
@@ -38,7 +39,8 @@ export default function Index({ products }) {
         setEditingId(product.id);
         setData({
             nama_produk: product.nama_produk,
-            kategori: product.kategori || '',
+            category_id: product.category_id || '',
+            kategori: product.kategori || '', // Untuk backward compatibility
             harga_beli: product.harga_beli || 0,
             harga: product.harga,
             stok: product.stok || 0,
@@ -262,18 +264,18 @@ export default function Index({ products }) {
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Kategori</label>
                                     <select
-                                        value={data.kategori}
-                                        onChange={e => setData('kategori', e.target.value)}
-                                        className={`w-full rounded-lg border px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all ${errors.kategori ? 'border-red-500 ring-red-500/20' : 'border-slate-300'}`}
+                                        value={data.category_id}
+                                        onChange={e => setData('category_id', e.target.value)}
+                                        className={`w-full rounded-lg border px-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all ${errors.category_id ? 'border-red-500 ring-red-500/20' : 'border-slate-300'}`}
                                     >
                                         <option value="">Pilih Kategori</option>
-                                        <option value="Menu Utama">Menu Utama</option>
-                                        <option value="Topping">Topping</option>
-                                        <option value="Minuman">Minuman</option>
-                                        <option value="Packaging">Packaging</option>
-                                        <option value="Lainnya">Lainnya</option>
+                                        {categories && categories.map(category => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.nama_kategori}
+                                            </option>
+                                        ))}
                                     </select>
-                                    {errors.kategori && <p className="mt-1.5 text-sm text-red-600">{errors.kategori}</p>}
+                                    {errors.category_id && <p className="mt-1.5 text-sm text-red-600">{errors.category_id}</p>}
                                 </div>
 
                                 <div>

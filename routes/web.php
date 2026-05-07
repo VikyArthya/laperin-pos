@@ -7,6 +7,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->name('home');
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LaporanPulangController;
 use App\Http\Controllers\MaterialController;
@@ -33,6 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin Only Routes
     Route::middleware(['admin'])->group(function () {
         Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
+        Route::resource('categories', CategoryController::class);
         Route::resource('products', ProductController::class)->except(['create', 'show', 'edit']);
         Route::resource('shifts', ShiftController::class)->except(['create', 'show', 'edit']);
         Route::resource('materials', MaterialController::class)->except(['create', 'show', 'edit']);

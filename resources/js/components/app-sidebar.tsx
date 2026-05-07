@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Package, Receipt, Store, Box, Users, ShieldAlert, Banknote, FileText } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, Package, Receipt, Store, Box, Users, ShieldAlert, Banknote, FileText, FolderOpen } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -39,6 +39,12 @@ const allNavItems = [
         title: 'Master Cabang / Shift',
         href: '/shifts',
         icon: Store,
+        role: 'admin'
+    },
+    {
+        title: 'Master Kategori',
+        href: '/categories',
+        icon: FolderOpen,
         role: 'admin'
     },
     {
