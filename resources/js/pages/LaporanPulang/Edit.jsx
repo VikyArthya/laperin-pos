@@ -226,7 +226,7 @@ export default function Edit({ laporan, materials }) {
 
 
                                                     const qtyBawa = data.items.find(i => i.id === item.id)?.qty_bawa || item.qty_bawa;
-                                                    const qtySisa = data.items.find(i => i.id === item.id)?.qty_sisa || 0;
+                                                    const qtySisa = data.items.find(i => i.id === item.id)?.qty_sisa === '' ? '' : (data.items.find(i => i.id === item.id)?.qty_sisa ?? item.qty_sisa);
                                                     const qtyTerjual = Math.max(0, qtyBawa - qtySisa);
                                                     const totalHarga = product.harga * qtyTerjual;
 
@@ -249,8 +249,11 @@ export default function Edit({ laporan, materials }) {
                                                                             max={qtyBawa}
                                                                             value={qtySisa}
                                                                             onChange={(e) => handleItemChange(item.id, 'qty_sisa', e.target.value)}
-                                                                            className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-center text-base text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                            className={`w-full rounded-lg border px-3 py-2 text-center text-base text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_sisa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
                                                                         />
+                                                                        {errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_sisa`] && (
+                                                                            <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium">Wajib isi</p>
+                                                                        )}
                                                                     </div>
                                                                     <div>
                                                                         <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Bawa</label>
@@ -260,8 +263,11 @@ export default function Edit({ laporan, materials }) {
                                                                             value={qtyBawa}
                                                                             onChange={(e) => handleItemChange(item.id, 'qty_bawa', e.target.value)}
                                                                             disabled={!canEditQtyBawa}
-                                                                            className={`w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-center text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent ${!canEditQtyBawa ? 'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-500' : 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white'}`}
+                                                                            className={`w-full rounded-lg border px-3 py-2 text-center text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_bawa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} ${!canEditQtyBawa ? 'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-500' : 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white'}`}
                                                                         />
+                                                                        {errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_bawa`] && (
+                                                                            <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium">Wajib isi</p>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                                 <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
@@ -296,8 +302,11 @@ export default function Edit({ laporan, materials }) {
                                                                             max={qtyBawa}
                                                                             value={qtySisa}
                                                                             onChange={(e) => handleItemChange(item.id, 'qty_sisa', e.target.value)}
-                                                                            className="w-20 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1 text-center text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                            className={`w-20 rounded-lg border px-2 py-1 text-center text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_sisa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
                                                                         />
+                                                                        {errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_sisa`] && (
+                                                                            <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium leading-tight">Wajib isi</p>
+                                                                        )}
                                                                     </div>
                                                                     <div className="text-center">
                                                                         <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Bawa</label>
@@ -307,8 +316,11 @@ export default function Edit({ laporan, materials }) {
                                                                             value={qtyBawa}
                                                                             onChange={(e) => handleItemChange(item.id, 'qty_bawa', e.target.value)}
                                                                             disabled={!canEditQtyBawa}
-                                                                            className={`w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent ${!canEditQtyBawa ? 'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-500' : 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white'}`}
+                                                                            className={`w-20 rounded-lg border px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_bawa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} ${!canEditQtyBawa ? 'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-500' : 'bg-white dark:bg-slate-800 text-gray-900 dark:text-white'}`}
                                                                         />
+                                                                        {errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_bawa`] && (
+                                                                            <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium leading-tight">Wajib isi</p>
+                                                                        )}
                                                                     </div>
                                                                     <div className="text-center min-w-[120px]">
                                                                         <p className="text-sm font-bold text-purple-600 dark:text-purple-400">
@@ -393,8 +405,8 @@ export default function Edit({ laporan, materials }) {
                                 </div>
                             </div>
 
-                            {/* Selisih Info - Jika ada lebih */}
-                            {totalPembayaran > 0 && totalTerjual > 0 && totalPembayaran > totalTerjual && (
+                            {/* Selisih Info - Jika ada lebih - HANYA UNTUK ADMIN */}
+                            {isAdmin && totalPembayaran > 0 && totalTerjual > 0 && totalPembayaran > totalTerjual && (
                                 <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white mb-4">
                                     <div className="flex justify-between items-center">
                                         <div>
@@ -428,10 +440,12 @@ export default function Edit({ laporan, materials }) {
                                             <span className="text-slate-600 dark:text-slate-400">Omset Penjualan:</span>
                                             <span className="font-semibold text-slate-900 dark:text-white">{formatRp(totalTerjual)}</span>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-600 dark:text-slate-400">Kelebihan (Bonus SF):</span>
-                                            <span className="font-semibold text-green-600 dark:text-green-400">{totalPembayaran > totalTerjual ? '+' : ''}{formatRp(totalPembayaran - totalTerjual)}</span>
-                                        </div>
+                                        {isAdmin && (
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-600 dark:text-slate-400">Kelebihan (Bonus SF):</span>
+                                                <span className="font-semibold text-green-600 dark:text-green-400">{totalPembayaran > totalTerjual ? '+' : ''}{formatRp(totalPembayaran - totalTerjual)}</span>
+                                            </div>
+                                        )}
                                         <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mt-2">
                                             <div className="flex justify-between">
                                                 <span className="font-semibold text-slate-700 dark:text-slate-300">Total Dana Masuk:</span>

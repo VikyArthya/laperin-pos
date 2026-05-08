@@ -195,8 +195,8 @@ class LaporanPulangController extends Controller
             'stock_refill_items.*' => 'nullable|integer|exists:materials,id',
             'items' => 'nullable|array',
             'items.*.id' => 'required|exists:laporan_pulang_items,id',
-            'items.*.qty_sisa' => 'nullable|integer|min:0',
-            'items.*.qty_bawa' => 'nullable|integer|min:0',
+            'items.*.qty_sisa' => 'required|integer|min:0',
+            'items.*.qty_bawa' => 'required|integer|min:0',
         ]);
 
         DB::transaction(function () use ($request, $laporanPulang) {

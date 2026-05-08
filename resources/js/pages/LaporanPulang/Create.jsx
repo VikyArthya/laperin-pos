@@ -169,8 +169,11 @@ export default function Create({ shifts, products, materials, employees }) {
                                                                     min="0"
                                                                     value={item.qty_bawa}
                                                                     onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
-                                                                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-center text-base text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                    className={`w-full rounded-lg border px-3 py-2 text-center text-base text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
                                                                 />
+                                                                {errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] && (
+                                                                    <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium text-center">Wajib isi</p>
+                                                                )}
                                                             </div>
                                                         </div>
 
@@ -187,8 +190,11 @@ export default function Create({ shifts, products, materials, employees }) {
                                                                     min="0"
                                                                     value={item.qty_bawa}
                                                                     onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
-                                                                    className="w-20 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1 text-center text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                    className={`w-20 rounded-lg border px-2 py-1 text-center text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
                                                                 />
+                                                                {errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] && (
+                                                                    <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium leading-tight text-center">Wajib isi</p>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
