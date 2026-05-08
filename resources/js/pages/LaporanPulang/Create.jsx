@@ -16,6 +16,7 @@ export default function Create({ shifts, products, materials, employees }) {
         tanggal: getLocalDateString(),
         shift_id: '',
         employee_id: '',
+        is_karyawan_hadir: true,
         dana_keluar: '',
         items: products.map(p => ({
             product_id: p.id,
@@ -105,22 +106,37 @@ export default function Create({ shifts, products, materials, employees }) {
                                 </select>
                             </div>
                         </div>
+
+                        {/* Checkbox Tanpa Karyawan */}
+                        <div className="mt-6 flex items-center">
+                            <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-purple-300 transition-colors">
+                                <input 
+                                    type="checkbox" 
+                                    id="admin_jualan_checkbox"
+                                    checked={data.is_karyawan_hadir === false} 
+                                    onChange={e => setData('is_karyawan_hadir', e.target.checked ? false : true)}
+                                    className="w-5 h-5 rounded text-purple-600 focus:ring-purple-500"
+                                />
+                                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Admin Jualan Sendiri (Tanpa Karyawan)</span>
+                            </label>
+                        </div>
+
                         <div className="mt-6">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 <Users className="w-4 h-4 inline mr-1" />
-                                Assign ke Karyawan
+                                Assign ke Karyawan {data.is_karyawan_hadir === true ? <span className="text-red-500">*</span> : <span className="text-slate-400 font-normal ml-1">(Opsional)</span>}
                             </label>
                             <select
                                 name="employee_id"
                                 value={data.employee_id}
                                 onChange={e => setData('employee_id', e.target.value)}
-                                className={inputClasses}
-                                required
+                                className={`${inputClasses} ${data.is_karyawan_hadir === false ? 'bg-slate-50 dark:bg-slate-800/50 opacity-80' : ''}`}
+                                required={data.is_karyawan_hadir === true}
                             >
-                                <option value="">Pilih Karyawan</option>
+                                <option value="">{data.is_karyawan_hadir === true ? 'Pilih Karyawan' : 'Tanpa Karyawan (Admin Jual)'}</option>
                                 {employees.map(e => <option key={e.id} value={e.id}>{e.nama}</option>)}
                             </select>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pilih karyawan yang akan mengisi laporan ini</p>
+                            {data.is_karyawan_hadir === true && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pilih karyawan yang akan mengisi laporan ini</p>}
                         </div>
                     </div>
 

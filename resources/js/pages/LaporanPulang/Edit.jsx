@@ -38,6 +38,7 @@ export default function Edit({ laporan, materials }) {
         catatan_dana_keluar: laporan.catatan_dana_keluar || '',
         ma_50: laporan.ma_50 || '50000',
         stock_refill_items: laporan.stock_refill_items || [],
+        is_karyawan_hadir: laporan.is_karyawan_hadir ?? true,
         items: laporan.items.map(item => ({
             id: item.id,
             product_id: item.product_id,
@@ -145,6 +146,19 @@ export default function Edit({ laporan, materials }) {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Shift</label>
                                 <input type="text" value={laporan.shift?.nama_shift || ''} disabled className={inputClasses + ' bg-slate-100 dark:bg-slate-800/50'} />
                             </div>
+                        </div>
+
+                        {/* Checkbox Tanpa Karyawan */}
+                        <div className="mt-6 flex items-center">
+                            <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-purple-300 transition-colors">
+                                <input 
+                                    type="checkbox" 
+                                    checked={!data.is_karyawan_hadir} 
+                                    onChange={e => setData('is_karyawan_hadir', !e.target.checked)}
+                                    className="w-5 h-5 rounded text-purple-600 focus:ring-purple-500"
+                                />
+                                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Admin Jualan Sendiri (Tanpa Karyawan)</span>
+                            </label>
                         </div>
                     </div>
 
@@ -410,7 +424,7 @@ export default function Edit({ laporan, materials }) {
                                 <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white mb-4">
                                     <div className="flex justify-between items-center">
                                         <div>
-                                            <p className="text-sm font-medium opacity-90">🎉 Kelebihan Pembayaran (Bonus)</p>
+                                            <p className="text-sm font-medium opacity-90">🎉 Kelebihan Pembayaran</p>
                                             <p className="text-3xl font-black mt-1">{formatRp(totalPembayaran - totalTerjual)}</p>
                                             <p className="text-xs opacity-75 mt-1">ShopeeFood memberikan lebih dari harga produk</p>
                                         </div>
@@ -452,6 +466,31 @@ export default function Edit({ laporan, materials }) {
                                                 <span className="font-bold text-slate-900 dark:text-white">{formatRp(totalPembayaran)}</span>
                                             </div>
                                         </div>
+
+                                        {isAdmin && (
+                                            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-600 space-y-2">
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-slate-500">Gaji Karyawan:</span>
+                                                    <span className="font-medium text-red-500">
+                                                        {data.is_karyawan_hadir ? `-${formatRp(laporan.employee?.gaji_pokok || 0)}` : 'Rp 0'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-slate-500">Modal Produk:</span>
+                                                    <span className="font-medium text-slate-600">-{formatRp(laporan.items.reduce((sum, item) => sum + (Math.max(0, Number(item.qty_bawa) - Number(item.qty_sisa)) * (item.product?.harga_beli || 0)), 0))}</span>
+                                                </div>
+                                                <div className="flex justify-between text-base font-black pt-2">
+                                                    <span className="text-slate-800 dark:text-white">Estimasi Untung Bersih:</span>
+                                                    <span className="text-emerald-600 dark:text-emerald-400">
+                                                        {formatRp(
+                                                            totalPembayaran 
+                                                            - (data.is_karyawan_hadir ? (laporan.employee?.gaji_pokok || 0) : 0)
+                                                            - laporan.items.reduce((sum, item) => sum + (Math.max(0, Number(item.qty_bawa) - Number(item.qty_sisa)) * (item.product?.harga_beli || 0)), 0)
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}

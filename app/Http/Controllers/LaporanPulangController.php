@@ -71,7 +71,8 @@ class LaporanPulangController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'shift_id' => 'required|exists:shifts,id',
-            'employee_id' => 'required|exists:employees,id',
+            'employee_id' => 'nullable|exists:employees,id',
+            'is_karyawan_hadir' => 'nullable|boolean',
             'dana_keluar' => 'nullable|integer|min:0',
             'catatan_dana_keluar' => 'nullable|string',
             'items' => 'required|array',
@@ -98,6 +99,7 @@ class LaporanPulangController extends Controller
                 'admin_id' => auth()->id(),
                 'user_id' => null, // Akan diisi saat karyawan submit
                 'employee_id' => $request->employee_id, // Admin assign ke karyawan
+                'is_karyawan_hadir' => $request->has('is_karyawan_hadir') ? $request->is_karyawan_hadir : true,
                 'status' => 'submitted_by_admin',
                 'cash' => 0,
                 'qris' => 0,
@@ -194,6 +196,7 @@ class LaporanPulangController extends Controller
             'stock_refill_items' => 'nullable|array',
             'stock_refill_items.*' => 'nullable|integer|exists:materials,id',
             'items' => 'nullable|array',
+            'is_karyawan_hadir' => 'nullable|boolean',
             'items.*.id' => 'required|exists:laporan_pulang_items,id',
             'items.*.qty_sisa' => 'required|integer|min:0',
             'items.*.qty_bawa' => 'required|integer|min:0',
@@ -270,6 +273,7 @@ class LaporanPulangController extends Controller
                 'catatan_stok' => $request->catatan_stok,
                 'stock_refill_items' => $request->stock_refill_items ?? [],
                 'status' => $newStatus,
+                'is_karyawan_hadir' => $request->has('is_karyawan_hadir') ? $request->is_karyawan_hadir : $laporanPulang->is_karyawan_hadir,
             ];
 
             // Jika belum ada user_id (karyawan belum submit), isi dengan auth id jika role karyawan
@@ -334,7 +338,8 @@ class LaporanPulangController extends Controller
 
                 // Hitung gaji karyawan berdasarkan total pembayaran
                 $gajiKaryawan = 0;
-                if ($totalPembayaran > 0) {
+                $isKaryawanHadir = (bool) $laporanPulang->is_karyawan_hadir;
+                if ($isKaryawanHadir && $totalPembayaran > 0) {
                     $gajiBase = floor($totalPembayaran * 0.20);
                     $bonus = floor($totalPembayaran / 100000) * 5000;
                     $gajiKaryawan = $gajiBase + $bonus;
@@ -362,8 +367,8 @@ class LaporanPulangController extends Controller
                     'dana_masuk' => $totalPembayaran,
                     'selisih_dana' => $danaKeluar - $totalPembayaran,
                     'omset_penjualan' => $omsetPenjualan,
-                    'is_karyawan_hadir' => true,
-                    'employee_id' => $authEmployee?->id,
+                    'is_karyawan_hadir' => $isKaryawanHadir,
+                    'employee_id' => $isKaryawanHadir ? $authEmployee?->id : null,
                     'gaji_karyawan' => $gajiKaryawan,
                     'untung_kotor' => $untungKotor,
                     'untung_bersih' => $untungBersih,
