@@ -233,6 +233,27 @@ export default function Show({ sale }) {
                     </div>
                 </div>
 
+                {/* Sisa Produk */}
+                {sale.laporan_pulang?.items?.some(i => i.qty_sisa > 0) && (
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mb-6">
+                        <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <Package className="w-5 h-5 text-purple-600 dark:text-purple-400" /> Sisa Produk (Tidak Terjual)
+                            </h2>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                {sale.laporan_pulang.items.filter(i => i.qty_sisa > 0).map(item => (
+                                    <div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold truncate">{item.product?.nama_produk}</p>
+                                        <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{item.qty_sisa} <span className="text-[10px] font-medium text-slate-400">unit</span></p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Notes */}
                 {sale.catatan && (
                     <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">

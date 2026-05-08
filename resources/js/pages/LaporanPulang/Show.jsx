@@ -262,6 +262,21 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                                     <span className="font-black text-xl">{formatRp(laporan.total_pembayaran)}</span>
                                 </div>
                             </div>
+
+                            {/* Ringkasan Sisa Produk */}
+                            {laporan.items.some(item => Number(item.qty_sisa) > 0) && (
+                                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">📦 Ringkasan Sisa Produk (Tidak Terjual)</p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        {laporan.items.filter(item => Number(item.qty_sisa) > 0).map(item => (
+                                            <div key={item.id} className="flex flex-col p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold truncate">{item.product?.nama_produk}</span>
+                                                <span className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{item.qty_sisa} <span className="text-[10px] font-medium text-slate-400">unit</span></span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* DANA KELUAR Section */}

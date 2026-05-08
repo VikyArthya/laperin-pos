@@ -122,7 +122,7 @@ class SaleController extends Controller
 
     public function index(Request $request)
     {
-        $query = Sale::with('shift')->orderBy('created_at', 'desc');
+        $query = Sale::with(['shift', 'laporanPulang.items.product'])->orderBy('created_at', 'desc');
 
         if ($request->filled('month')) {
             $parts = explode('-', $request->month);
@@ -187,7 +187,7 @@ class SaleController extends Controller
 
     public function show(Sale $sale)
     {
-        $sale->load(['shift', 'saleItems.product', 'user']);
+        $sale->load(['shift', 'saleItems.product', 'user', 'laporanPulang.items.product']);
 
         return Inertia::render('Sales/Show', [
             'sale' => $sale,
