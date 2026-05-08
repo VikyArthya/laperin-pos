@@ -26,8 +26,8 @@ export default function AuthCardLayout({
                     href={home()}
                     className="flex items-center gap-3 self-center font-medium group"
                 >
-                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-all duration-300">
-                        <AppLogoIcon className="size-10 fill-current text-white" />
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-lg shadow-slate-200/50 group-hover:shadow-slate-300/50 transition-all duration-300 border border-slate-100">
+                        <AppLogoIcon className="size-10" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-2xl font-bold text-slate-800">Laper.In</span>
