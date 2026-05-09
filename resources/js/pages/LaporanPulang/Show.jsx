@@ -322,21 +322,21 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                        {/* <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                                             <p className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">CATATAN STOK</p>
                                             <p className="text-xs text-blue-700 dark:text-blue-400">( ! ) perlu direfill &nbsp; (   ) kosongi jika masih banyak</p>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 ) : (
                                     <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                                         <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line font-mono">
                                             {laporan.catatan_stok || 'Tidak ada item yang perlu direfill.'}
                                         </div>
-                                        <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                        {/* <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                                             <p className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">CATATAN STOK</p>
                                             <p className="text-xs text-blue-700 dark:text-blue-400">( ! ) perlu direfill</p>
                                             <p className="text-xs text-blue-700 dark:text-blue-400">(   ) kosongi jika masih banyak</p>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 )}
                             </div>
