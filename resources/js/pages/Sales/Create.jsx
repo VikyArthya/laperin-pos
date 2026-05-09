@@ -356,6 +356,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                                     type="number"
                                                     min="0"
                                                     max={stock}
+                                                    step="any"
                                                     value={qty}
                                                     onChange={e => handleItemChange(product.id, e.target.value)}
                                                     className={`w-full text-center rounded-xl border py-2 font-bold focus:ring-2 focus:bg-white dark:focus:bg-slate-800 transition-all shadow-sm ${

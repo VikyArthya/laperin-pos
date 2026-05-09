@@ -14,7 +14,8 @@
       "mcp__laravel-boost__read-log-entries",
       "mcp__laravel-boost__database-query",
       "Bash(mkdir:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(composer require:*)"
     ],
     "deny": [],
     "ask": []

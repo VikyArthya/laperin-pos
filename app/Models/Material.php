@@ -7,4 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Material extends Model
 {
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'stok' => 'float',
+        'nominal' => 'integer',
+    ];
 }

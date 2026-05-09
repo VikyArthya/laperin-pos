@@ -8,6 +8,12 @@ class SaleItem extends Model
 {
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'qty' => 'float',
+        'harga_satuan' => 'integer',
+        'subtotal' => 'integer',
+    ];
+
     public function sale()
     {
         return $this->belongsTo(Sale::class);

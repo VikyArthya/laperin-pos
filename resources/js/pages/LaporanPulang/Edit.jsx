@@ -112,6 +112,17 @@ export default function Edit({ laporan, materials }) {
         return 'Rp ' + number.toLocaleString('id-ID');
     };
 
+    const formatQty = (num) => {
+        if (num === null || num === undefined || num === '') return '0';
+        const number = typeof num === 'string' ? parseFloat(num) : Number(num);
+        // Check if number is decimal
+        if (number % 1 === 0) {
+            return number.toString();
+        }
+        // Show up to 2 decimal places
+        return parseFloat(number.toFixed(2)).toString();
+    };
+
     const inputClasses = "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all";
     const inputClassesSmall = "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all";
 
@@ -326,6 +337,7 @@ export default function Edit({ laporan, materials }) {
                                                                             type="number"
                                                                             min="0"
                                                                             max={qtyBawa}
+                                                                            step="any"
                                                                             value={qtySisa}
                                                                             onChange={(e) => handleItemChange(item.id, 'qty_sisa', e.target.value)}
                                                                             className={`w-full rounded-lg border px-3 py-2 text-center text-base text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_sisa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
@@ -338,7 +350,8 @@ export default function Edit({ laporan, materials }) {
                                                                         <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Bawa</label>
                                                                         <input
                                                                             type="number"
-                                                                            min="1"
+                                                                            min="0"
+                                                                            step="any"
                                                                             value={qtyBawa}
                                                                             onChange={(e) => handleItemChange(item.id, 'qty_bawa', e.target.value)}
                                                                             disabled={!canEditQtyBawa}
@@ -353,9 +366,9 @@ export default function Edit({ laporan, materials }) {
                                                                     <div className="flex justify-between items-center">
                                                                         <div>
                                                                             <p className="text-sm font-bold text-purple-600 dark:text-purple-400">
-                                                                                {qtySisa} ({qtyBawa})
+                                                                                {formatQty(qtySisa)} ({formatQty(qtyBawa)})
                                                                             </p>
-                                                                            <p className="text-xs text-gray-500 dark:text-gray-400">Terjual: {qtyTerjual}</p>
+                                                                            <p className="text-xs text-gray-500 dark:text-gray-400">Terjual: {formatQty(qtyTerjual)}</p>
                                                                         </div>
                                                                         {qtyTerjual > 0 && (
                                                                             <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
@@ -379,6 +392,7 @@ export default function Edit({ laporan, materials }) {
                                                                             type="number"
                                                                             min="0"
                                                                             max={qtyBawa}
+                                                                            step="any"
                                                                             value={qtySisa}
                                                                             onChange={(e) => handleItemChange(item.id, 'qty_sisa', e.target.value)}
                                                                             className={`w-20 rounded-lg border px-2 py-1 text-center text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.id === item.id)}.qty_sisa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
@@ -391,7 +405,8 @@ export default function Edit({ laporan, materials }) {
                                                                         <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Bawa</label>
                                                                         <input
                                                                             type="number"
-                                                                            min="1"
+                                                                            min="0"
+                                                                            step="any"
                                                                             value={qtyBawa}
                                                                             onChange={(e) => handleItemChange(item.id, 'qty_bawa', e.target.value)}
                                                                             disabled={!canEditQtyBawa}
@@ -403,9 +418,9 @@ export default function Edit({ laporan, materials }) {
                                                                     </div>
                                                                     <div className="text-center min-w-[120px]">
                                                                         <p className="text-sm font-bold text-purple-600 dark:text-purple-400">
-                                                                            {qtySisa} ({qtyBawa})
+                                                                            {formatQty(qtySisa)} ({formatQty(qtyBawa)})
                                                                         </p>
-                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Terjual: {qtyTerjual}</p>
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Terjual: {formatQty(qtyTerjual)}</p>
                                                                         {qtyTerjual > 0 && (
                                                                             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                                                                                 {formatRp(totalHarga)}
@@ -565,7 +580,7 @@ export default function Edit({ laporan, materials }) {
                                             return (
                                                 <div key={item.id} className="flex flex-col p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                                                     <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold truncate">{product?.nama_produk}</span>
-                                                    <span className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{item.qty_sisa} <span className="text-[10px] font-medium text-slate-400">unit</span></span>
+                                                    <span className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{formatQty(item.qty_sisa)} <span className="text-[10px] font-medium text-slate-400">unit</span></span>
                                                 </div>
                                             );
                                         })}

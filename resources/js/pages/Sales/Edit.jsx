@@ -352,6 +352,7 @@ export default function Edit({ sale, shifts, products, employees }) {
                                                 <input
                                                     type="number"
                                                     min="0"
+                                                    step="any"
                                                     value={qty}
                                                     onChange={e => handleItemChange(product.id, e.target.value)}
                                                     className="w-full text-center rounded-xl border border-slate-200 py-2 font-bold text-slate-900 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-transparent transition-all shadow-sm"

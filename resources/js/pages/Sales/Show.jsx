@@ -9,6 +9,17 @@ export default function Show({ sale }) {
         return 'Rp ' + number.toLocaleString('id-ID');
     };
 
+    const formatQty = (num) => {
+        if (num === null || num === undefined) return '0';
+        const number = typeof num === 'string' ? parseFloat(num) : num;
+        // Check if number is decimal
+        if (number % 1 === 0) {
+            return number.toString();
+        }
+        // Show up to 2 decimal places
+        return parseFloat(number.toFixed(2)).toString();
+    };
+
     const formatDate = (dateStr) => {
         if (!dateStr) return '-';
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -209,7 +220,7 @@ export default function Show({ sale }) {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                                 <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold">
-                                                    {item.qty}
+                                                    {formatQty(item.qty)}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
@@ -246,7 +257,7 @@ export default function Show({ sale }) {
                                 {sale.laporan_pulang.items.filter(i => i.qty_sisa > 0).map(item => (
                                     <div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                                         <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold truncate">{item.product?.nama_produk}</p>
-                                        <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{item.qty_sisa} <span className="text-[10px] font-medium text-slate-400">unit</span></p>
+                                        <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{formatQty(item.qty_sisa)} <span className="text-[10px] font-medium text-slate-400">unit</span></p>
                                     </div>
                                 ))}
                             </div>

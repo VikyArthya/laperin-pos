@@ -311,8 +311,9 @@ export default function Index({ products, categories }) {
                                         value={data.stok}
                                         onChange={e => setData('stok', e.target.value)}
                                         min="0"
+                                        step="any"
                                         className={`w-full rounded-lg border px-4 py-2.5 text-gray-900 dark:text-white bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all ${errors.stok ? 'border-red-500 dark:border-red-600 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'}`}
-                                        placeholder="Contoh: 10"
+                                        placeholder="Contoh: 10 atau 10.5"
                                     />
                                     {errors.stok && <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.stok}</p>}
                                 </div>
@@ -369,7 +370,8 @@ export default function Index({ products, categories }) {
                                         type="number"
                                         value={stockData.jumlah}
                                         onChange={e => setStockDataData('jumlah', e.target.value)}
-                                        min="1"
+                                        min="0"
+                                        step="any"
                                         className={`w-full rounded-lg border px-4 py-2.5 text-gray-900 dark:text-white bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all ${errors.jumlah ? 'border-red-500 dark:border-red-600 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'}`}
                                         placeholder="Masukkan jumlah"
                                     />

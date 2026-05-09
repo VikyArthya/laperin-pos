@@ -8,6 +8,12 @@ class Product extends Model
 {
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'stok' => 'float',
+        'harga_beli' => 'integer',
+        'harga' => 'integer',
+    ];
+
     protected $fillable = [
         'nama_produk',
         'kategori', // Untuk backward compatibility
