@@ -357,13 +357,14 @@ class LaporanPulangController extends Controller
                 // PERHITUNGAN PENJUALAN:
                 // Omset Penjualan = Total Harga Terjual (harga produk yang terjual)
                 // Untung Kotor = Omset Penjualan - Modal Awal
-                // Untung Bersih = (Untung Kotor - Gaji Karyawan) + Selisih Pembayaran
+                // Untung Bersih = Total Pembayaran - Gaji Karyawan - (Modal Produk + 33000)
                 // Jika Admin Mode, gaji karyawan tidak dikurangkan
                 $omsetPenjualan = $totalHargaTerjual;
                 $untungKotor = $omsetPenjualan - $totalModalAwal;
-                $untungBersihTanpaKaryawan = $untungKotor + $selisihPembayaran;
+                $biayaTambahan = 33000;
+                $untungBersihTanpaKaryawan = $totalPembayaran - ($totalModalAwal + $biayaTambahan);
                 $potonganGaji = $isAdminMode ? 0 : $gajiKaryawan;
-                $untungBersih = ($untungKotor - $potonganGaji) + $selisihPembayaran;
+                $untungBersih = $totalPembayaran - $potonganGaji - ($totalModalAwal + $biayaTambahan);
 
                 // Cek apakah sale sudah ada
                 $sale = Sale::where('laporan_pulang_id', $laporanPulang->id)->first();

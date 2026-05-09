@@ -46,7 +46,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
             }
             return total;
         }, 0);
-        return modalProduk + 33000; // Biaya operasional tetap per transaksi
+        return modalProduk; // Biaya operasional tetap per transaksi
     }, [data.items, products]);
 
     // Hitung gaji otomatis berdasarkan rumus: (omset × 20%) + (floor(omset / 100rb) × 5rb)

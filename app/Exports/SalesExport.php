@@ -84,7 +84,7 @@ class SalesExport implements FromQuery, WithEvents, WithHeadings, WithMapping, W
             'Rp '.number_format($sale->untung_kotor, 0, ',', '.'),
             'Rp '.number_format($sale->untung_bersih, 0, ',', '.'),
             'Rp '.number_format($sale->selisih_pembayaran ?? 0, 0, ',', '.'),
-            'Rp '.number_format(($sale->untung_bersih ?? 0) + ($sale->selisih_pembayaran ?? 0), 0, ',', '.'),
+            'Rp '.number_format($sale->untung_bersih ?? 0, 0, ',', '.'),
             $sale->is_karyawan_hadir ? 'Ya' : 'Tidak',
             $sale->employee->nama ?? '-',
             $sale->catatan ?? '-',
@@ -353,7 +353,7 @@ class SalesExport implements FromQuery, WithEvents, WithHeadings, WithMapping, W
                     'selisih_pembayaran' => $sales->sum('selisih_pembayaran'),
                 ];
 
-                $totalUntung = $totals['untung_bersih'] + $totals['selisih_pembayaran'];
+                $totalUntung = $totals['untung_bersih'];
                 $karyawanHadirCount = $sales->where('is_karyawan_hadir', true)->count();
 
                 // Add totals row
