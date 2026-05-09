@@ -39,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('materials', MaterialController::class)->except(['create', 'show', 'edit']);
         Route::resource('employees', EmployeeController::class)->except(['create', 'show', 'edit']);
         Route::get('payroll', [PayrollController::class, 'index'])->name('payroll.index');
+        Route::get('payroll/export', [PayrollController::class, 'export'])->name('payroll.export');
 
         // Stock adjustment routes
         Route::post('products/{product}/add-stock', [ProductController::class, 'addStock'])->name('products.add-stock');

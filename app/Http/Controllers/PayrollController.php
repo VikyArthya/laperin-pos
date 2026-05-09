@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PayrollExport;
 use App\Models\Employee;
 use App\Models\Sale;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PayrollController extends Controller
 {
@@ -150,5 +152,33 @@ class PayrollController extends Controller
         }
 
         return $periods;
+    }
+
+    public function export(Request $request)
+    {
+        $filters = [
+            'month' => $request->input('month', date('m')),
+            'year' => $request->input('year', date('Y')),
+            'week_period' => $request->input('week_period', null),
+        ];
+
+        $filename = 'Laporan_Penggajian_';
+
+        if (! empty($filters['month']) && ! empty($filters['year'])) {
+            $months = [
+                '1' => 'Januari', '2' => 'Februari', '3' => 'Maret', '4' => 'April',
+                '5' => 'Mei', '6' => 'Juni', '7' => 'Juli', '8' => 'Agustus',
+                '9' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
+            ];
+            $filename .= ($months[$filters['month']] ?? $filters['month']).'_'.$filters['year'];
+        }
+
+        if (! empty($filters['week_period']) && $filters['week_period'] !== 'all') {
+            $filename .= '_Minggu_'.$filters['week_period'];
+        }
+
+        $filename .= '.xlsx';
+
+        return Excel::download(new PayrollExport($filters), $filename);
     }
 }

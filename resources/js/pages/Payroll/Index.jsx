@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Banknote, ChevronDown, ChevronUp, Calendar, Users, TrendingUp, Calculator } from 'lucide-react';
+import { Banknote, ChevronDown, ChevronUp, Calendar, Users, TrendingUp, Calculator, FileSpreadsheet } from 'lucide-react';
 
 const MONTHS = [
     { value: 1, label: 'Januari' },
@@ -40,6 +40,16 @@ export default function Index({ payrollData, weeklyPeriods, filters }) {
         router.get('/payroll', { month, year, week_period: weekPeriod }, { preserveState: true, preserveScroll: true });
     };
 
+    const handleExport = () => {
+        const params = new URLSearchParams({
+            month: month,
+            year: year,
+            ...(weekPeriod && weekPeriod !== 'all' && { week_period: weekPeriod }),
+        });
+
+        window.location.href = `/payroll/export?${params.toString()}`;
+    };
+
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
@@ -62,9 +72,18 @@ export default function Index({ payrollData, weeklyPeriods, filters }) {
                         </h1>
                         <p className="mt-1 text-gray-600 dark:text-gray-400">Rekap gaji otomatis berdasarkan omset penjualan harian.</p>
                     </div>
-                    <Link href="/dashboard" className="inline-flex items-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-                        Kembali
-                    </Link>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleExport}
+                            className="inline-flex items-center text-sm font-medium text-white bg-emerald-600 dark:bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-700 px-4 py-2 rounded-lg border border-transparent shadow-sm transition-colors"
+                        >
+                            <FileSpreadsheet className="w-4 h-4 mr-2" />
+                            Export Excel
+                        </button>
+                        <Link href="/dashboard" className="inline-flex items-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
+                            Kembali
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Formula Info Card */}
@@ -242,6 +261,15 @@ export default function Index({ payrollData, weeklyPeriods, filters }) {
                             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                                 Belum ada transaksi penjualan di periode yang dipilih.
                             </p>
+                            {payrollData.length === 0 && (
+                                <button
+                                    onClick={handleExport}
+                                    className="mt-4 inline-flex items-center text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300"
+                                >
+                                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                                    Export Excel (Format Kosong)
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
