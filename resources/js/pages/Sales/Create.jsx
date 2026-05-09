@@ -19,6 +19,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         qris: '0',
         sf: '0',
         is_karyawan_hadir: isKaryawan ? true : false,
+        is_admin_mode: false,
         employee_id: isKaryawan && authEmployee ? authEmployee.id : '',
         gaji_karyawan: '0',
         catatan: '',
@@ -65,9 +66,11 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         setData('omset_penjualan', totalOmsetProduk);
         setData('modal_awal', totalModalAwal);
         setData('dana_masuk', totalOmsetProduk);
-        setData('gaji_karyawan', data.is_karyawan_hadir ? autoGaji : 0);
+        // Gaji karyawan = 0 jika Admin Mode atau tidak ada karyawan
+        const shouldCalculateGaji = data.is_karyawan_hadir && !data.is_admin_mode;
+        setData('gaji_karyawan', shouldCalculateGaji ? autoGaji : 0);
         setData('selisih_dana', selisihDana);
-    }, [totalOmsetProduk, totalModalAwal, autoGaji, data.is_karyawan_hadir, selisihDana]);
+    }, [totalOmsetProduk, totalModalAwal, autoGaji, data.is_karyawan_hadir, data.is_admin_mode, selisihDana]);
 
     const handleItemChange = (productId, qty) => {
         const newItems = data.items.map(item =>
@@ -137,13 +140,69 @@ export default function Create({ shifts, products, employees, authEmployee }) {
 
                         <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4">
                             {!isKaryawan && (
-                                <div className="flex items-center mb-4">
-                                    <input type="checkbox" id="karyawan_hadir" checked={data.is_karyawan_hadir} onChange={e => setData('is_karyawan_hadir', e.target.checked)} className="h-4 w-4 text-blue-600 rounded border-slate-300 dark:border-slate-600 focus:ring-blue-500" />
-                                    <label htmlFor="karyawan_hadir" className="ml-2 block text-sm text-gray-900 dark:text-white font-medium">Karyawan Hadir?</label>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Mode Penjualan</label>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        {/* Opsi 1: Tanpa Karyawan */}
+                                        <label className={`relative flex cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                                            !data.is_karyawan_hadir && !data.is_admin_mode
+                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                        }`}>
+                                            <input type="radio" name="mode_penjualan" value="tanpa_karyawan" checked={!data.is_karyawan_hadir && !data.is_admin_mode} onChange={() => { setData('is_karyawan_hadir', false); setData('is_admin_mode', false); }} className="sr-only" />
+                                            <div className="flex-1">
+                                                <span className="block text-sm font-semibold text-gray-900 dark:text-white">Tanpa Karyawan</span>
+                                                <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1">Tidak ada karyawan bekerja</span>
+                                            </div>
+                                        </label>
+
+                                        {/* Opsi 2: Dengan Karyawan */}
+                                        <label className={`relative flex cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                                            data.is_karyawan_hadir && !data.is_admin_mode
+                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                        }`}>
+                                            <input type="radio" name="mode_penjualan" value="dengan_karyawan" checked={data.is_karyawan_hadir && !data.is_admin_mode} onChange={() => { setData('is_karyawan_hadir', true); setData('is_admin_mode', false); }} className="sr-only" />
+                                            <div className="flex-1">
+                                                <span className="block text-sm font-semibold text-gray-900 dark:text-white">Dengan Karyawan</span>
+                                                <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1">Karyawan bekerja & digaji</span>
+                                            </div>
+                                        </label>
+
+                                        {/* Opsi 3: Admin Mode */}
+                                        <label className={`relative flex cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                                            data.is_admin_mode
+                                                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                        }`}>
+                                            <input type="radio" name="mode_penjualan" value="admin_mode" checked={data.is_admin_mode} onChange={() => { setData('is_karyawan_hadir', true); setData('is_admin_mode', true); }} className="sr-only" />
+                                            <div className="flex-1">
+                                                <span className="block text-sm font-semibold text-purple-900 dark:text-purple-300 flex items-center gap-1">
+                                                    👑 Admin Mode
+                                                </span>
+                                                <span className="block text-xs text-purple-700 dark:text-purple-400 mt-1">Admin jual sendiri (tanpa gaji)</span>
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
                             )}
 
-                            {data.is_karyawan_hadir && (
+                            {/* Admin Mode Badge */}
+                            {data.is_admin_mode && (
+                                <div className="mb-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-shrink-0">
+                                            <span className="text-2xl">👑</span>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-purple-900 dark:text-purple-300">Mode Admin Aktif</p>
+                                            <p className="text-xs text-purple-700 dark:text-purple-400 mt-0.5">Untung bersih tidak dikurangi gaji karyawan</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {data.is_karyawan_hadir && !data.is_admin_mode && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Karyawan</label>
@@ -248,7 +307,10 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                         <div>
                                             <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">UNTUNG BERSIH</label>
                                             <p className={`text-2xl sm:text-3xl font-black ${(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.gaji_karyawan)) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatRp(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.gaji_karyawan))}</p>
-                                            <p className="text-[10px] text-slate-400 mt-2">= Dana Masuk - Modal Produk - Gaji</p>
+                                            <p className="text-[10px] text-slate-400 mt-2">
+                                                = Dana Masuk - Modal Produk{!data.is_admin_mode && data.is_karyawan_hadir && ' - Gaji'}
+                                                {data.is_admin_mode && ' (Admin Mode)'}
+                                            </p>
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">UNTUNG TANPA GAJI</label>

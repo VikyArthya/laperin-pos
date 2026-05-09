@@ -14,6 +14,8 @@ class LaporanPulang extends Model
         'user_id',
         'admin_id',
         'employee_id',
+        'is_karyawan_hadir',
+        'is_admin_mode',
         'cash',
         'qris',
         'sf',
@@ -27,6 +29,8 @@ class LaporanPulang extends Model
     ];
 
     protected $casts = [
+        'is_karyawan_hadir' => 'boolean',
+        'is_admin_mode' => 'boolean',
         'stock_refill_items' => 'array',
         'status' => 'string',
         'tanggal' => 'date:Y-m-d', // Explicit format untuk avoid timezone issues

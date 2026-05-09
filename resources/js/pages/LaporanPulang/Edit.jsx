@@ -31,6 +31,8 @@ export default function Edit({ laporan, materials }) {
     const { data, setData, put, processing, errors, reset } = useForm({
         tanggal: formatDateForInput(laporan.tanggal),
         shift_id: laporan.shift_id,
+        is_karyawan_hadir: laporan.is_karyawan_hadir ?? true,
+        is_admin_mode: laporan.is_admin_mode ?? false,
         cash: laporan.cash || '',
         qris: laporan.qris || '',
         sf: laporan.sf || '',
@@ -146,6 +148,70 @@ export default function Edit({ laporan, materials }) {
                                 <input type="text" value={laporan.shift?.nama_shift || ''} disabled className={inputClasses + ' bg-slate-100 dark:bg-slate-800/50'} />
                             </div>
                         </div>
+
+                        {/* Mode Penjualan - Hanya untuk Admin */}
+                        {isAdmin && (
+                            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Mode Penjualan</label>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    {/* Opsi 1: Tanpa Karyawan */}
+                                    <label className={`relative flex cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                                        !data.is_karyawan_hadir && !data.is_admin_mode
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                    }`}>
+                                        <input type="radio" name="mode_penjualan" value="tanpa_karyawan" checked={!data.is_karyawan_hadir && !data.is_admin_mode} onChange={() => { setData('is_karyawan_hadir', false); setData('is_admin_mode', false); }} className="sr-only" />
+                                        <div className="flex-1">
+                                            <span className="block text-sm font-semibold text-gray-900 dark:text-white">Tanpa Karyawan</span>
+                                            <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1">Tidak ada karyawan bekerja</span>
+                                        </div>
+                                    </label>
+
+                                    {/* Opsi 2: Dengan Karyawan */}
+                                    <label className={`relative flex cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                                        data.is_karyawan_hadir && !data.is_admin_mode
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                    }`}>
+                                        <input type="radio" name="mode_penjualan" value="dengan_karyawan" checked={data.is_karyawan_hadir && !data.is_admin_mode} onChange={() => { setData('is_karyawan_hadir', true); setData('is_admin_mode', false); }} className="sr-only" />
+                                        <div className="flex-1">
+                                            <span className="block text-sm font-semibold text-gray-900 dark:text-white">Dengan Karyawan</span>
+                                            <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1">Karyawan bekerja & digaji</span>
+                                        </div>
+                                    </label>
+
+                                    {/* Opsi 3: Admin Mode */}
+                                    <label className={`relative flex cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                                        data.is_admin_mode
+                                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                    }`}>
+                                        <input type="radio" name="mode_penjualan" value="admin_mode" checked={data.is_admin_mode} onChange={() => { setData('is_karyawan_hadir', true); setData('is_admin_mode', true); }} className="sr-only" />
+                                        <div className="flex-1">
+                                            <span className="block text-sm font-semibold text-purple-900 dark:text-purple-300 flex items-center gap-1">
+                                                👑 Admin Mode
+                                            </span>
+                                            <span className="block text-xs text-purple-700 dark:text-purple-400 mt-1">Admin jual sendiri (tanpa gaji)</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Admin Mode Badge - Show untuk semua jika aktif */}
+                        {data.is_admin_mode && (
+                            <div className="mt-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-shrink-0">
+                                        <span className="text-2xl">👑</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-purple-900 dark:text-purple-300">Mode Admin Aktif</p>
+                                        <p className="text-xs text-purple-700 dark:text-purple-400 mt-0.5">Untung bersih tidak dikurangi gaji karyawan</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Tabs */}

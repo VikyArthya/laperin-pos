@@ -68,10 +68,14 @@ class LaporanPulangController extends Controller
             abort(403, 'Hanya admin yang dapat membuat laporan.');
         }
 
+        $isAdminMode = $request->is_admin_mode ?? false;
+
         $request->validate([
             'tanggal' => 'required|date',
             'shift_id' => 'required|exists:shifts,id',
-            'employee_id' => 'required|exists:employees,id',
+            'employee_id' => $isAdminMode ? 'nullable|exists:employees,id' : 'required|exists:employees,id',
+            'is_karyawan_hadir' => 'boolean',
+            'is_admin_mode' => 'boolean',
             'dana_keluar' => 'nullable|integer|min:0',
             'catatan_dana_keluar' => 'nullable|string',
             'items' => 'required|array',
@@ -98,6 +102,8 @@ class LaporanPulangController extends Controller
                 'admin_id' => auth()->id(),
                 'user_id' => null, // Akan diisi saat karyawan submit
                 'employee_id' => $request->employee_id, // Admin assign ke karyawan
+                'is_karyawan_hadir' => $request->is_karyawan_hadir ?? false,
+                'is_admin_mode' => $request->is_admin_mode ?? false,
                 'status' => 'submitted_by_admin',
                 'cash' => 0,
                 'qris' => 0,
@@ -193,6 +199,8 @@ class LaporanPulangController extends Controller
             'catatan_stok' => 'nullable|string',
             'stock_refill_items' => 'nullable|array',
             'stock_refill_items.*' => 'nullable|integer|exists:materials,id',
+            'is_karyawan_hadir' => 'boolean',
+            'is_admin_mode' => 'boolean',
             'items' => 'nullable|array',
             'items.*.id' => 'required|exists:laporan_pulang_items,id',
             'items.*.qty_sisa' => 'required|integer|min:0',
@@ -269,6 +277,8 @@ class LaporanPulangController extends Controller
                 'ma_50' => $request->ma_50,
                 'catatan_stok' => $request->catatan_stok,
                 'stock_refill_items' => $request->stock_refill_items ?? [],
+                'is_karyawan_hadir' => $request->is_karyawan_hadir ?? true,
+                'is_admin_mode' => $request->is_admin_mode ?? false,
                 'status' => $newStatus,
             ];
 
@@ -332,9 +342,13 @@ class LaporanPulangController extends Controller
                 // Negatif = Kurang bayar
                 $selisihPembayaran = $totalPembayaran - $totalHargaTerjual;
 
+                // Cek apakah Admin Mode
+                $isAdminMode = $request->is_admin_mode ?? false;
+
                 // Hitung gaji karyawan berdasarkan total pembayaran
+                // Jika Admin Mode, gaji karyawan = 0
                 $gajiKaryawan = 0;
-                if ($totalPembayaran > 0) {
+                if ($totalPembayaran > 0 && ! $isAdminMode) {
                     $gajiBase = floor($totalPembayaran * 0.20);
                     $bonus = floor($totalPembayaran / 100000) * 5000;
                     $gajiKaryawan = $gajiBase + $bonus;
@@ -344,10 +358,12 @@ class LaporanPulangController extends Controller
                 // Omset Penjualan = Total Harga Terjual (harga produk yang terjual)
                 // Untung Kotor = Omset Penjualan - Modal Awal
                 // Untung Bersih = (Untung Kotor - Gaji Karyawan) + Selisih Pembayaran
+                // Jika Admin Mode, gaji karyawan tidak dikurangkan
                 $omsetPenjualan = $totalHargaTerjual;
                 $untungKotor = $omsetPenjualan - $totalModalAwal;
                 $untungBersihTanpaKaryawan = $untungKotor + $selisihPembayaran;
-                $untungBersih = ($untungKotor - $gajiKaryawan) + $selisihPembayaran;
+                $potonganGaji = $isAdminMode ? 0 : $gajiKaryawan;
+                $untungBersih = ($untungKotor - $potonganGaji) + $selisihPembayaran;
 
                 // Cek apakah sale sudah ada
                 $sale = Sale::where('laporan_pulang_id', $laporanPulang->id)->first();
@@ -363,6 +379,7 @@ class LaporanPulangController extends Controller
                     'selisih_dana' => $danaKeluar - $totalPembayaran,
                     'omset_penjualan' => $omsetPenjualan,
                     'is_karyawan_hadir' => true,
+                    'is_admin_mode' => $isAdminMode,
                     'employee_id' => $authEmployee?->id,
                     'gaji_karyawan' => $gajiKaryawan,
                     'untung_kotor' => $untungKotor,

@@ -220,6 +220,7 @@ class SaleController extends Controller
             'selisih_dana' => 'required|numeric',
             'omset_penjualan' => 'required|numeric',
             'is_karyawan_hadir' => 'boolean',
+            'is_admin_mode' => 'boolean',
             'employee_id' => 'nullable|exists:employees,id',
             'gaji_karyawan' => 'required|numeric',
             'catatan' => 'nullable|string',
@@ -251,10 +252,12 @@ class SaleController extends Controller
             $cash = (int) ($data['cash'] ?? 0);
             $qris = (int) ($data['qris'] ?? 0);
             $sf = (int) ($data['sf'] ?? 0);
+            $isAdminMode = (bool) ($data['is_admin_mode'] ?? false);
 
             // Untung Bersih = Omset Penjualan - Gaji Karyawan - Modal Awal
-            // Note: Modal Awal sudah termasuk biaya operasional 33.000 dari frontend
-            $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal;
+            // Jika Admin Mode, gaji karyawan tidak dikurangkan
+            $potonganGaji = $isAdminMode ? 0 : $gajiKaryawan;
+            $untungBersih = $danaMasuk - $potonganGaji - $modalAwal;
             $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
 
             $sale->update([
@@ -269,6 +272,7 @@ class SaleController extends Controller
                 'selisih_dana' => $data['selisih_dana'],
                 'omset_penjualan' => $danaMasuk,
                 'is_karyawan_hadir' => $data['is_karyawan_hadir'] ?? false,
+                'is_admin_mode' => $isAdminMode,
                 'employee_id' => $data['employee_id'],
                 'gaji_karyawan' => $gajiKaryawan,
                 'untung_kotor' => $untungBersihTanpaKaryawan,
@@ -349,6 +353,7 @@ class SaleController extends Controller
             'selisih_dana' => 'required|numeric',
             'omset_penjualan' => 'required|numeric',
             'is_karyawan_hadir' => 'boolean',
+            'is_admin_mode' => 'boolean',
             'employee_id' => 'nullable|exists:employees,id',
             'gaji_karyawan' => 'required|numeric',
             'catatan' => 'nullable|string',
@@ -387,12 +392,14 @@ class SaleController extends Controller
             $cash = (int) ($data['cash'] ?? 0);
             $qris = (int) ($data['qris'] ?? 0);
             $sf = (int) ($data['sf'] ?? 0);
+            $isAdminMode = (bool) ($data['is_admin_mode'] ?? false);
 
             // Total Omset = Dana Masuk
             $totalOmset = $danaMasuk;
             // Untung Bersih = Omset Penjualan - Gaji Karyawan - Modal Awal
-            // Note: Modal Awal sudah termasuk biaya operasional 33.000 dari frontend
-            $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal;
+            // Jika Admin Mode, gaji karyawan tidak dikurangkan
+            $potonganGaji = $isAdminMode ? 0 : $gajiKaryawan;
+            $untungBersih = $danaMasuk - $potonganGaji - $modalAwal;
             $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
 
             $sale = Sale::create([
@@ -411,6 +418,7 @@ class SaleController extends Controller
                 'omset_topping' => 0,
                 'biaya_packaging' => 0,
                 'is_karyawan_hadir' => $data['is_karyawan_hadir'] ?? false,
+                'is_admin_mode' => $isAdminMode,
                 'employee_id' => $employeeId,
                 'gaji_karyawan' => $gajiKaryawan,
                 'untung_kotor' => $untungBersihTanpaKaryawan,
