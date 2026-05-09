@@ -207,15 +207,33 @@ class LaporanPulangController extends Controller
             'items.*.qty_bawa' => 'required|integer|min:0',
         ]);
 
-        DB::transaction(function () use ($request, $laporanPulang) {
+        // Validasi: Jika sudah mengisi sisa stok, wajib mengisi pembayaran
+        $cash = (int) ($request->cash ?? 0);
+        $qris = (int) ($request->qris ?? 0);
+        $sf = (int) ($request->sf ?? 0);
+        $totalPembayaran = $cash + $qris + $sf;
+
+        $hasInputSisaStok = false;
+        if ($request->has('items')) {
+            foreach ($request->items as $item) {
+                if (isset($item['qty_sisa']) && $item['qty_sisa'] !== '' && $item['qty_sisa'] !== null) {
+                    $hasInputSisaStok = true;
+                    break;
+                }
+            }
+        }
+
+        if ($hasInputSisaStok && $totalPembayaran <= 0) {
+            throw ValidationException::withMessages([
+                'cash' => 'Mohon isi pembayaran (Cash, QRIS, atau ShopeeFood) sebelum menyimpan laporan.',
+            ]);
+        }
+
+        DB::transaction(function () use ($request, $laporanPulang, $cash, $qris, $sf, $totalPembayaran) {
             $isAdmin = auth()->user()->role === 'admin';
             $isSubmittedByAdmin = $laporanPulang->status === 'submitted_by_admin';
 
-            $cash = (int) ($request->cash ?? 0);
-            $qris = (int) ($request->qris ?? 0);
-            $sf = (int) ($request->sf ?? 0);
             $danaKeluar = (int) ($request->dana_keluar ?? 0);
-            $totalPembayaran = $cash + $qris + $sf;
 
             // 1. Handle Qty Bawa changes by Admin (hanya jika status masih submitted_by_admin)
             if ($isAdmin && $isSubmittedByAdmin && $request->has('items')) {

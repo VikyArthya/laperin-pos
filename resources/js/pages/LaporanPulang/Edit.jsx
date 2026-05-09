@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Save, FileText, Package, Wallet } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Package, Wallet, AlertCircle } from 'lucide-react';
 
 export default function Edit({ laporan, materials }) {
     const { props } = usePage();
     const authUser = props.auth?.user;
 
     const [activeTab, setActiveTab] = useState('isian');
+    const [validationError, setValidationError] = useState('');
 
     const isAdmin = authUser?.role === 'admin';
     const isSubmittedByAdmin = laporan.status === 'submitted_by_admin';
@@ -90,6 +91,18 @@ export default function Edit({ laporan, materials }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Validasi: Jika sudah mengisi sisa stok, wajib mengisi pembayaran
+        const hasInputSisaStok = data.items.some(item => item.qty_sisa !== '' && item.qty_sisa !== null && item.qty_sisa !== undefined);
+        const hasPembayaran = totalPembayaran > 0;
+
+        if (hasInputSisaStok && !hasPembayaran) {
+            setValidationError('Mohon isi pembayaran (Cash, QRIS, atau ShopeeFood) sebelum menyimpan laporan.');
+            setActiveTab('pembayaran');
+            return;
+        }
+
+        setValidationError('');
         put(`/laporan-pulang/${laporan.id}`);
     };
 
@@ -415,6 +428,26 @@ export default function Edit({ laporan, materials }) {
                     {activeTab === 'pembayaran' && (
                         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-2">CASH</h2>
+
+                            {/* Validasi Error */}
+                            {validationError && (
+                                <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                                    <div className="flex items-start gap-3">
+                                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                                        <div className="flex-1">
+                                            <p className="text-sm font-semibold text-red-800 dark:text-red-300">Validasi Error</p>
+                                            <p className="text-sm text-red-700 dark:text-red-400 mt-1">{validationError}</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setValidationError('')}
+                                            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
