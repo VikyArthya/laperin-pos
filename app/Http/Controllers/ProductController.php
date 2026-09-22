@@ -9,19 +9,42 @@ use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category')
-            ->orderBy('nama_produk', 'asc')
-            ->paginate(10);
+        $cabangFilter = $request->input('cabang');
+
+        $query = Product::with('category')->orderBy('nama_produk', 'asc');
+
+        if ($cabangFilter === '__umum__') {
+            $query->where(function ($q) {
+                $q->whereDoesntHave('category')
+                    ->orWhereHas('category', function ($cq) {
+                        $cq->whereNull('cabang')->orWhere('cabang', '');
+                    });
+            });
+        } elseif ($cabangFilter) {
+            $query->whereHas('category', function ($q) use ($cabangFilter) {
+                $q->where('cabang', $cabangFilter);
+            });
+        }
+
+        $products = $query->paginate(10)->withQueryString();
 
         $categories = Category::active()
             ->orderBy('nama_kategori')
             ->get();
 
+        $cabangs = Category::whereNotNull('cabang')->where('cabang', '!=', '')
+            ->pluck('cabang')
+            ->merge(\App\Models\Shift::whereNotNull('cabang')->where('cabang', '!=', '')->pluck('cabang'))
+            ->unique()
+            ->values();
+
         return Inertia::render('Products/Index', [
             'products' => $products,
             'categories' => $categories,
+            'cabangs' => $cabangs,
+            'currentCabang' => $cabangFilter,
         ]);
     }
 

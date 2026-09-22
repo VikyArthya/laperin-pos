@@ -49,7 +49,7 @@ class LaporanPulangController extends Controller
         }
 
         $shifts = Shift::all();
-        $products = Product::orderBy('nama_produk')->get();
+        $products = Product::with('category')->orderBy('nama_produk')->get();
         $materials = Material::orderBy('nama_bahan')->get();
         $employees = Employee::orderBy('nama')->get();
 
@@ -73,6 +73,7 @@ class LaporanPulangController extends Controller
             'shift_id' => 'required|exists:shifts,id',
             'employee_id' => 'nullable|exists:employees,id',
             'is_karyawan_hadir' => 'nullable|boolean',
+            'modal_harian' => 'nullable|integer|min:0',
             'dana_keluar' => 'nullable|integer|min:0',
             'catatan_dana_keluar' => 'nullable|string',
             'items' => 'required|array',
@@ -105,6 +106,7 @@ class LaporanPulangController extends Controller
                 'qris' => 0,
                 'sf' => 0,
                 'total_pembayaran' => 0,
+                'modal_harian' => (int) ($request->modal_harian ?? 0),
                 'dana_keluar' => (int) ($request->dana_keluar ?? 0),
                 'catatan_dana_keluar' => $request->catatan_dana_keluar,
                 'ma_50' => null,
@@ -189,6 +191,7 @@ class LaporanPulangController extends Controller
             'cash' => 'nullable|integer|min:0',
             'qris' => 'nullable|integer|min:0',
             'sf' => 'nullable|integer|min:0',
+            'modal_harian' => 'nullable|integer|min:0',
             'dana_keluar' => 'nullable|integer|min:0',
             'catatan_dana_keluar' => 'nullable|string',
             'ma_50' => 'nullable|string',
@@ -267,6 +270,7 @@ class LaporanPulangController extends Controller
                 'qris' => $qris,
                 'sf' => $sf,
                 'total_pembayaran' => $totalPembayaran,
+                'modal_harian' => $request->has('modal_harian') ? (int) $request->modal_harian : (int) ($laporanPulang->modal_harian ?? 0),
                 'dana_keluar' => $danaKeluar,
                 'catatan_dana_keluar' => $request->catatan_dana_keluar,
                 'ma_50' => $request->ma_50,
@@ -346,11 +350,13 @@ class LaporanPulangController extends Controller
                 }
 
                 // PERHITUNGAN PENJUALAN:
+                // Modal Harian = inputan manual modal operasional
                 // Omset Penjualan = Total Harga Terjual (harga produk yang terjual)
-                // Untung Kotor = Omset Penjualan - Modal Awal
+                // Untung Kotor = Omset Penjualan - Modal Produk - Modal Harian
                 // Untung Bersih = (Untung Kotor - Gaji Karyawan) + Selisih Pembayaran
+                $modalHarian = (int) ($updateData['modal_harian'] ?? 0);
                 $omsetPenjualan = $totalHargaTerjual;
-                $untungKotor = $omsetPenjualan - $totalModalAwal;
+                $untungKotor = $omsetPenjualan - $totalModalAwal - $modalHarian;
                 $untungBersihTanpaKaryawan = $untungKotor + $selisihPembayaran;
                 $untungBersih = ($untungKotor - $gajiKaryawan) + $selisihPembayaran;
 
@@ -360,6 +366,7 @@ class LaporanPulangController extends Controller
                 $saleData = [
                     'user_id' => auth()->id(),
                     'modal_awal' => $totalModalAwal,
+                    'modal_harian' => $modalHarian,
                     'cash' => $cash,
                     'qris' => $qris,
                     'sf' => $sf,

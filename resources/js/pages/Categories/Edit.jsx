@@ -2,9 +2,16 @@ import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save, FolderOpen } from 'lucide-react';
 
-export default function Edit({ category }) {
+export default function Edit({ category, cabangs = [] }) {
+    const isExistingCabang = cabangs.includes(category.cabang);
+    const initialIsCustom = !isExistingCabang && Boolean(category.cabang);
+
+    const [isCustomCabang, setIsCustomCabang] = React.useState(initialIsCustom);
+    const [customCabangInput, setCustomCabangInput] = React.useState(initialIsCustom ? category.cabang : '');
+
     const { data, setData, put, processing, errors } = useForm({
         nama_kategori: category.nama_kategori || '',
+        cabang: category.cabang || '',
         kode: category.kode || '',
         deskripsi: category.deskripsi || '',
         is_active: category.is_active ?? true,
@@ -54,6 +61,57 @@ export default function Edit({ category }) {
                                 {errors.nama_kategori && (
                                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.nama_kategori}</p>
                                 )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Cabang / Merk <span className="text-xs text-gray-400">(Pilih cabang atau biarkan Semua Cabang)</span>
+                                </label>
+                                <select
+                                    value={isCustomCabang ? '__new__' : (data.cabang || '')}
+                                    onChange={e => {
+                                        const val = e.target.value;
+                                        if (val === '__new__') {
+                                            setIsCustomCabang(true);
+                                            setData('cabang', customCabangInput);
+                                        } else {
+                                            setIsCustomCabang(false);
+                                            setData('cabang', val);
+                                        }
+                                    }}
+                                    className={inputClasses}
+                                >
+                                    <option value="">-- Berlaku untuk Semua Cabang / Merk --</option>
+                                    {cabangs.map((c, idx) => (
+                                        <option key={idx} value={c}>
+                                            Merk: {c}
+                                        </option>
+                                    ))}
+                                    <option value="__new__">+ Tambah Merk Baru...</option>
+                                </select>
+
+                                {isCustomCabang && (
+                                    <div className="mt-2.5">
+                                        <input
+                                            type="text"
+                                            value={customCabangInput}
+                                            onChange={e => {
+                                                setCustomCabangInput(e.target.value);
+                                                setData('cabang', e.target.value);
+                                            }}
+                                            placeholder="Ketik nama merk / cabang baru..."
+                                            className="w-full rounded-lg border border-purple-300 dark:border-purple-600 bg-purple-50/30 dark:bg-slate-800 px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-600 outline-none"
+                                            autoFocus
+                                        />
+                                        <p className="mt-1 text-xs text-purple-600 dark:text-purple-400">
+                                            Merk baru ini otomatis tersimpan dan dapat dipilih di menu Cabang & Kategori lainnya.
+                                        </p>
+                                    </div>
+                                )}
+                                {errors.cabang && (
+                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.cabang}</p>
+                                )}
+                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Pilih cabang/merk menu ini. Pilih "Semua Cabang" jika berlaku universal.</p>
                             </div>
 
                             <div>

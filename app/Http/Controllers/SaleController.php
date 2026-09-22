@@ -175,7 +175,7 @@ class SaleController extends Controller
     public function create()
     {
         $shifts = Shift::orderBy('nama_shift')->get();
-        $products = Product::orderBy('kategori')->get();
+        $products = Product::with('category')->orderBy('nama_produk')->get();
         $employees = Employee::orderBy('nama')->get();
 
         return Inertia::render('Sales/Create', [
@@ -198,7 +198,7 @@ class SaleController extends Controller
     {
         $sale->load(['saleItems.product']);
         $shifts = Shift::orderBy('nama_shift')->get();
-        $products = Product::orderBy('kategori')->get();
+        $products = Product::with('category')->orderBy('nama_produk')->get();
         $employees = Employee::orderBy('nama')->get();
 
         return Inertia::render('Sales/Edit', [
@@ -215,6 +215,7 @@ class SaleController extends Controller
             'tanggal' => 'required|date',
             'shift_id' => 'required|exists:shifts,id',
             'modal_awal' => 'required|numeric',
+            'modal_harian' => 'nullable|numeric',
             'dana_keluar' => 'required|numeric',
             'dana_masuk' => 'required|numeric',
             'selisih_dana' => 'required|numeric',
@@ -245,6 +246,7 @@ class SaleController extends Controller
 
             // Update sale
             $modalAwal = (int) $data['modal_awal'];
+            $modalHarian = (int) ($data['modal_harian'] ?? 0);
             $danaMasuk = (int) $data['dana_masuk'];
             $danaKeluar = (int) $data['dana_keluar'];
             $gajiKaryawan = (int) $data['gaji_karyawan'];
@@ -252,15 +254,15 @@ class SaleController extends Controller
             $qris = (int) ($data['qris'] ?? 0);
             $sf = (int) ($data['sf'] ?? 0);
 
-            // Untung Bersih = Omset Penjualan - Gaji Karyawan - Modal Awal
-            // Note: Modal Awal sudah termasuk biaya operasional 33.000 dari frontend
-            $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal;
-            $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
+            // Untung Bersih = Omset Penjualan - Gaji Karyawan - Modal Produk - Modal Harian
+            $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal - $modalHarian;
+            $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal - $modalHarian;
 
             $sale->update([
                 'tanggal' => $data['tanggal'],
                 'shift_id' => $data['shift_id'],
                 'modal_awal' => $modalAwal,
+                'modal_harian' => $modalHarian,
                 'cash' => $cash,
                 'qris' => $qris,
                 'sf' => $sf,
@@ -344,6 +346,7 @@ class SaleController extends Controller
             'tanggal' => 'required|date',
             'shift_id' => 'required|exists:shifts,id',
             'modal_awal' => 'required|numeric',
+            'modal_harian' => 'nullable|numeric',
             'dana_keluar' => 'required|numeric',
             'dana_masuk' => 'required|numeric',
             'selisih_dana' => 'required|numeric',
@@ -381,6 +384,7 @@ class SaleController extends Controller
             $employeeId = $data['employee_id'] ?? null;
 
             $modalAwal = (int) ($data['modal_awal'] ?? 0);
+            $modalHarian = (int) ($data['modal_harian'] ?? 0);
             $danaMasuk = (int) ($data['dana_masuk'] ?? 0);
             $danaKeluar = (int) ($data['dana_keluar'] ?? 0);
             $gajiKaryawan = (int) ($data['gaji_karyawan'] ?? 0);
@@ -390,16 +394,16 @@ class SaleController extends Controller
 
             // Total Omset = Dana Masuk
             $totalOmset = $danaMasuk;
-            // Untung Bersih = Omset Penjualan - Gaji Karyawan - Modal Awal
-            // Note: Modal Awal sudah termasuk biaya operasional 33.000 dari frontend
-            $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal;
-            $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal;
+            // Untung Bersih = Omset Penjualan - Gaji Karyawan - Modal Produk - Modal Harian
+            $untungBersih = $danaMasuk - $gajiKaryawan - $modalAwal - $modalHarian;
+            $untungBersihTanpaKaryawan = $danaMasuk - $modalAwal - $modalHarian;
 
             $sale = Sale::create([
                 'user_id' => auth()->id(),
                 'tanggal' => $data['tanggal'],
                 'shift_id' => $data['shift_id'],
                 'modal_awal' => $modalAwal,
+                'modal_harian' => $modalHarian,
                 'cash' => $cash,
                 'qris' => $qris,
                 'sf' => $sf,

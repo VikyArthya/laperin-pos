@@ -84,10 +84,14 @@ export default function Show({ sale }) {
                         </h2>
                     </div>
                     <div className="p-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
                                 <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Modal Produk</p>
                                 <p className="font-bold text-gray-900 dark:text-white">{formatRp(sale.modal_awal)}</p>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Modal Harian (Ops)</p>
+                                <p className="font-bold text-gray-900 dark:text-white">{formatRp(sale.modal_harian || 0)}</p>
                             </div>
                             <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-100 dark:border-emerald-800">
                                 <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-medium">Dana Masuk</p>

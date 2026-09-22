@@ -11,6 +11,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         tanggal: new Date().toISOString().split('T')[0],
         shift_id: '',
         modal_awal: '0',
+        modal_harian: '0',
         dana_keluar: '0',
         dana_masuk: '0',
         selisih_dana: '0',
@@ -25,6 +26,34 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         items: products.map(p => ({ product_id: p.id, qty: '' })),
     });
 
+    // Cari cabang dari shift yang dipilih
+    const selectedShift = shifts.find(s => s.id == data.shift_id);
+    const currentCabang = selectedShift?.cabang;
+
+    // Filter produk berdasarkan cabang shift
+    const filteredProducts = useMemo(() => {
+        if (!data.shift_id) return [];
+        if (!currentCabang) return products;
+        return products.filter(p => {
+            const catCabang = p.category?.cabang;
+            if (!catCabang) return true;
+            return catCabang.toLowerCase() === currentCabang.toLowerCase();
+        });
+    }, [products, data.shift_id, currentCabang]);
+
+    // Sinkronkan data.items ketika shift_id berubah
+    useEffect(() => {
+        if (data.shift_id) {
+            setData('items', filteredProducts.map(p => {
+                const existing = data.items.find(i => i.product_id === p.id);
+                return {
+                    product_id: p.id,
+                    qty: existing ? existing.qty : '',
+                };
+            }));
+        }
+    }, [data.shift_id]);
+
     // Hitung total omset dari harga jual produk
     const totalOmsetProduk = useMemo(() => {
         return data.items.reduce((total, item) => {
@@ -36,16 +65,15 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         }, 0);
     }, [data.items, products]);
 
-    // Hitung modal awal dari harga beli produk + biaya operasional (bensin dll: Rp 33.000)
-    const totalModalAwal = useMemo(() => {
-        const modalProduk = data.items.reduce((total, item) => {
+    // Hitung modal produk murni dari harga beli produk
+    const totalModalProduk = useMemo(() => {
+        return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
                 return total + ((product.harga_beli || 0) * (item.qty === '' ? 0 : Number(item.qty)));
             }
             return total;
         }, 0);
-        return modalProduk + 33000; // Biaya operasional tetap per transaksi
     }, [data.items, products]);
 
     // Hitung gaji otomatis berdasarkan rumus: (omset × 20%) + (floor(omset / 100rb) × 5rb)
@@ -63,11 +91,11 @@ export default function Create({ shifts, products, employees, authEmployee }) {
     // Update semua field computed saat dependencies berubah
     useEffect(() => {
         setData('omset_penjualan', totalOmsetProduk);
-        setData('modal_awal', totalModalAwal);
+        setData('modal_awal', totalModalProduk);
         setData('dana_masuk', totalOmsetProduk);
         setData('gaji_karyawan', data.is_karyawan_hadir ? autoGaji : 0);
         setData('selisih_dana', selisihDana);
-    }, [totalOmsetProduk, totalModalAwal, autoGaji, data.is_karyawan_hadir, selisihDana]);
+    }, [totalOmsetProduk, totalModalProduk, autoGaji, data.is_karyawan_hadir, selisihDana]);
 
     const handleItemChange = (productId, qty) => {
         const newItems = data.items.map(item =>
@@ -128,8 +156,12 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cabang / Shift</label>
                                 <select value={data.shift_id} onChange={e => setData('shift_id', e.target.value)} className={inputClasses} required>
-                                    <option value="">Pilih Cabang</option>
-                                    {shifts.map(s => <option key={s.id} value={s.id}>{s.nama_shift}</option>)}
+                                    <option value="">-- Pilih Cabang / Shift --</option>
+                                    {shifts.map(s => (
+                                        <option key={s.id} value={s.id}>
+                                            {s.nama_shift} {s.cabang ? `— [Merk: ${s.cabang}]` : '— [Semua Menu]'}
+                                        </option>
+                                    ))}
                                 </select>
                                 {errors.shift_id && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.shift_id}</p>}
                             </div>
@@ -206,12 +238,17 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                     <Calculator className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> Rincian Keuangan
                                 </h2>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                                     <div>
                                         <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Modal Produk <span className="text-emerald-600 dark:text-emerald-400">(Auto)</span></label>
                                         <input type="number" value={data.modal_awal} readOnly className={`${inputClasses} bg-slate-100 dark:bg-slate-900/50 cursor-not-allowed`} />
-                                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">= Σ(Harga Beli × Qty) + Rp 33.000</p>
-                                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Biaya operasional (bensin, dll) termasuk</p>
+                                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">= Σ(Harga Beli × Qty)</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">💰 Modal Harian (Manual)</label>
+                                        <input type="number" value={data.modal_harian} onChange={e => setData('modal_harian', e.target.value)} className={inputClasses} placeholder="0" min="0" />
+                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{formatRp(data.modal_harian)} (Operasional)</p>
                                     </div>
 
                                     <div>
@@ -267,13 +304,13 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">UNTUNG BERSIH</label>
-                                            <p className={`text-2xl sm:text-3xl font-black ${(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.gaji_karyawan)) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatRp(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.gaji_karyawan))}</p>
-                                            <p className="text-[10px] text-slate-400 mt-2">= Dana Masuk - Modal Produk - Gaji</p>
+                                            <p className={`text-2xl sm:text-3xl font-black ${(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.modal_harian || 0) - Number(data.gaji_karyawan)) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatRp(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.modal_harian || 0) - Number(data.gaji_karyawan))}</p>
+                                            <p className="text-[10px] text-slate-400 mt-2">= Dana Masuk - Modal - Operasional - Gaji</p>
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold tracking-wider text-slate-400 mb-2">UNTUNG TANPA GAJI</label>
-                                            <p className={`text-2xl sm:text-3xl font-black ${(Number(data.dana_masuk) - Number(data.modal_awal)) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{formatRp(Number(data.dana_masuk) - Number(data.modal_awal))}</p>
-                                            <p className="text-[10px] text-slate-400 mt-2">= Dana Masuk - Modal Produk</p>
+                                            <p className={`text-2xl sm:text-3xl font-black ${(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.modal_harian || 0)) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{formatRp(Number(data.dana_masuk) - Number(data.modal_awal) - Number(data.modal_harian || 0))}</p>
+                                            <p className="text-[10px] text-slate-400 mt-2">= Dana Masuk - Modal - Operasional</p>
                                         </div>
                                     </div>
                                 </div>
@@ -282,12 +319,30 @@ export default function Create({ shifts, products, employees, authEmployee }) {
 
                         {/* Menu Input */}
                         <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[500px] lg:h-[800px]">
-                            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Input Porsi Terjual</h2>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">Masukkan Qty / Jumlah item yang laku</p>
+                            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Input Porsi Terjual</h2>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">Masukkan Qty / Jumlah item yang laku</p>
+                                </div>
+                                {selectedShift && (
+                                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">
+                                        {currentCabang ? `Merk: ${currentCabang}` : 'Semua Merk'}
+                                    </span>
+                                )}
                             </div>
                             <div className="p-4 flex-1 overflow-y-auto space-y-4">
-                                {products.map(product => {
+                                {!data.shift_id ? (
+                                    <div className="py-16 text-center text-gray-500 dark:text-gray-400">
+                                        <p className="text-sm font-semibold">Pilih Cabang / Shift Terlebih Dahulu</p>
+                                        <p className="text-xs mt-1 text-gray-400">Menu makanan akan tampil sesuai merk cabang.</p>
+                                    </div>
+                                ) : filteredProducts.length === 0 ? (
+                                    <div className="py-16 text-center text-gray-500 dark:text-gray-400">
+                                        <p className="text-sm font-semibold">Tidak ada produk untuk merk "{currentCabang}"</p>
+                                        <p className="text-xs mt-1 text-gray-400">Silakan cek kategori dan produk di Master Data.</p>
+                                    </div>
+                                ) : (
+                                    filteredProducts.map(product => {
                                     const stock = product.stok || 0;
                                     const qty = getQty(product.id);
                                     const isOverStock = qty > stock && stock > 0;
@@ -325,7 +380,8 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                             </div>
                                         </div>
                                     );
-                                })}
+                                })
+                            )}
                             </div>
                         </div>
                     </div>

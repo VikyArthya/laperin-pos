@@ -1,11 +1,21 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Plus, Edit, Trash2, FolderOpen } from 'lucide-react';
 
-export default function Index({ categories }) {
+export default function Index({ categories, cabangs = [], currentCabang = '' }) {
     const formatRp = (num) => {
         if (num === null || num === undefined) return '0';
         return num.toString();
+    };
+
+    const handleDelete = (category) => {
+        const warning = (category.products_count || 0) > 0
+            ? `Kategori "${category.nama_kategori}" masih memiliki ${category.products_count} produk terkait.\n\nJika kategori ini dihapus, produk-produk tersebut akan dialihkan menjadi "Tanpa Kategori".\n\nApakah Anda yakin ingin tetap menghapus?`
+            : `Apakah Anda yakin ingin menghapus kategori "${category.nama_kategori}"?`;
+
+        if (confirm(warning)) {
+            router.delete(`/categories/${category.id}`);
+        }
     };
 
     return (
@@ -22,7 +32,7 @@ export default function Index({ categories }) {
                             </div>
                             Master Kategori Produk
                         </h1>
-                        <p className="mt-1 text-gray-600 dark:text-gray-400">Kelola kategori untuk produk Anda.</p>
+                        <p className="mt-1 text-gray-600 dark:text-gray-400">Kelola kategori untuk membedakan menu antar cabang/merk.</p>
                     </div>
                     <Link
                         href="/categories/create"
@@ -33,6 +43,46 @@ export default function Index({ categories }) {
                     </Link>
                 </div>
 
+                {/* Filter Tabs Merk/Cabang */}
+                {cabangs.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 mb-6">
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mr-1">Filter Merk:</span>
+                        <Link
+                            href="/categories"
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                !currentCabang
+                                    ? 'bg-purple-600 text-white shadow-sm shadow-purple-600/30'
+                                    : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            Semua
+                        </Link>
+                        {cabangs.map((c) => (
+                            <Link
+                                key={c}
+                                href={`/categories?cabang=${encodeURIComponent(c)}`}
+                                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                    currentCabang === c
+                                        ? 'bg-purple-600 text-white shadow-sm shadow-purple-600/30'
+                                        : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                }`}
+                            >
+                                Merk: {c}
+                            </Link>
+                        ))}
+                        <Link
+                            href="/categories?cabang=__umum__"
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                currentCabang === '__umum__'
+                                    ? 'bg-purple-600 text-white shadow-sm shadow-purple-600/30'
+                                    : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            Umum (Semua Cabang)
+                        </Link>
+                    </div>
+                )}
+
                 {/* Table */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <div className="overflow-x-auto">
@@ -40,6 +90,7 @@ export default function Index({ categories }) {
                             <thead className="bg-slate-50 dark:bg-slate-800/80">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Nama Kategori</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Cabang / Merk</th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Kode</th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Deskripsi</th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Status</th>
@@ -67,6 +118,15 @@ export default function Index({ categories }) {
                                                         <div className="text-sm font-medium text-gray-900 dark:text-white">{category.nama_kategori}</div>
                                                     </div>
                                                 </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                                                {category.cabang ? (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400">
+                                                        {category.cabang}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-gray-400 text-xs italic">Semua Cabang</span>
+                                                )}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                                                 {category.kode || '-'}
@@ -96,14 +156,10 @@ export default function Index({ categories }) {
                                                     <Edit className="w-4 h-4 mr-1" />
                                                     Edit
                                                 </Link>
-                                                <button
-                                                    onClick={() => {
-                                                        if (confirm(`Apakah Anda yakin ingin menghapus kategori "${category.nama_kategori}"?`)) {
-                                                            // Inertia delete
-                                                        }
-                                                    }}
-                                                    className="inline-flex items-center text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                                                    disabled={(category.products_count || 0) > 0}
+                                                 <button
+                                                    type="button"
+                                                    onClick={() => handleDelete(category)}
+                                                    className="inline-flex items-center text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
                                                 >
                                                     <Trash2 className="w-4 h-4 mr-1" />
                                                     Hapus
@@ -113,7 +169,7 @@ export default function Index({ categories }) {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center text-gray-600 dark:text-gray-400">
+                                        <td colSpan="7" className="px-6 py-12 text-center text-gray-600 dark:text-gray-400">
                                             <FolderOpen className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
                                             <p className="text-sm">Belum ada kategori.</p>
                                         </td>
