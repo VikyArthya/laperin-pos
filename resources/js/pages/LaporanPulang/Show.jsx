@@ -21,11 +21,14 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
         return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     };
 
+    const formatQty = (val) => {
+        if (val === null || val === undefined || val === '') return '0';
+        const num = parseFloat(val);
+        return isNaN(num) ? '0' : Number(num.toFixed(2)).toString();
+    };
+
     const formatItem = (qty_sisa, qty_bawa) => {
-        const sisa = Number(qty_sisa);
-        const bawa = Number(qty_bawa);
-        const terjual = Math.max(0, bawa - sisa);
-        return `${sisa} (${bawa})`;
+        return `${formatQty(qty_sisa)} (${formatQty(qty_bawa)})`;
     };
 
     const handleDelete = () => {
@@ -127,7 +130,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                                                         <span className="text-gray-700 dark:text-gray-300">{product?.nama_produk || '-'}</span>
                                                         {laporan.status === 'completed' && (
                                                             <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                                                                Terjual: {qtyTerjual}
+                                                                Terjual: {formatQty(qtyTerjual)}
                                                             </span>
                                                         )}
                                                     </div>
@@ -169,14 +172,14 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                                                         <span className="text-gray-700 dark:text-gray-300">{item.product?.nama_produk || '-'}</span>
                                                         {laporan.status === 'completed' && (
                                                             <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                                                                Terjual: {qtyTerjual}
+                                                                Terjual: {formatQty(qtyTerjual)}
                                                             </span>
                                                         )}
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
                                                     <span className="font-semibold text-purple-600 dark:text-purple-400">
-                                                        {qtySisa} ({qtyBawa})
+                                                        {formatItem(item.qty_sisa, item.qty_bawa)}
                                                     </span>
                                                     {laporan.status === 'completed' && qtyTerjual > 0 && item.product && (
                                                         <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
@@ -211,7 +214,7 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                                                         <span className="text-gray-700 dark:text-gray-300">{item.product?.nama_produk || '-'}</span>
                                                         {laporan.status === 'completed' && (
                                                             <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                                                                Terjual: {qtyTerjual}
+                                                                Terjual: {formatQty(qtyTerjual)}
                                                             </span>
                                                         )}
                                                     </div>
@@ -264,14 +267,14 @@ export default function Show({ laporan, itemsByCategory, stockRefillMaterials })
                             </div>
 
                             {/* Ringkasan Sisa Produk */}
-                            {laporan.items.some(item => Number(item.qty_sisa) > 0) && (
+                            {laporan.items.some(item => (parseFloat(item.qty_sisa) || 0) > 0) && (
                                 <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
                                     <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">📦 Ringkasan Sisa Produk (Tidak Terjual)</p>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {laporan.items.filter(item => Number(item.qty_sisa) > 0).map(item => (
+                                        {laporan.items.filter(item => (parseFloat(item.qty_sisa) || 0) > 0).map(item => (
                                             <div key={item.id} className="flex flex-col p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                                                 <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold truncate">{item.product?.nama_produk}</span>
-                                                <span className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{item.qty_sisa} <span className="text-[10px] font-medium text-slate-400">unit</span></span>
+                                                <span className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{formatQty(item.qty_sisa)} <span className="text-[10px] font-medium text-slate-400">unit</span></span>
                                             </div>
                                         ))}
                                     </div>

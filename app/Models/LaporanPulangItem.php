@@ -10,6 +10,11 @@ class LaporanPulangItem extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'qty_bawa' => 'float',
+        'qty_sisa' => 'float',
+    ];
+
     public function laporanPulang()
     {
         return $this->belongsTo(LaporanPulang::class);

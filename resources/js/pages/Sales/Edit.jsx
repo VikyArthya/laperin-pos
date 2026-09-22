@@ -6,6 +6,12 @@ export default function Edit({ sale, shifts, products, employees }) {
     const { props } = usePage();
     const authUser = props.auth?.user;
 
+    const formatQty = (val) => {
+        if (val === null || val === undefined || val === '') return '0';
+        const num = parseFloat(val);
+        return isNaN(num) ? '0' : Number(num.toFixed(2)).toString();
+    };
+
     const { data, setData, put, processing, errors } = useForm({
         tanggal: sale.tanggal,
         shift_id: sale.shift_id,
@@ -26,7 +32,7 @@ export default function Edit({ sale, shifts, products, employees }) {
             const existingItem = sale.sale_items?.find(si => si.product_id === p.id);
             return {
                 product_id: p.id,
-                qty: existingItem ? existingItem.qty : ''
+                qty: existingItem ? formatQty(existingItem.qty) : ''
             };
         }),
     });
@@ -50,7 +56,8 @@ export default function Edit({ sale, shifts, products, employees }) {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
-                return total + (product.harga * (item.qty === '' ? 0 : Number(item.qty)));
+                const q = parseFloat(item.qty) || 0;
+                return total + (product.harga * q);
             }
             return total;
         }, 0);
@@ -61,7 +68,8 @@ export default function Edit({ sale, shifts, products, employees }) {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
-                return total + ((product.harga_beli || 0) * (item.qty === '' ? 0 : Number(item.qty)));
+                const q = parseFloat(item.qty) || 0;
+                return total + ((product.harga_beli || 0) * q);
             }
             return total;
         }, 0);
@@ -108,7 +116,7 @@ export default function Edit({ sale, shifts, products, employees }) {
 
     const handleItemChange = (productId, qty) => {
         const newItems = data.items.map(item =>
-            item.product_id === productId ? { ...item, qty: qty === '' ? '' : Number(qty) } : item
+            item.product_id === productId ? { ...item, qty: qty } : item
         );
         setData('items', newItems);
     };
@@ -295,7 +303,7 @@ export default function Edit({ sale, shifts, products, employees }) {
                             </div>
                             <div className="p-4 flex-1 overflow-y-auto space-y-4">
                                 {filteredProducts.map(product => {
-                                    const stock = product.stok || 0;
+                                    const stock = parseFloat(product.stok) || 0;
                                     const qty = getQty(product.id);
                                     const stockColor = stock > 10 ? 'text-emerald-600 bg-emerald-50' : stock > 0 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50';
                                     return (
@@ -304,13 +312,14 @@ export default function Edit({ sale, shifts, products, employees }) {
                                                 <p className="font-semibold text-sm text-slate-800 group-hover:text-blue-700 transition-colors truncate">{product.nama_produk}</p>
                                                 <div className="flex items-center gap-2 mt-0.5">
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{product.kategori}</p>
-                                                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>Stok: {stock}</span>
+                                                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>Stok: {formatQty(stock)}</span>
                                                 </div>
                                                 <p className="text-[10px] text-slate-500 mt-1">Beli: {formatRp(product.harga_beli)} · Jual: {formatRp(product.harga)}</p>
                                             </div>
                                             <div className="w-24 ml-2">
                                                 <input
                                                     type="number"
+                                                    step="any"
                                                     min="0"
                                                     value={qty}
                                                     onChange={e => handleItemChange(product.id, e.target.value)}
