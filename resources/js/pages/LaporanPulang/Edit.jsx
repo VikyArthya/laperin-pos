@@ -36,6 +36,7 @@ export default function Edit({ laporan, materials }) {
         sf: laporan.sf || '',
         dana_keluar: laporan.dana_keluar || '',
         catatan_dana_keluar: laporan.catatan_dana_keluar || '',
+        modal_harian: laporan.modal_harian || '',
         ma_50: laporan.ma_50 || '50000',
         stock_refill_items: laporan.stock_refill_items || [],
         is_karyawan_hadir: laporan.is_karyawan_hadir ?? true,
@@ -148,17 +149,34 @@ export default function Edit({ laporan, materials }) {
                             </div>
                         </div>
 
-                        {/* Checkbox Tanpa Karyawan */}
-                        <div className="mt-6 flex items-center">
+                        {/* Checkbox Tanpa Karyawan & Modal Harian */}
+                        <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
                             <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-purple-300 transition-colors">
-                                <input 
-                                    type="checkbox" 
-                                    checked={!data.is_karyawan_hadir} 
+                                <input
+                                    type="checkbox"
+                                    checked={!data.is_karyawan_hadir}
                                     onChange={e => setData('is_karyawan_hadir', !e.target.checked)}
                                     className="w-5 h-5 rounded text-purple-600 focus:ring-purple-500"
                                 />
                                 <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Admin Jualan Sendiri (Tanpa Karyawan)</span>
                             </label>
+
+                            <div className="flex-1 max-w-xs">
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                    💰 Modal Harian / Operasional (Rp)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={data.modal_harian}
+                                    onChange={e => setData('modal_harian', e.target.value)}
+                                    className={inputClasses}
+                                    placeholder="0"
+                                    min="0"
+                                />
+                                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                                    {formatRp(data.modal_harian)}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -479,13 +497,18 @@ export default function Edit({ laporan, materials }) {
                                                     <span className="text-slate-500">Modal Produk:</span>
                                                     <span className="font-medium text-slate-600">-{formatRp(laporan.items.reduce((sum, item) => sum + (Math.max(0, Number(item.qty_bawa) - Number(item.qty_sisa)) * (item.product?.harga_beli || 0)), 0))}</span>
                                                 </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-slate-500">Modal Harian (Operasional):</span>
+                                                    <span className="font-medium text-slate-600">-{formatRp(Number(data.modal_harian || 0))}</span>
+                                                </div>
                                                 <div className="flex justify-between text-base font-black pt-2">
                                                     <span className="text-slate-800 dark:text-white">Estimasi Untung Bersih:</span>
                                                     <span className="text-emerald-600 dark:text-emerald-400">
                                                         {formatRp(
-                                                            totalPembayaran 
+                                                            totalPembayaran
                                                             - (data.is_karyawan_hadir ? (laporan.employee?.gaji_pokok || 0) : 0)
                                                             - laporan.items.reduce((sum, item) => sum + (Math.max(0, Number(item.qty_bawa) - Number(item.qty_sisa)) * (item.product?.harga_beli || 0)), 0)
+                                                            - Number(data.modal_harian || 0)
                                                         )}
                                                     </span>
                                                 </div>

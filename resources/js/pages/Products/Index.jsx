@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Plus, Edit2, Trash2, X, Package, Minus, PlusCircle } from 'lucide-react';
 
-export default function Index({ products, categories }) {
+export default function Index({ products, categories, cabangs = [], currentCabang = '' }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isStockModalOpen, setIsStockModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
@@ -124,6 +124,46 @@ export default function Index({ products, categories }) {
                     </div>
                 </div>
 
+                {/* Filter Tabs Merk/Cabang */}
+                {cabangs.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 mb-6">
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mr-1">Filter Merk:</span>
+                        <Link
+                            href="/products"
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                !currentCabang
+                                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+                                    : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            Semua
+                        </Link>
+                        {cabangs.map((c) => (
+                            <Link
+                                key={c}
+                                href={`/products?cabang=${encodeURIComponent(c)}`}
+                                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                    currentCabang === c
+                                        ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+                                        : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                }`}
+                            >
+                                Merk: {c}
+                            </Link>
+                        ))}
+                        <Link
+                            href="/products?cabang=__umum__"
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                currentCabang === '__umum__'
+                                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+                                    : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            Umum (Semua Cabang)
+                        </Link>
+                    </div>
+                )}
+
                 {/* Table Card */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <div className="overflow-x-auto">
@@ -131,7 +171,7 @@ export default function Index({ products, categories }) {
                             <thead className="bg-slate-50/80 dark:bg-slate-800/80">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Nama Produk</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Kategori</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Kategori & Merk</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Harga Beli</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Harga Jual</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Stok</th>
@@ -146,13 +186,24 @@ export default function Index({ products, categories }) {
                                                 {product.nama_produk}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border
-                                                    ${product.kategori === 'Menu Utama' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200/50 dark:border-amber-800/50' :
-                                                    product.kategori === 'Topping' ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-200/50 dark:border-rose-800/50' :
-                                                    product.kategori === 'Packaging' ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50' :
-                                                    'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200/50 dark:border-blue-800/50'}`}>
-                                                    {product.kategori || 'Tanpa Kategori'}
-                                                </span>
+                                                <div className="flex flex-col gap-1 items-start">
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
+                                                        ${(product.category?.nama_kategori || product.kategori) === 'Menu Utama' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200/50 dark:border-amber-800/50' :
+                                                        (product.category?.nama_kategori || product.kategori) === 'Topping' ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-200/50 dark:border-rose-800/50' :
+                                                        (product.category?.nama_kategori || product.kategori) === 'Packaging' ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50' :
+                                                        'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200/50 dark:border-blue-800/50'}`}>
+                                                        {product.category?.nama_kategori || product.kategori || 'Tanpa Kategori'}
+                                                    </span>
+                                                    {product.category?.cabang ? (
+                                                        <span className="inline-flex items-center text-[10px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 px-2 py-0.5 rounded border border-purple-200/60 dark:border-purple-800/40">
+                                                            Merk: {product.category.cabang}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[10px] text-gray-400 dark:text-gray-500 italic">
+                                                            Semua Cabang
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-orange-600 dark:text-orange-400">
                                                 {formatRp(product.harga_beli)}
@@ -262,16 +313,23 @@ export default function Index({ products, categories }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori & Merk</label>
                                     <select
                                         value={data.category_id}
-                                        onChange={e => setData('category_id', e.target.value)}
+                                        onChange={e => {
+                                            const cat = categories.find(c => c.id == e.target.value);
+                                            setData({
+                                                ...data,
+                                                category_id: e.target.value,
+                                                kategori: cat ? cat.nama_kategori : '',
+                                            });
+                                        }}
                                         className={`w-full rounded-lg border px-4 py-2.5 text-gray-900 dark:text-white bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all ${errors.category_id ? 'border-red-500 dark:border-red-600 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'}`}
                                     >
                                         <option value="">Pilih Kategori</option>
                                         {categories && categories.map(category => (
                                             <option key={category.id} value={category.id}>
-                                                {category.nama_kategori}
+                                                {category.nama_kategori} {category.cabang ? `— [Merk: ${category.cabang}]` : '— [Semua Cabang]'}
                                             </option>
                                         ))}
                                     </select>

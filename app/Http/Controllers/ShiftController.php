@@ -11,8 +11,15 @@ class ShiftController extends Controller
     public function index()
     {
         $shifts = Shift::orderBy('nama_shift', 'asc')->paginate(10);
+        $cabangs = \App\Models\Category::whereNotNull('cabang')->where('cabang', '!=', '')
+            ->pluck('cabang')
+            ->merge(Shift::whereNotNull('cabang')->where('cabang', '!=', '')->pluck('cabang'))
+            ->unique()
+            ->values();
+
         return Inertia::render('Shifts/Index', [
-            'shifts' => $shifts
+            'shifts' => $shifts,
+            'cabangs' => $cabangs,
         ]);
     }
 
@@ -20,6 +27,7 @@ class ShiftController extends Controller
     {
         $validated = $request->validate([
             'nama_shift' => 'required|string|max:255|unique:shifts,nama_shift',
+            'cabang' => 'nullable|string|max:255',
         ]);
 
         Shift::create($validated);
@@ -30,6 +38,7 @@ class ShiftController extends Controller
     {
         $validated = $request->validate([
             'nama_shift' => 'required|string|max:255|unique:shifts,nama_shift,' . $shift->id,
+            'cabang' => 'nullable|string|max:255',
         ]);
 
         $shift->update($validated);

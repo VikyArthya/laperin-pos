@@ -17,12 +17,42 @@ export default function Create({ shifts, products, materials, employees }) {
         shift_id: '',
         employee_id: '',
         is_karyawan_hadir: true,
+        modal_harian: '',
         dana_keluar: '',
-        items: products.map(p => ({
-            product_id: p.id,
-            qty_bawa: '',
-        })),
+        items: [],
     });
+
+    // Cari cabang dari shift yang dipilih
+    const selectedShift = shifts.find(s => s.id == data.shift_id);
+    const currentCabang = selectedShift?.cabang;
+
+    // Filter produk berdasarkan cabang dari shift yang dipilih
+    const filteredProducts = React.useMemo(() => {
+        if (!data.shift_id) return [];
+        if (!currentCabang) return products; // Jika shift tidak dispesifikasikan merk, tampilkan semua
+        return products.filter(p => {
+            const catCabang = p.category?.cabang;
+            // Jika kategori tidak memiliki cabang khusus, berlaku untuk semua cabang
+            if (!catCabang) return true;
+            // Jika ada cabang khusus, harus cocok dengan cabang shift
+            return catCabang.toLowerCase() === currentCabang.toLowerCase();
+        });
+    }, [products, data.shift_id, currentCabang]);
+
+    // Sinkronkan data.items ketika shift_id berubah agar hanya memuat produk cabang terkait
+    React.useEffect(() => {
+        if (data.shift_id) {
+            setData('items', filteredProducts.map(p => {
+                const existing = data.items.find(i => i.product_id === p.id);
+                return {
+                    product_id: p.id,
+                    qty_bawa: existing ? existing.qty_bawa : '',
+                };
+            }));
+        } else {
+            setData('items', []);
+        }
+    }, [data.shift_id, filteredProducts.length]);
 
     const handleItemChange = (productId, field, value) => {
         const newItems = data.items.map(item =>
@@ -44,9 +74,9 @@ export default function Create({ shifts, products, materials, employees }) {
 
     const inputClasses = "w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all";
 
-    // Group products by category
-    const productsByCategory = products.reduce((acc, product) => {
-        const category = product.kategori || 'Lainnya';
+    // Group products by category dari filteredProducts
+    const productsByCategory = filteredProducts.reduce((acc, product) => {
+        const category = product.category?.nama_kategori || product.kategori || 'Lainnya';
         if (!acc[category]) acc[category] = [];
         acc[category].push(product);
         return acc;
@@ -101,8 +131,12 @@ export default function Create({ shifts, products, materials, employees }) {
                                     className={inputClasses}
                                     required
                                 >
-                                    <option value="">Pilih Cabang</option>
-                                    {shifts.map(s => <option key={s.id} value={s.id}>{s.nama_shift}</option>)}
+                                    <option value="">-- Pilih Cabang / Shift --</option>
+                                    {shifts.map(s => (
+                                        <option key={s.id} value={s.id}>
+                                            {s.nama_shift} {s.cabang ? `— [Merk: ${s.cabang}]` : '— [Semua Menu]'}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
@@ -110,10 +144,10 @@ export default function Create({ shifts, products, materials, employees }) {
                         {/* Checkbox Tanpa Karyawan */}
                         <div className="mt-6 flex items-center">
                             <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-purple-300 transition-colors">
-                                <input 
-                                    type="checkbox" 
+                                <input
+                                    type="checkbox"
                                     id="admin_jualan_checkbox"
-                                    checked={data.is_karyawan_hadir === false} 
+                                    checked={data.is_karyawan_hadir === false}
                                     onChange={e => setData('is_karyawan_hadir', e.target.checked ? false : true)}
                                     className="w-5 h-5 rounded text-purple-600 focus:ring-purple-500"
                                 />
@@ -138,89 +172,152 @@ export default function Create({ shifts, products, materials, employees }) {
                             </select>
                             {data.is_karyawan_hadir === true && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pilih karyawan yang akan mengisi laporan ini</p>}
                         </div>
+
+                        <div className="mt-6 border-t border-slate-100 dark:border-slate-800 pt-6">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                💰 Modal Harian / Operasional Cabang
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <input
+                                        type="number"
+                                        name="modal_harian"
+                                        value={data.modal_harian}
+                                        onChange={e => setData('modal_harian', e.target.value)}
+                                        className={inputClasses}
+                                        placeholder="Contoh: 33000"
+                                        min="0"
+                                    />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        {formatRp(data.modal_harian)} (Biaya operasional harian cabang yang memotong untung bersih)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Stok Bawa */}
                     <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-2">Input Stok Bawa</h2>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">Masukkan jumlah stok bawa untuk setiap produk. Karyawan akan menginput sisa stok nanti.</p>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 mb-4 border-b border-slate-100 dark:border-slate-800 gap-2">
+                            <div>
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Input Stok Bawa</h2>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Masukkan jumlah stok bawa untuk setiap produk cabang.</p>
+                            </div>
+                            {selectedShift && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800 self-start sm:self-auto">
+                                    <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></span>
+                                    {currentCabang ? `Merk: ${currentCabang}` : 'Semua Merk'}
+                                </span>
+                            )}
+                        </div>
 
-                        <div className="space-y-8">
-                            {sortedCategories.map((category) => {
-                                const categoryProducts = productsByCategory[category] || [];
-                                if (categoryProducts.length === 0) return null;
+                        {!data.shift_id ? (
+                            <div className="py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-800/30">
+                                <Package className="w-12 h-12 mx-auto text-purple-400 mb-3" />
+                                <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                                    Silakan Pilih Cabang / Shift Terlebih Dahulu
+                                </h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
+                                    Daftar menu produk akan otomatis disaring sesuai merk yang berlaku pada cabang/shift yang Anda pilih di atas.
+                                </p>
+                            </div>
+                        ) : filteredProducts.length === 0 ? (
+                            <div className="py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-800/30">
+                                <Package className="w-12 h-12 mx-auto text-slate-400 mb-3" />
+                                <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                                    Belum Ada Produk untuk Merk Ini
+                                </h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
+                                    Tidak ada produk yang terhubung ke merk <span className="font-semibold text-purple-600 dark:text-purple-400">"{currentCabang}"</span>. Silakan hubungkan kategori atau produk ke merk ini di Master Data.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-8">
+                                {sortedCategories.map((category) => {
+                                    const categoryProducts = productsByCategory[category] || [];
+                                    if (categoryProducts.length === 0) return null;
 
-                                return (
-                                    <div key={category}>
-                                        <h3 className="text-md font-bold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wider flex items-center gap-2">
-                                            <span className={`inline-block w-2 h-2 rounded-full ${category === 'Menu Utama' ? 'bg-amber-500' :
+                                    return (
+                                        <div key={category}>
+                                            <h3 className="text-md font-bold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wider flex items-center gap-2">
+                                                <span className={`inline-block w-2 h-2 rounded-full ${category === 'Menu Utama' ? 'bg-amber-500' :
                                                     category === 'Topping' ? 'bg-rose-500' :
                                                         category === 'Packaging' ? 'bg-slate-500' :
                                                             'bg-blue-500'
-                                                }`} />
-                                            {category === 'Menu Utama' ? 'ISIAN' :
-                                                category === 'Topping' ? 'TOPPING' :
-                                                    category === 'Packaging' ? 'PACKAGING' :
-                                                        `${category.toUpperCase()}`}
-                                        </h3>
-                                        <div className="space-y-3">
-                                            {categoryProducts.map((product) => {
-                                                const item = data.items.find(i => i.product_id === product.id) || {};
+                                                    }`} />
+                                                {category === 'Menu Utama' ? 'ISIAN' :
+                                                    category === 'Topping' ? 'TOPPING' :
+                                                        category === 'Packaging' ? 'PACKAGING' :
+                                                            `${category.toUpperCase()}`}
+                                            </h3>
+                                            <div className="space-y-3">
+                                                {categoryProducts.map((product) => {
+                                                    const item = data.items.find(i => i.product_id === product.id) || {};
 
-
-                                                return (
-                                                    <div key={product.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                        {/* Mobile Layout - Vertical */}
-                                                        <div className="sm:hidden">
-                                                            <div className="flex items-center gap-3 mb-3">
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className="font-semibold text-gray-900 dark:text-white text-sm">{product.nama_produk}</p>
-                                                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
+                                                    return (
+                                                        <div key={product.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                                                            {/* Mobile Layout - Vertical */}
+                                                            <div className="sm:hidden">
+                                                                <div className="flex items-center gap-3 mb-3">
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                                                                            {product.nama_produk}
+                                                                            {!product.category?.cabang && (
+                                                                                <span className="ml-1.5 text-[10px] text-gray-400 font-normal italic">(Umum)</span>
+                                                                            )}
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Stok Bawa</label>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        value={item.qty_bawa}
+                                                                        onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
+                                                                        className={`w-full rounded-lg border px-3 py-2 text-center text-base text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
+                                                                    />
+                                                                    {errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] && (
+                                                                        <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium text-center">Wajib isi</p>
+                                                                    )}
                                                                 </div>
                                                             </div>
-                                                            <div>
-                                                                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Stok Bawa</label>
-                                                                <input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    value={item.qty_bawa}
-                                                                    onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
-                                                                    className={`w-full rounded-lg border px-3 py-2 text-center text-base text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
-                                                                />
-                                                                {errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] && (
-                                                                    <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium text-center">Wajib isi</p>
-                                                                )}
-                                                            </div>
-                                                        </div>
 
-                                                        {/* Desktop Layout - Horizontal */}
-                                                        <div className="hidden sm:flex items-center gap-4">
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="font-medium text-gray-900 dark:text-white truncate">{product.nama_produk}</p>
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
-                                                            </div>
-                                                            <div className="text-center">
-                                                                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Stok Bawa</label>
-                                                                <input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    value={item.qty_bawa}
-                                                                    onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
-                                                                    className={`w-20 rounded-lg border px-2 py-1 text-center text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
-                                                                />
-                                                                {errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] && (
-                                                                    <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium leading-tight text-center">Wajib isi</p>
-                                                                )}
+                                                            {/* Desktop Layout - Horizontal */}
+                                                            <div className="hidden sm:flex items-center gap-4">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="font-medium text-gray-900 dark:text-white truncate">
+                                                                        {product.nama_produk}
+                                                                        {!product.category?.cabang && (
+                                                                            <span className="ml-1.5 text-[10px] text-gray-400 font-normal italic">(Semua Cabang)</span>
+                                                                        )}
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400">Harga: {formatRp(product.harga)} | Stok: {product.stok}</p>
+                                                                </div>
+                                                                <div className="text-center">
+                                                                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Stok Bawa</label>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        value={item.qty_bawa}
+                                                                        onChange={(e) => handleItemChange(product.id, 'qty_bawa', e.target.value)}
+                                                                        className={`w-20 rounded-lg border px-2 py-1 text-center text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] ? 'border-red-500 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'} bg-white dark:bg-slate-800`}
+                                                                    />
+                                                                    {errors[`items.${data.items.findIndex(i => i.product_id === product.id)}.qty_bawa`] && (
+                                                                        <p className="mt-1 text-[10px] text-red-600 dark:text-red-400 font-medium leading-tight text-center">Wajib isi</p>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     {/* Dana Keluar */}

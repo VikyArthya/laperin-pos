@@ -8,26 +8,53 @@ use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::withCount('products')
-            ->orderBy('nama_kategori')
-            ->get();
+        $cabangFilter = $request->input('cabang');
+
+        $query = Category::withCount('products')->orderBy('nama_kategori');
+
+        if ($cabangFilter === '__umum__') {
+            $query->where(function ($q) {
+                $q->whereNull('cabang')->orWhere('cabang', '');
+            });
+        } elseif ($cabangFilter) {
+            $query->where('cabang', $cabangFilter);
+        }
+
+        $categories = $query->get();
+
+        $cabangs = Category::whereNotNull('cabang')->where('cabang', '!=', '')
+            ->pluck('cabang')
+            ->merge(\App\Models\Shift::whereNotNull('cabang')->where('cabang', '!=', '')->pluck('cabang'))
+            ->unique()
+            ->values();
 
         return Inertia::render('Categories/Index', [
             'categories' => $categories,
+            'cabangs' => $cabangs,
+            'currentCabang' => $cabangFilter,
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Categories/Create');
+        $cabangs = \App\Models\Category::whereNotNull('cabang')->where('cabang', '!=', '')
+            ->pluck('cabang')
+            ->merge(\App\Models\Shift::whereNotNull('cabang')->where('cabang', '!=', '')->pluck('cabang'))
+            ->unique()
+            ->values();
+
+        return Inertia::render('Categories/Create', [
+            'cabangs' => $cabangs,
+        ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'nama_kategori' => 'required|string|max:255',
+            'cabang' => 'nullable|string|max:255',
             'kode' => 'nullable|string|max:50|unique:categories,kode',
             'deskripsi' => 'nullable|string',
             'is_active' => 'boolean',
@@ -35,6 +62,7 @@ class CategoryController extends Controller
 
         Category::create([
             'nama_kategori' => $request->nama_kategori,
+            'cabang' => $request->cabang,
             'kode' => $request->kode,
             'deskripsi' => $request->deskripsi,
             'is_active' => $request->is_active ?? true,
@@ -45,8 +73,15 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
+        $cabangs = \App\Models\Category::whereNotNull('cabang')->where('cabang', '!=', '')
+            ->pluck('cabang')
+            ->merge(\App\Models\Shift::whereNotNull('cabang')->where('cabang', '!=', '')->pluck('cabang'))
+            ->unique()
+            ->values();
+
         return Inertia::render('Categories/Edit', [
             'category' => $category,
+            'cabangs' => $cabangs,
         ]);
     }
 
@@ -54,6 +89,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'nama_kategori' => 'required|string|max:255',
+            'cabang' => 'nullable|string|max:255',
             'kode' => 'nullable|string|max:50|unique:categories,kode,'.$category->id,
             'deskripsi' => 'nullable|string',
             'is_active' => 'boolean',
@@ -61,6 +97,7 @@ class CategoryController extends Controller
 
         $category->update([
             'nama_kategori' => $request->nama_kategori,
+            'cabang' => $request->cabang,
             'kode' => $request->kode,
             'deskripsi' => $request->deskripsi,
             'is_active' => $request->is_active ?? true,
@@ -71,10 +108,11 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        // Cek apakah kategori masih digunakan oleh produk
-        if ($category->products()->count() > 0) {
-            return back()->withErrors(['message' => 'Kategori masih digunakan oleh produk. Hapus atau ubah kategori produk terlebih dahulu.']);
-        }
+        // Setel category_id menjadi null pada produk yang terkait agar produk tetap aman
+        \App\Models\Product::where('category_id', $category->id)->update([
+            'category_id' => null,
+            'kategori' => null,
+        ]);
 
         $category->delete();
 

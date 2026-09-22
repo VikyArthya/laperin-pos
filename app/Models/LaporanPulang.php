@@ -20,9 +20,11 @@ class LaporanPulang extends Model
         'total_pembayaran',
         'dana_keluar',
         'catatan_dana_keluar',
+        'modal_harian',
         'ma_50',
         'catatan_stok',
         'stock_refill_items',
+        'is_karyawan_hadir',
         'status',
     ];
 

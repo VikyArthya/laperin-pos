@@ -49,7 +49,7 @@ class LaporanPulangController extends Controller
         }
 
         $shifts = Shift::all();
-        $products = Product::orderBy('nama_produk')->get();
+        $products = Product::with('category')->orderBy('nama_produk')->get();
         $materials = Material::orderBy('nama_bahan')->get();
         $employees = Employee::orderBy('nama')->get();
 
@@ -73,6 +73,7 @@ class LaporanPulangController extends Controller
             'shift_id' => 'required|exists:shifts,id',
             'employee_id' => 'nullable|exists:employees,id',
             'is_karyawan_hadir' => 'nullable|boolean',
+            'modal_harian' => 'nullable|integer|min:0',
             'dana_keluar' => 'nullable|integer|min:0',
             'catatan_dana_keluar' => 'nullable|string',
             'items' => 'required|array',
@@ -105,6 +106,7 @@ class LaporanPulangController extends Controller
                 'qris' => 0,
                 'sf' => 0,
                 'total_pembayaran' => 0,
+                'modal_harian' => (int) ($request->modal_harian ?? 0),
                 'dana_keluar' => (int) ($request->dana_keluar ?? 0),
                 'catatan_dana_keluar' => $request->catatan_dana_keluar,
                 'ma_50' => null,
@@ -146,13 +148,13 @@ class LaporanPulangController extends Controller
         }
         // Karyawan hanya bisa mengedit laporan yang di-assign ke dia dan belum completed
         elseif (auth()->check() && auth()->user()->role === 'karyawan') {
-            if (! $laporanPulang->isSubmittedByAdmin()) {
+            if (!$laporanPulang->isSubmittedByAdmin()) {
                 abort(403, 'Laporan ini belum siap untuk diisi.');
             }
 
             // Cek apakah laporan di-assign ke karyawan yang sedang login
             $authEmployee = Employee::where('user_id', auth()->id())->first();
-            if (! $authEmployee || $laporanPulang->employee_id !== $authEmployee->id) {
+            if (!$authEmployee || $laporanPulang->employee_id !== $authEmployee->id) {
                 abort(403, 'Laporan ini tidak di-assign ke Anda.');
             }
         } else {
@@ -180,7 +182,7 @@ class LaporanPulangController extends Controller
 
         // Jika karyawan, cek validasi status laporan
         if (auth()->user()->role === 'karyawan') {
-            if (! $laporanPulang->isSubmittedByAdmin() && ! $laporanPulang->employee_id) {
+            if (!$laporanPulang->isSubmittedByAdmin() && !$laporanPulang->employee_id) {
                 abort(403, 'Laporan ini belum siap untuk diisi.');
             }
         }
@@ -189,6 +191,7 @@ class LaporanPulangController extends Controller
             'cash' => 'nullable|integer|min:0',
             'qris' => 'nullable|integer|min:0',
             'sf' => 'nullable|integer|min:0',
+            'modal_harian' => 'nullable|integer|min:0',
             'dana_keluar' => 'nullable|integer|min:0',
             'catatan_dana_keluar' => 'nullable|string',
             'ma_50' => 'nullable|string',
@@ -267,6 +270,7 @@ class LaporanPulangController extends Controller
                 'qris' => $qris,
                 'sf' => $sf,
                 'total_pembayaran' => $totalPembayaran,
+                'modal_harian' => $request->has('modal_harian') ? (int) $request->modal_harian : (int) ($laporanPulang->modal_harian ?? 0),
                 'dana_keluar' => $danaKeluar,
                 'catatan_dana_keluar' => $request->catatan_dana_keluar,
                 'ma_50' => $request->ma_50,
@@ -277,7 +281,7 @@ class LaporanPulangController extends Controller
             ];
 
             // Jika belum ada user_id (karyawan belum submit), isi dengan auth id jika role karyawan
-            if (! $laporanPulang->user_id && auth()->user()->role === 'karyawan') {
+            if (!$laporanPulang->user_id && auth()->user()->role === 'karyawan') {
                 $updateData['user_id'] = auth()->id();
             }
 
@@ -286,7 +290,7 @@ class LaporanPulangController extends Controller
             // Jika statusnya completed, baru proses Sale dan Stok Kembalian
             if ($newStatus === 'completed') {
                 $authEmployee = Employee::where('id', $laporanPulang->employee_id)->first();
-                if (! $authEmployee) {
+                if (!$authEmployee) {
                     // Fallback jika tidak ada employee_id
                     $authEmployee = Employee::where('user_id', auth()->id())->first();
                 }
@@ -346,11 +350,13 @@ class LaporanPulangController extends Controller
                 }
 
                 // PERHITUNGAN PENJUALAN:
+                // Modal Harian = inputan manual modal operasional
                 // Omset Penjualan = Total Harga Terjual (harga produk yang terjual)
-                // Untung Kotor = Omset Penjualan - Modal Awal
+                // Untung Kotor = Omset Penjualan - Modal Produk - Modal Harian
                 // Untung Bersih = (Untung Kotor - Gaji Karyawan) + Selisih Pembayaran
+                $modalHarian = (int) ($updateData['modal_harian'] ?? 0);
                 $omsetPenjualan = $totalHargaTerjual;
-                $untungKotor = $omsetPenjualan - $totalModalAwal;
+                $untungKotor = $omsetPenjualan - $totalModalAwal - $modalHarian;
                 $untungBersihTanpaKaryawan = $untungKotor + $selisihPembayaran;
                 $untungBersih = ($untungKotor - $gajiKaryawan) + $selisihPembayaran;
 
@@ -360,6 +366,7 @@ class LaporanPulangController extends Controller
                 $saleData = [
                     'user_id' => auth()->id(),
                     'modal_awal' => $totalModalAwal,
+                    'modal_harian' => $modalHarian,
                     'cash' => $cash,
                     'qris' => $qris,
                     'sf' => $sf,
@@ -380,7 +387,7 @@ class LaporanPulangController extends Controller
                 if ($sale) {
                     // Update existing sale
                     $sale->update(array_merge($saleData, [
-                        'catatan' => 'Diperbarui dari Laporan Pulang #'.$laporanPulang->id,
+                        'catatan' => 'Diperbarui dari Laporan Pulang #' . $laporanPulang->id,
                     ]));
 
                     // Delete existing sale items
@@ -394,7 +401,7 @@ class LaporanPulangController extends Controller
                         'omset_bubuk' => 0,
                         'omset_topping' => 0,
                         'biaya_packaging' => 0,
-                        'catatan' => 'Otomatis dibuat dari Laporan Pulang #'.$laporanPulang->id,
+                        'catatan' => 'Otomatis dibuat dari Laporan Pulang #' . $laporanPulang->id,
                     ]));
                 }
 
@@ -448,7 +455,7 @@ class LaporanPulangController extends Controller
         // Karyawan: hanya bisa melihat laporan yang di-assign ke dia
         if (auth()->check() && auth()->user()->role === 'karyawan') {
             $authEmployee = Employee::where('user_id', auth()->id())->first();
-            if (! $authEmployee || $laporanPulang->employee_id !== $authEmployee->id) {
+            if (!$authEmployee || $laporanPulang->employee_id !== $authEmployee->id) {
                 abort(403, 'Anda tidak memiliki akses ke laporan ini.');
             }
         }
@@ -470,7 +477,7 @@ class LaporanPulangController extends Controller
 
         foreach ($laporanPulang->items as $item) {
             $kategori = $item->product->kategori ?? 'Lainnya';
-            if (! isset($itemsByCategory[$kategori])) {
+            if (!isset($itemsByCategory[$kategori])) {
                 $itemsByCategory[$kategori] = [];
             }
             $itemsByCategory[$kategori][] = $item;
