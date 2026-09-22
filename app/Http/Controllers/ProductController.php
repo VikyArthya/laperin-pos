@@ -56,7 +56,7 @@ class ProductController extends Controller
             'kategori' => 'nullable|string|max:255', // Untuk backward compatibility
             'harga_beli' => 'required|integer|min:0',
             'harga' => 'required|integer|min:0',
-            'stok' => 'required|integer|min:0',
+            'stok' => 'required|numeric|min:0',
         ]);
 
         Product::create($validated);
@@ -72,7 +72,7 @@ class ProductController extends Controller
             'kategori' => 'nullable|string|max:255', // Untuk backward compatibility
             'harga_beli' => 'required|integer|min:0',
             'harga' => 'required|integer|min:0',
-            'stok' => 'required|integer|min:0',
+            'stok' => 'required|numeric|min:0',
         ]);
 
         $product->update($validated);
@@ -83,7 +83,7 @@ class ProductController extends Controller
     public function addStock(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'jumlah' => 'required|integer|min:1',
+            'jumlah' => 'required|numeric|min:0.01',
         ]);
 
         $product->increment('stok', $validated['jumlah']);
@@ -94,7 +94,7 @@ class ProductController extends Controller
     public function reduceStock(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'jumlah' => 'required|integer|min:1',
+            'jumlah' => 'required|numeric|min:0.01',
         ]);
 
         $currentStock = $product->stok ?? 0;

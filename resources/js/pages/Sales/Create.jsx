@@ -7,6 +7,12 @@ export default function Create({ shifts, products, employees, authEmployee }) {
     const authUser = props.auth?.user;
     const isKaryawan = authUser?.role === 'karyawan';
 
+    const formatQty = (val) => {
+        if (val === null || val === undefined || val === '') return '0';
+        const num = parseFloat(val);
+        return isNaN(num) ? '0' : Number(num.toFixed(2)).toString();
+    };
+
     const { data, setData, post, processing, errors, reset } = useForm({
         tanggal: new Date().toISOString().split('T')[0],
         shift_id: '',
@@ -59,7 +65,8 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
-                return total + (product.harga * (item.qty === '' ? 0 : Number(item.qty)));
+                const q = parseFloat(item.qty) || 0;
+                return total + (product.harga * q);
             }
             return total;
         }, 0);
@@ -70,7 +77,8 @@ export default function Create({ shifts, products, employees, authEmployee }) {
         return data.items.reduce((total, item) => {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
-                return total + ((product.harga_beli || 0) * (item.qty === '' ? 0 : Number(item.qty)));
+                const q = parseFloat(item.qty) || 0;
+                return total + ((product.harga_beli || 0) * q);
             }
             return total;
         }, 0);
@@ -99,7 +107,7 @@ export default function Create({ shifts, products, employees, authEmployee }) {
 
     const handleItemChange = (productId, qty) => {
         const newItems = data.items.map(item =>
-            item.product_id === productId ? { ...item, qty: qty === '' ? '' : Number(qty) } : item
+            item.product_id === productId ? { ...item, qty: qty } : item
         );
         setData('items', newItems);
     };
@@ -343,9 +351,10 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                     </div>
                                 ) : (
                                     filteredProducts.map(product => {
-                                    const stock = product.stok || 0;
+                                    const stock = parseFloat(product.stok) || 0;
                                     const qty = getQty(product.id);
-                                    const isOverStock = qty > stock && stock > 0;
+                                    const numQty = parseFloat(qty) || 0;
+                                    const isOverStock = numQty > stock && stock > 0;
                                     const stockColor = stock > 10 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30' : stock > 0 ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30' : 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30';
                                     return (
                                         <div key={product.id} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-300 group ${
@@ -355,18 +364,19 @@ export default function Create({ shifts, products, employees, authEmployee }) {
                                                 <p className="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors truncate">{product.nama_produk}</p>
                                                 <div className="flex items-center gap-2 mt-0.5">
                                                     <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{product.kategori}</p>
-                                                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>Stok: {stock}</span>
+                                                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stockColor}`}>Stok: {formatQty(stock)}</span>
                                                 </div>
                                                 <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-1">Beli: {formatRp(product.harga_beli)} · Jual: {formatRp(product.harga)}</p>
                                                 {isOverStock && (
                                                     <p className="text-[10px] font-bold text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
-                                                        <span>⚠️</span> Melebihi stok! (max: {stock})
+                                                        <span>⚠️</span> Melebihi stok! (max: {formatQty(stock)})
                                                     </p>
                                                 )}
                                             </div>
                                             <div className="w-24 ml-2">
                                                 <input
                                                     type="number"
+                                                    step="any"
                                                     min="0"
                                                     max={stock}
                                                     value={qty}

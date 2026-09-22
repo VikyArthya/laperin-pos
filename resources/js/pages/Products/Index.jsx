@@ -26,6 +26,12 @@ export default function Index({ products, categories, cabangs = [], currentCaban
         return 'Rp ' + (num || 0).toLocaleString('id-ID');
     };
 
+    const formatQty = (val) => {
+        if (val === null || val === undefined || val === '') return '0';
+        const num = parseFloat(val);
+        return isNaN(num) ? '0' : Number(num.toFixed(2)).toString();
+    };
+
     const openAddModal = () => {
         setModalMode('add');
         setEditingId(null);
@@ -43,7 +49,7 @@ export default function Index({ products, categories, cabangs = [], currentCaban
             kategori: product.kategori || '', // Untuk backward compatibility
             harga_beli: product.harga_beli || '',
             harga: product.harga || '',
-            stok: product.stok || '',
+            stok: formatQty(product.stok),
         });
         clearErrors();
         setIsModalOpen(true);
@@ -213,10 +219,10 @@ export default function Index({ products, categories, cabangs = [], currentCaban
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
-                                                    ${(product.stok || 0) > 10 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
-                                                    (product.stok || 0) > 0 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
+                                                    ${(parseFloat(product.stok) || 0) > 10 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
+                                                    (parseFloat(product.stok) || 0) > 0 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
                                                     'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
-                                                    {(product.stok || 0)} unit
+                                                    {formatQty(product.stok)} unit
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -366,6 +372,7 @@ export default function Index({ products, categories, cabangs = [], currentCaban
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stok Awal</label>
                                     <input
                                         type="number"
+                                        step="any"
                                         value={data.stok}
                                         onChange={e => setData('stok', e.target.value)}
                                         min="0"
@@ -417,7 +424,7 @@ export default function Index({ products, categories, cabangs = [], currentCaban
                                 {stockItem?.type === 'add' ? 'Masukkan jumlah stok yang ingin ditambahkan.' : 'Masukkan jumlah stok yang ingin dikurangi.'}
                             </p>
                             <p className="text-sm font-medium text-gray-900 dark:text-white mb-4">
-                                {stockItem?.nama_produk} <span className="text-gray-500 dark:text-gray-400">(Stok saat ini: {stockItem?.stok || 0})</span>
+                                {stockItem?.nama_produk} <span className="text-gray-500 dark:text-gray-400">(Stok saat ini: {formatQty(stockItem?.stok)})</span>
                             </p>
 
                             <form onSubmit={handleStockSubmit}>
@@ -425,9 +432,10 @@ export default function Index({ products, categories, cabangs = [], currentCaban
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah</label>
                                     <input
                                         type="number"
+                                        step="any"
                                         value={stockData.jumlah}
                                         onChange={e => setStockDataData('jumlah', e.target.value)}
-                                        min="1"
+                                        min="0.01"
                                         className={`w-full rounded-lg border px-4 py-2.5 text-gray-900 dark:text-white bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all ${errors.jumlah ? 'border-red-500 dark:border-red-600 ring-red-500/20' : 'border-slate-300 dark:border-slate-600'}`}
                                         placeholder="Masukkan jumlah"
                                     />

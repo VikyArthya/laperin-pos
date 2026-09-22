@@ -78,7 +78,7 @@ class LaporanPulangController extends Controller
             'catatan_dana_keluar' => 'nullable|string',
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.qty_bawa' => 'required|integer|min:0',
+            'items.*.qty_bawa' => 'nullable|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -117,9 +117,8 @@ class LaporanPulangController extends Controller
             // Simpan stok bawa untuk setiap produk dan kurangi stok master
             if ($request->has('items')) {
                 foreach ($request->items as $item) {
-                    if (isset($item['product_id']) && $item['qty_bawa'] > 0) {
-                        $qtyBawa = (int) $item['qty_bawa'];
-
+                    $qtyBawa = isset($item['qty_bawa']) && $item['qty_bawa'] !== '' ? (float) $item['qty_bawa'] : 0;
+                    if (isset($item['product_id']) && $qtyBawa > 0) {
                         LaporanPulangItem::create([
                             'laporan_pulang_id' => $laporan->id,
                             'product_id' => $item['product_id'],
@@ -201,8 +200,8 @@ class LaporanPulangController extends Controller
             'items' => 'nullable|array',
             'is_karyawan_hadir' => 'nullable|boolean',
             'items.*.id' => 'required|exists:laporan_pulang_items,id',
-            'items.*.qty_sisa' => 'required|integer|min:0',
-            'items.*.qty_bawa' => 'required|integer|min:0',
+            'items.*.qty_sisa' => 'nullable|numeric|min:0',
+            'items.*.qty_bawa' => 'nullable|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($request, $laporanPulang) {
@@ -218,13 +217,13 @@ class LaporanPulangController extends Controller
             // 1. Handle Qty Bawa changes by Admin (hanya jika status masih submitted_by_admin)
             if ($isAdmin && $isSubmittedByAdmin && $request->has('items')) {
                 foreach ($request->items as $itemData) {
-                    if (isset($itemData['id']) && isset($itemData['qty_bawa'])) {
+                    if (isset($itemData['id'])) {
                         $laporanItem = LaporanPulangItem::find($itemData['id']);
                         if ($laporanItem && $laporanItem->laporan_pulang_id === $laporanPulang->id) {
-                            $oldQtyBawa = $laporanItem->qty_bawa;
-                            $newQtyBawa = (int) $itemData['qty_bawa'];
+                            $oldQtyBawa = (float) $laporanItem->qty_bawa;
+                            $newQtyBawa = isset($itemData['qty_bawa']) && $itemData['qty_bawa'] !== '' ? (float) $itemData['qty_bawa'] : 0;
 
-                            if ($oldQtyBawa !== $newQtyBawa) {
+                            if (abs($oldQtyBawa - $newQtyBawa) > 0.0001) {
                                 $diff = $newQtyBawa - $oldQtyBawa;
                                 $product = $laporanItem->product;
                                 if ($product) {
@@ -252,7 +251,7 @@ class LaporanPulangController extends Controller
                 $hasQtySisa = false;
                 if ($request->has('items')) {
                     foreach ($request->items as $i) {
-                        if (isset($i['qty_sisa']) && (int) $i['qty_sisa'] > 0) {
+                        if (isset($i['qty_sisa']) && (float) $i['qty_sisa'] > 0) {
                             $hasQtySisa = true;
                             break;
                         }
@@ -304,8 +303,8 @@ class LaporanPulangController extends Controller
                         if (isset($item['id'])) {
                             $laporanItem = LaporanPulangItem::find($item['id']);
                             if ($laporanItem && $laporanItem->laporan_pulang_id === $laporanPulang->id) {
-                                $qtySisa = (int) ($item['qty_sisa'] ?? 0);
-                                $qtyBawa = $laporanItem->qty_bawa;
+                                $qtySisa = isset($item['qty_sisa']) && $item['qty_sisa'] !== '' ? (float) $item['qty_sisa'] : 0;
+                                $qtyBawa = (float) $laporanItem->qty_bawa;
 
                                 // Hitung qty_terjual = qty_bawa - qty_sisa
                                 $qtyTerjual = max(0, $qtyBawa - $qtySisa);
@@ -413,8 +412,8 @@ class LaporanPulangController extends Controller
                             if ($laporanItem && $laporanItem->laporan_pulang_id === $laporanPulang->id) {
                                 $product = $laporanItem->product;
                                 if ($product) {
-                                    $qtyBawa = $laporanItem->qty_bawa;
-                                    $qtySisa = (int) ($item['qty_sisa'] ?? 0);
+                                    $qtyBawa = (float) $laporanItem->qty_bawa;
+                                    $qtySisa = isset($item['qty_sisa']) && $item['qty_sisa'] !== '' ? (float) $item['qty_sisa'] : 0;
                                     $qtyTerjual = max(0, $qtyBawa - $qtySisa);
 
                                     if ($qtyTerjual > 0) {

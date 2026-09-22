@@ -9,6 +9,12 @@ export default function Show({ sale }) {
         return 'Rp ' + number.toLocaleString('id-ID');
     };
 
+    const formatQty = (val) => {
+        if (val === null || val === undefined || val === '') return '0';
+        const num = parseFloat(val);
+        return isNaN(num) ? '0' : Number(num.toFixed(2)).toString();
+    };
+
     const formatDate = (dateStr) => {
         if (!dateStr) return '-';
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -212,8 +218,8 @@ export default function Show({ sale }) {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                                <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold">
-                                                    {item.qty}
+                                                <span className="inline-flex items-center justify-center min-w-[2.5rem] px-2 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold">
+                                                    {formatQty(item.qty)}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
@@ -238,7 +244,7 @@ export default function Show({ sale }) {
                 </div>
 
                 {/* Sisa Produk */}
-                {sale.laporan_pulang?.items?.some(i => i.qty_sisa > 0) && (
+                {sale.laporan_pulang?.items?.some(i => (parseFloat(i.qty_sisa) || 0) > 0) && (
                     <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mb-6">
                         <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -247,10 +253,10 @@ export default function Show({ sale }) {
                         </div>
                         <div className="p-6">
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                {sale.laporan_pulang.items.filter(i => i.qty_sisa > 0).map(item => (
+                                {sale.laporan_pulang.items.filter(i => (parseFloat(i.qty_sisa) || 0) > 0).map(item => (
                                     <div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                                         <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold truncate">{item.product?.nama_produk}</p>
-                                        <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{item.qty_sisa} <span className="text-[10px] font-medium text-slate-400">unit</span></p>
+                                        <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">{formatQty(item.qty_sisa)} <span className="text-[10px] font-medium text-slate-400">unit</span></p>
                                     </div>
                                 ))}
                             </div>

@@ -17,6 +17,10 @@ class Product extends Model
         'stok',
     ];
 
+    protected $casts = [
+        'stok' => 'float',
+    ];
+
     // Accessor untuk mendapatkan nama kategori (backward compatible)
     public function getKategoriAttribute()
     {
