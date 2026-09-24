@@ -184,6 +184,7 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                                 <tr>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Tanggal</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Shift</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Modal Awal</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Modal Produk</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Omset Penjualan</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Untung Bersih</th>
@@ -203,13 +204,16 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
+                                            {formatRp(sale.modal_harian || 0)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
                                             {formatRp(sale.modal_awal)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
                                             {formatRp(sale.omset_penjualan)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                                            {formatRp((sale.untung_bersih || 0) + (sale.selisih_pembayaran || 0))}
+                                            {formatRp(sale.untung_bersih || 0)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
                                             <span className="text-emerald-600 dark:text-emerald-400">+{formatRp(sale.dana_masuk || 0)}</span>
@@ -228,7 +232,7 @@ export default function Index({ sales, shifts, filters, summary, auth }) {
                                 ))}
                                 {sales.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                        <td colSpan="8" className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                             <Search className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
                                             <p>Tidak ada data penjualan untuk filter tersebut.</p>
                                         </td>
